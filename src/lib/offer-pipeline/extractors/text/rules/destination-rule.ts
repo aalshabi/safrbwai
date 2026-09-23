@@ -45,22 +45,120 @@ const STOP_WORDS = [
 /** Phrases where a following "إلى/to" is NOT introducing a destination. */
 const MARKER_BLOCKLIST = ["بالإضافة", "إضافة", "اضافة", "تصل", "يصل", "up", "close", "next"];
 
+/**
+ * Facility nouns that follow "إلى/to" without naming a place: "من وإلى المطار"
+ * describes a transfer, not where the traveller is going. Deliberately limited
+ * to facilities — a word that could begin a real place name (مدينة، جزيرة…) is
+ * NOT listed, so "إلى المدينة المنورة" is never lost.
+ */
+const NOT_A_DESTINATION = new Set([
+  "المطار", "مطار", "المطارات", "الفندق", "فندق", "المنتجع", "منتجع", "الشقة", "الغرفة",
+  "المسبح", "الصالة", "البوابة", "السكن", "المبنى",
+  "airport", "airports", "hotel", "hotels", "resort", "room", "lobby", "gate", "terminal",
+  "station", "pool", "building",
+]);
+
+const LEADING_ARTICLE = /^(?:the|a|an)$/i;
+
+function namesAFacility(value: string): boolean {
+  const words = value.split(/\s+/).filter(Boolean);
+  // "to the airport" — look past an English article, which Arabic attaches.
+  const first = (LEADING_ARTICLE.test(words[0] ?? "") ? words[1] : words[0])?.toLowerCase() ?? "";
+  return NOT_A_DESTINATION.has(first);
+}
+
 const MAX_WORDS = 4;
 const MAX_CHARS = 40;
 
-function findCanonical(text: string): { entry: (typeof DESTINATIONS)[number]; index: number; length: number } | null {
+/**
+ * An alias must not end in the middle of a longer word: "الهند" inside
+ * "الهندسة" and "قطر" inside "القطرية" are not destinations.
+ *
+ * Only the END is checked. Arabic attaches single-letter prefixes to place
+ * names ("بدبي", "ودبي", "لدبي"), so requiring a boundary before the alias
+ * would lose real matches — while requiring one after it costs nothing.
+ */
+function endsOnAWordBoundary(haystack: string, index: number, length: number): boolean {
+  const next = haystack[index + length];
+  return next === undefined || !/[\p{L}\p{N}]/u.test(next);
+}
+
+/**
+ * An airline carries a country adjective in its name — "الخطوط السعودية",
+ * "الخطوط التركية", "Qatar Airways". The carrier is not where the traveller is
+ * going, so a country match introduced by one of these is discarded.
+ */
+const CARRIER_BEFORE = /(?:الخطوط|خطوط|طيران|شركة|على متن)\s*$/;
+const CARRIER_AFTER = /^\s*(?:airways|airlines|air\b)/i;
+
+function namesACarrier(haystack: string, index: number, length: number): boolean {
+  return (
+    CARRIER_BEFORE.test(haystack.slice(Math.max(0, index - 14), index)) ||
+    CARRIER_AFTER.test(haystack.slice(index + length))
+  );
+}
+
+type Match = { entry: (typeof DESTINATIONS)[number]; index: number; length: number; marker: number };
+
+const DESTINATION_MARKER = /(?:إلى|الى|الوجهة\s*[:：]|وجهة\s*[:：]|\bto|\bdestination\s*[:：])\s*$/i;
+const ORIGIN_MARKER = /(?:من|\bfrom|مغادرة\s*من|انطلاق\s*من)\s*$/i;
+
+/**
+ * "من الرياض إلى تبليسي" names two cities. The one after "إلى" is where the
+ * traveller is going; the one after "من" is where they leave from and must
+ * never be reported as the destination.
+ */
+function markerRank(haystack: string, index: number): number {
+  const before = haystack.slice(Math.max(0, index - 16), index);
+  if (DESTINATION_MARKER.test(before)) return 2;
+  if (ORIGIN_MARKER.test(before)) return 0;
+  return 1;
+}
+
+/** Better = stronger marker first, then the longer alias. */
+function outranks(a: Match, b: Match | null): boolean {
+  if (!b) return true;
+  if (a.marker !== b.marker) return a.marker > b.marker;
+  return a.length > b.length;
+}
+
+/**
+ * Tier-1 selection. A CITY outranks a COUNTRY: an offer that says "فندق في
+ * تبليسي … على الخطوط السعودية" is going to Tbilisi, and picking the longest
+ * alias anywhere in the text would answer "Saudi Arabia". Within the same
+ * rank the longest alias still wins, so "أبو ظبي" is not shadowed.
+ */
+function findCanonical(text: string): Match | null {
   const haystack = text.toLowerCase();
-  let best: { entry: (typeof DESTINATIONS)[number]; index: number; length: number } | null = null;
+  let city: Match | null = null;
+  let country: Match | null = null;
 
   for (const entry of DESTINATIONS) {
     for (const alias of entry.aliases) {
-      const index = haystack.indexOf(alias.toLowerCase());
-      if (index === -1) continue;
-      // Longest alias wins so "أبو ظبي" is not shadowed by a shorter entry.
-      if (!best || alias.length > best.length) best = { entry, index, length: alias.length };
+      const needle = alias.toLowerCase();
+      // Scan every occurrence: the first may sit inside a longer word.
+      for (let index = haystack.indexOf(needle); index !== -1; index = haystack.indexOf(needle, index + 1)) {
+        if (!endsOnAWordBoundary(haystack, index, needle.length)) continue;
+        if (entry.kind === "country" && namesACarrier(haystack, index, needle.length)) continue;
+
+        const hit: Match = { entry, index, length: alias.length, marker: markerRank(haystack, index) };
+        if (entry.kind === "country") {
+          if (outranks(hit, country)) country = hit;
+        } else if (outranks(hit, city)) {
+          city = hit;
+        }
+        break;
+      }
     }
   }
-  return best;
+  // A city sitting INSIDE a longer country alias is not a separate mention:
+  // "سلطنة عمان" contains "عمان" (Amman), and the whole phrase is the answer.
+  if (city && country && contains(country, city)) return country;
+  return city ?? country;
+}
+
+function contains(outer: Match, inner: Match): boolean {
+  return outer.index <= inner.index && inner.index + inner.length <= outer.index + outer.length;
 }
 
 /** Trim a captured tail down to a short, plausible destination phrase. */
@@ -92,7 +190,7 @@ function findExplicit(text: string): { value: string; evidence: string } | null 
 
       const tail = text.slice(m.index + m[0].length);
       const value = trimToDestination(tail);
-      if (!value) continue;
+      if (!value || namesAFacility(value)) continue;
 
       // Evidence covers the marker plus the captured destination.
       return { value, evidence: text.slice(m.index, m.index + m[0].length + value.length).trim() };

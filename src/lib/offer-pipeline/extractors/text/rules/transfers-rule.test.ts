@@ -29,3 +29,41 @@ describe("transfersRule", () => {
     expect(r.warnings).toEqual([]);
   });
 });
+
+/**
+ * Transfers is a REQUIRED field, so a phrasing the rule misses is reported to
+ * the traveller as "التحويلات غير مذكورة" about an offer that did state them.
+ * These are the wordings real agency offers use.
+ */
+describe("transfersRule — the wordings a real offer uses", () => {
+  const included = (text: string) => transfersRule.apply(text).facts.transfer?.value;
+
+  it("«استقبال وتوديع» — the meet-and-greet pair", () => {
+    expect(included("استقبال وتوديع من المطار")).toEqual({ included: true });
+    expect(included("استقبال وتوصيل من المطار")).toEqual({ included: true });
+  });
+
+  it("«شامل/يشمل» followed by the transport word", () => {
+    expect(included("شامل التنقلات من وإلى المطار")).toEqual({ included: true });
+    expect(included("يشمل النقل من المطار")).toEqual({ included: true });
+    expect(included("تشمل المواصلات الداخلية")).toEqual({ included: true });
+    expect(included("مع التوصيل من المطار")).toEqual({ included: true });
+  });
+
+  it("the transport word followed by its status", () => {
+    expect(included("التنقلات مشمولة")).toEqual({ included: true });
+    expect(included("الترحيل مجاني")).toEqual({ included: true });
+    expect(included("ترانسفير خاص")).toEqual({ included: true });
+  });
+
+  it("English wordings", () => {
+    expect(included("Complimentary airport transfers")).toEqual({ included: true });
+    expect(included("Meet and greet at the airport")).toEqual({ included: true });
+  });
+
+  it("negation still wins over any of them", () => {
+    expect(included("التنقلات غير مشمولة")).toEqual({ included: false });
+    expect(included("بدون مواصلات")).toEqual({ included: false });
+    expect(included("شامل الإفطار، النقل غير مشمول")).toEqual({ included: false });
+  });
+});
