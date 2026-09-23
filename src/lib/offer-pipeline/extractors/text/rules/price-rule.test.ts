@@ -74,6 +74,21 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     expect(amounts("السعر الإجمالي 5,000 ريال. الطيران 2,000 ريال.")).toEqual([5000]);
   });
 
+  // English puts the component BEFORE the price word, where the clause-end
+  // anchor cannot see it — so "Hotel price" needs its own rejection.
+  it("an English component price, whose word order is the reverse of Arabic", () => {
+    expect(amounts("Total price SAR 5,000. Hotel price SAR 3,000.")).toEqual([5000]);
+    expect(amounts("Total price SAR 5,000. Flight cost SAR 2,000.")).toEqual([5000]);
+    expect(amounts("Total price SAR 5,000. Ticket cost SAR 1,200.")).toEqual([5000]);
+    expect(amounts("Total price SAR 5,000. Per-night price SAR 700.")).toEqual([5000]);
+    expect(amounts("Total price SAR 5,000. Hotel's price SAR 3,000.")).toEqual([5000]);
+  });
+
+  it("but an English label naming the whole offer still competes", () => {
+    expect(amounts("Total price SAR 5,000. Package price SAR 6,000.")).toEqual([5000, 6000]);
+    expect(amounts("Total price SAR 5,000. Price SAR 6,000.")).toEqual([5000, 6000]);
+  });
+
   it("a per-person rate beside a total", () => {
     expect(amounts("السعر الإجمالي 8,400 ريال. السعر 4,200 ريال للشخص.")).toEqual([8400]);
   });
