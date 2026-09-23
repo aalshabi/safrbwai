@@ -23,10 +23,23 @@ const FINAL_PRICE_LABEL =
 /**
  * A bare price label — "السعر 6,000 ريال" — with no "النهائي/الإجمالي".
  * Anchored to the end of the clause so "سعر الفندق 3000 ريال" does NOT match:
- * there the clause ends with the component word, not the price word.
+ * in Arabic the clause ends with the component word, not the price word.
  */
 const PRICE_WORD_LABEL =
   /(?:السعر|سعر|التكلفة|تكلفة|المبلغ|price|cost)\s*[:：\-–—]?\s*$/i;
+/** The parts an offer itemizes; their own price never rivals the total. */
+const COMPONENT_ALT =
+  "hotels?|flights?|airfare|tickets?|rooms?|nights?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+/**
+ * English puts the component BEFORE the price word ("Hotel price SAR 3,000"),
+ * so the clause-end anchor alone would read it as the offer's price. This
+ * rejects that order; Arabic needs no equivalent because its word order puts
+ * the component last, where the anchor already excludes it.
+ */
+const COMPONENT_PRICE_LABEL = new RegExp(
+  `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost)\\s*[:：\\-–—]?\\s*$`,
+  "i"
+);
 /**
  * A per-unit suffix right after the amount ("4200 ريال للشخص"). Such a figure
  * is a unit rate, not a competing total, so two of them differing is not a
@@ -80,7 +93,8 @@ function hasFinalPriceContext(text: string, matchIndex: number): boolean {
 }
 
 function hasPriceWordContext(text: string, matchIndex: number): boolean {
-  return PRICE_WORD_LABEL.test(clausePrefix(text, matchIndex));
+  const prefix = clausePrefix(text, matchIndex);
+  return PRICE_WORD_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix);
 }
 
 function isPerUnitAmount(text: string, matchEnd: number): boolean {
