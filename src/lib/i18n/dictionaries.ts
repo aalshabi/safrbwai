@@ -500,7 +500,7 @@ export const dictionaries = {
     },
     compare: {
       title: "مقارنة الفنادق",
-      subtitle: "قارن حتى أربعة فنادق جنباً إلى جنب باتخاذ قرار موضوعي.",
+      subtitle: "أدخل أسماء الفنادق لمعاينة أداة المقارنة — قيد التطوير، ولا تُنتج مقارنة فعلية بعد.",
       addHotel: "أضف فندقاً",
       hotelName: "اسم الفندق",
       compareBtn: "جرّب المقارنة",
@@ -1116,7 +1116,7 @@ export const dictionaries = {
     },
     compare: {
       title: "Compare hotels",
-      subtitle: "Compare up to four hotels side by side for an objective decision.",
+      subtitle: "Enter hotel names to preview the comparison tool — in development, it produces no real comparison yet.",
       addHotel: "Add a hotel",
       hotelName: "Hotel name",
       compareBtn: "Try the comparison",
