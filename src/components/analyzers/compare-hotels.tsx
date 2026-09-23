@@ -8,18 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
-import { AnalyzerLoading } from "@/components/analyzers/analyzer-loading";
 import { AnalyzerPreview } from "@/components/shared/analyzer-preview";
 
-// UI-preview only: no engine call, no scores, no "best pick" chosen, no save.
-const PREVIEW_DELAY = 700;
+// UI-preview only: no engine call, no scores, no persistence — and no
+// simulated wait. Nothing is being computed, so the result appears at once
+// rather than behind a spinner that would claim work is happening.
 
 export function CompareHotels() {
   const { t } = useLanguage();
   const tc = t.compare;
   const th = t.analyzeHotel;
   const [names, setNames] = React.useState<string[]>(["", ""]);
-  const [loading, setLoading] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
 
@@ -44,17 +43,13 @@ export function CompareHotels() {
     if (names.length > 2) setNames((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  async function onCompare(e: React.FormEvent) {
+  function onCompare(e: React.FormEvent) {
     e.preventDefault();
     const filled = names.filter((n) => n.trim().length > 0);
     if (filled.length < 2) {
       toast.error(tc.needTwo);
       return;
     }
-    setLoading(true);
-    setSubmitted(false);
-    await new Promise((r) => setTimeout(r, PREVIEW_DELAY));
-    setLoading(false);
     setSubmitted(true);
     requestAnimationFrame(() =>
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -99,7 +94,7 @@ export function CompareHotels() {
                     {tc.addHotel}
                   </Button>
                 )}
-                <Button type="submit" size="default" className="sm:flex-1" disabled={loading}>
+                <Button type="submit" size="default" className="sm:flex-1">
                   <Sparkles className="size-4" />
                   {tc.compareBtn}
                 </Button>
@@ -109,8 +104,7 @@ export function CompareHotels() {
         </Card>
 
         <div ref={resultRef} className="mx-auto mt-8 max-w-4xl scroll-mt-24">
-          {loading && <AnalyzerLoading />}
-          {submitted && !loading && <AnalyzerPreview futureItems={futureItems} />}
+          {submitted && <AnalyzerPreview futureItems={futureItems} />}
         </div>
       </div>
     </>

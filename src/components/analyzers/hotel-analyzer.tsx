@@ -8,12 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
-import { AnalyzerLoading } from "@/components/analyzers/analyzer-loading";
 import { AnalyzerPreview } from "@/components/shared/analyzer-preview";
 
-// UI-preview only: this component intentionally does NOT call the demo engine,
-// produce scores, or persist anything.
-const PREVIEW_DELAY = 700;
+// UI-preview only: no engine call, no scores, no persistence — and no
+// simulated wait. Nothing is being computed, so the result appears at once
+// rather than behind a spinner that would claim work is happening.
 
 export function HotelAnalyzer() {
   const { t } = useLanguage();
@@ -22,7 +21,6 @@ export function HotelAnalyzer() {
 
   const [name, setName] = React.useState("");
   const [city, setCity] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
 
@@ -37,13 +35,9 @@ export function HotelAnalyzer() {
     th.metrics.hiddenFees,
   ];
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    setLoading(true);
-    setSubmitted(false);
-    await new Promise((r) => setTimeout(r, PREVIEW_DELAY));
-    setLoading(false);
     setSubmitted(true);
     requestAnimationFrame(() =>
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -76,23 +70,16 @@ export function HotelAnalyzer() {
                   placeholder={th.cityPlaceholder}
                 />
               </div>
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? (
-                  t.common.analyzing
-                ) : (
-                  <>
-                    <Sparkles className="size-4" />
-                    {t.common.analyze}
-                  </>
-                )}
+              <Button type="submit" size="lg" className="w-full">
+                <Sparkles className="size-4" />
+                {t.common.analyze}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <div ref={resultRef} className="mx-auto mt-8 max-w-4xl scroll-mt-24">
-          {loading && <AnalyzerLoading />}
-          {submitted && !loading && <AnalyzerPreview futureItems={futureItems} />}
+          {submitted && <AnalyzerPreview futureItems={futureItems} />}
         </div>
       </div>
     </>

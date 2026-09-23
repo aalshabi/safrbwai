@@ -41,4 +41,16 @@ describe("public analyzers do not generate demo data", () => {
       expect(file).not.toMatch(/saveAnalysis\s*\(/);
     }
   });
+
+  /**
+   * A preview that waits behind a "جاري التحليل" spinner asserts that work is
+   * happening. Nothing is computed here, so there is nothing to wait for.
+   */
+  it("no preview analyzer simulates a wait or claims to be analysing", () => {
+    for (const file of [hotel, dest, cmp]) {
+      expect(file).not.toMatch(/setTimeout/);
+      expect(file).not.toContain("PREVIEW_DELAY");
+      expect(file).not.toContain("AnalyzerLoading");
+    }
+  });
 });
