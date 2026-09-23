@@ -15,11 +15,17 @@ function labelFor(key: string): Bi {
 export function buildConfirmedFacts(facts: ExtractedOfferFacts): ConfirmedFact[] {
   const out: ConfirmedFact[] = [];
 
-  const add = (key: string, fact: Fact<unknown> | undefined) => {
+  /**
+   * `label` is passed only for a fact with no entry in the field registry —
+   * flight is extracted and shown, but is neither required nor recommended of
+   * every offer, so it deliberately stays out of the checklist and the
+   * missing-fields list.
+   */
+  const add = (key: string, fact: Fact<unknown> | undefined, label?: Bi) => {
     if (!fact || !fact.evidence) return; // never surface a fact without evidence
     out.push({
       key,
-      label: labelFor(key),
+      label: label ?? labelFor(key),
       value: fact.value,
       evidence: fact.evidence,
       confidenceType: "exact",
@@ -31,9 +37,13 @@ export function buildConfirmedFacts(facts: ExtractedOfferFacts): ConfirmedFact[]
   add("nights", facts.nights);
   add("destination", facts.destination);
   add("travellers", facts.travelers);
+  add("accommodation", facts.accommodation);
   add("board", facts.board);
   add("baggage", facts.baggage);
+  add("flight", facts.flight, { ar: "الطيران", en: "Flight" });
   add("transfers", facts.transfer);
+  add("taxes", facts.taxes);
+  add("cancellationPolicy", facts.cancellationPolicy);
   add("insurance", facts.insurance);
   add("visa", facts.visa);
 

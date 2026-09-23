@@ -17,6 +17,7 @@ describe("RuleRegistry", () => {
       "insurance",
       "visa",
       "transfer",
+      "flight",
       "taxes",
       "cancellationPolicy",
       "accommodation",

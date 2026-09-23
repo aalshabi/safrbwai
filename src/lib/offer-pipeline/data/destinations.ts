@@ -21,6 +21,11 @@ export interface DestinationEntry {
   canonical: string;
   /** ISO 3166-1 alpha-2 country code. */
   countryCode?: string;
+  /**
+   * "country" marks a whole-country entry. A city is a more specific answer,
+   * so it outranks a country mentioned in the same offer.
+   */
+  kind?: "country";
   /** Surface forms (ar + en) that unambiguously denote this destination. */
   aliases: string[];
 }
@@ -209,4 +214,74 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Sydney", countryCode: "AU", aliases: ["سيدني", "sydney"] },
   { canonical: "Melbourne", countryCode: "AU", aliases: ["ملبورن", "melbourne"] },
   { canonical: "Auckland", countryCode: "NZ", aliases: ["أوكلاند", "اوكلاند", "auckland"] },
+
+  // ---- Countries ----------------------------------------------------------
+  // A supplier offer often names only the country («باكج ماليزيا»). A city
+  // alias is always longer, so listing countries never shadows a city: the
+  // longest-alias rule keeps «كوالالمبور» winning over «ماليزيا».
+  // «عمان» alone is deliberately absent — it is Amman (JO), so Oman is listed
+  // only as «سلطنة عمان».
+  { canonical: "Saudi Arabia", countryCode: "SA", kind: "country", aliases: ["السعودية", "المملكة العربية السعودية", "saudi arabia", "ksa"] },
+  { canonical: "United Arab Emirates", countryCode: "AE", kind: "country", aliases: ["الإمارات", "الامارات", "united arab emirates", "uae"] },
+  { canonical: "Qatar", countryCode: "QA", kind: "country", aliases: ["قطر", "qatar"] },
+  { canonical: "Oman", countryCode: "OM", kind: "country", aliases: ["سلطنة عمان", "sultanate of oman"] },
+  { canonical: "Jordan", countryCode: "JO", kind: "country", aliases: ["الأردن", "الاردن", "jordan"] },
+  { canonical: "Lebanon", countryCode: "LB", kind: "country", aliases: ["لبنان", "lebanon"] },
+  { canonical: "Egypt", countryCode: "EG", kind: "country", aliases: ["مصر", "egypt"] },
+  { canonical: "Morocco", countryCode: "MA", kind: "country", aliases: ["المغرب", "morocco"] },
+  { canonical: "Tunisia", countryCode: "TN", kind: "country", aliases: ["الجمهورية التونسية", "tunisia"] },
+  { canonical: "Turkey", countryCode: "TR", kind: "country", aliases: ["تركيا", "turkey", "türkiye", "turkiye"] },
+  { canonical: "Georgia", countryCode: "GE", kind: "country", aliases: ["جورجيا", "georgia"] },
+  { canonical: "Azerbaijan", countryCode: "AZ", kind: "country", aliases: ["أذربيجان", "اذربيجان", "azerbaijan"] },
+  { canonical: "Armenia", countryCode: "AM", kind: "country", aliases: ["أرمينيا", "ارمينيا", "armenia"] },
+  { canonical: "Kazakhstan", countryCode: "KZ", kind: "country", aliases: ["كازاخستان", "kazakhstan"] },
+  { canonical: "Uzbekistan", countryCode: "UZ", kind: "country", aliases: ["أوزبكستان", "اوزبكستان", "uzbekistan"] },
+  { canonical: "Kyrgyzstan", countryCode: "KG", kind: "country", aliases: ["قيرغيزستان", "قرغيزستان", "kyrgyzstan"] },
+  { canonical: "Malaysia", countryCode: "MY", kind: "country", aliases: ["ماليزيا", "malaysia"] },
+  { canonical: "Thailand", countryCode: "TH", kind: "country", aliases: ["تايلاند", "تايلند", "تايلندا", "thailand"] },
+  { canonical: "Indonesia", countryCode: "ID", kind: "country", aliases: ["إندونيسيا", "اندونيسيا", "indonesia"] },
+  { canonical: "India", countryCode: "IN", kind: "country", aliases: ["الهند", "india"] },
+  { canonical: "Nepal", countryCode: "NP", kind: "country", aliases: ["نيبال", "nepal"] },
+  { canonical: "Sri Lanka", countryCode: "LK", kind: "country", aliases: ["سري لانكا"] },
+  { canonical: "Japan", countryCode: "JP", kind: "country", aliases: ["اليابان", "japan"] },
+  { canonical: "China", countryCode: "CN", kind: "country", aliases: ["الصين", "china"] },
+  { canonical: "South Korea", countryCode: "KR", kind: "country", aliases: ["كوريا الجنوبية", "كوريا", "south korea"] },
+  { canonical: "United Kingdom", countryCode: "GB", kind: "country", aliases: ["بريطانيا", "المملكة المتحدة", "united kingdom"] },
+  { canonical: "France", countryCode: "FR", kind: "country", aliases: ["فرنسا", "france"] },
+  { canonical: "Italy", countryCode: "IT", kind: "country", aliases: ["إيطاليا", "ايطاليا", "italy"] },
+  { canonical: "Spain", countryCode: "ES", kind: "country", aliases: ["إسبانيا", "اسبانيا", "spain"] },
+  { canonical: "Portugal", countryCode: "PT", kind: "country", aliases: ["البرتغال", "portugal"] },
+  { canonical: "Germany", countryCode: "DE", kind: "country", aliases: ["ألمانيا", "المانيا", "germany"] },
+  { canonical: "Austria", countryCode: "AT", kind: "country", aliases: ["النمسا", "austria"] },
+  { canonical: "Switzerland", countryCode: "CH", kind: "country", aliases: ["سويسرا", "switzerland"] },
+  { canonical: "Netherlands", countryCode: "NL", kind: "country", aliases: ["هولندا", "netherlands"] },
+  { canonical: "Belgium", countryCode: "BE", kind: "country", aliases: ["بلجيكا", "belgium"] },
+  { canonical: "Greece", countryCode: "GR", kind: "country", aliases: ["اليونان", "greece"] },
+  { canonical: "Croatia", countryCode: "HR", kind: "country", aliases: ["كرواتيا", "croatia"] },
+  { canonical: "Bosnia and Herzegovina", countryCode: "BA", kind: "country", aliases: ["البوسنة والهرسك", "البوسنة", "bosnia"] },
+  { canonical: "Albania", countryCode: "AL", kind: "country", aliases: ["ألبانيا", "البانيا", "albania"] },
+  { canonical: "Serbia", countryCode: "RS", kind: "country", aliases: ["صربيا", "serbia"] },
+  { canonical: "Romania", countryCode: "RO", kind: "country", aliases: ["رومانيا", "romania"] },
+  { canonical: "Bulgaria", countryCode: "BG", kind: "country", aliases: ["بلغاريا", "bulgaria"] },
+  { canonical: "Hungary", countryCode: "HU", kind: "country", aliases: ["المجر", "هنغاريا", "hungary"] },
+  { canonical: "Czechia", countryCode: "CZ", kind: "country", aliases: ["التشيك", "جمهورية التشيك", "czechia", "czech republic"] },
+  { canonical: "Poland", countryCode: "PL", kind: "country", aliases: ["بولندا", "poland"] },
+  { canonical: "Russia", countryCode: "RU", kind: "country", aliases: ["روسيا", "russia"] },
+  { canonical: "Norway", countryCode: "NO", kind: "country", aliases: ["النرويج", "norway"] },
+  { canonical: "Sweden", countryCode: "SE", kind: "country", aliases: ["السويد", "sweden"] },
+  { canonical: "Denmark", countryCode: "DK", kind: "country", aliases: ["الدنمارك", "denmark"] },
+  { canonical: "Finland", countryCode: "FI", kind: "country", aliases: ["فنلندا", "finland"] },
+  { canonical: "Iceland", countryCode: "IS", kind: "country", aliases: ["آيسلندا", "ايسلندا", "iceland"] },
+  { canonical: "Ireland", countryCode: "IE", kind: "country", aliases: ["أيرلندا", "ايرلندا", "ireland"] },
+  { canonical: "United States", countryCode: "US", kind: "country", aliases: ["الولايات المتحدة", "أمريكا", "امريكا", "united states"] },
+  { canonical: "Canada", countryCode: "CA", kind: "country", aliases: ["كندا", "canada"] },
+  { canonical: "Mexico", countryCode: "MX", kind: "country", aliases: ["المكسيك", "mexico"] },
+  { canonical: "Brazil", countryCode: "BR", kind: "country", aliases: ["البرازيل", "brazil"] },
+  { canonical: "Argentina", countryCode: "AR", kind: "country", aliases: ["الأرجنتين", "الارجنتين", "argentina"] },
+  { canonical: "Australia", countryCode: "AU", kind: "country", aliases: ["أستراليا", "استراليا", "australia"] },
+  { canonical: "New Zealand", countryCode: "NZ", kind: "country", aliases: ["نيوزيلندا", "نيوزيلاندا", "new zealand"] },
+  { canonical: "South Africa", countryCode: "ZA", kind: "country", aliases: ["جنوب أفريقيا", "جنوب افريقيا", "south africa"] },
+  { canonical: "Kenya", countryCode: "KE", kind: "country", aliases: ["كينيا", "kenya"] },
+  { canonical: "Tanzania", countryCode: "TZ", kind: "country", aliases: ["تنزانيا", "tanzania"] },
+  { canonical: "Ethiopia", countryCode: "ET", kind: "country", aliases: ["إثيوبيا", "اثيوبيا", "ethiopia"] },
 ];
