@@ -151,9 +151,16 @@ function findCanonical(text: string): Match | null {
       }
     }
   }
-  // A city sitting INSIDE a longer country alias is not a separate mention:
-  // "سلطنة عمان" contains "عمان" (Amman), and the whole phrase is the answer.
-  if (city && country && contains(country, city)) return country;
+  if (city && country) {
+    // A city sitting INSIDE a longer country alias is not a separate mention:
+    // "سلطنة عمان" contains "عمان" (Amman), and the whole phrase is the answer.
+    if (contains(country, city)) return country;
+    // A city marked as the ORIGIN never beats a country marked as the
+    // destination: "من الرياض إلى ماليزيا" is a trip to Malaysia. Specificity
+    // only decides between mentions of equal standing, so "رحلة إلى جورجيا …
+    // فندق في تبليسي" still answers with the city.
+    if (city.marker === 0 && country.marker > city.marker) return country;
+  }
   return city ?? country;
 }
 

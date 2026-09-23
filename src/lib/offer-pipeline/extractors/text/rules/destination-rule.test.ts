@@ -175,6 +175,13 @@ describe("destinationRule — which mention is the destination", () => {
     expect(dest("from Jeddah to Istanbul, 5 nights")).toMatchObject({ canonicalValue: "Istanbul" });
   });
 
+  // A country-level package departing from a Saudi city: the departure city is
+  // more specific, but it is the origin, so it must not win.
+  it("a destination COUNTRY beats an origin city", () => {
+    expect(dest("من الرياض إلى ماليزيا 5 ليالٍ")).toMatchObject({ canonicalValue: "Malaysia" });
+    expect(dest("من جدة إلى تركيا ٧ ليالٍ")).toMatchObject({ canonicalValue: "Turkey" });
+  });
+
   it("a full offer resolves to the city stayed in, not a country named in passing", () => {
     expect(
       dest("عرض رحلة إلى جورجيا\n٦ ليالٍ\nفندق في تبليسي\nطيران على الخطوط السعودية")
