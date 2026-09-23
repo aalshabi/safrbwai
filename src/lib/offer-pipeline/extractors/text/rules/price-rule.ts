@@ -20,12 +20,40 @@ const AMOUNT_THEN_CURRENCY = new RegExp(`(${AMOUNT_PATTERN})\\s*(${CURRENCY_ALT}
 const CURRENCY_THEN_AMOUNT = new RegExp(`(${CURRENCY_ALT})\\s*(${AMOUNT_PATTERN})`, "gi");
 const FINAL_PRICE_LABEL =
   /(?:السعر\s+(?:النهائي|الإجمالي)|(?:final|total)\s+price)\s*[:：\-–—]?\s*$/i;
+/**
+ * A bare price label — "السعر 6,000 ريال" — with no "النهائي/الإجمالي".
+ * Anchored to the end of the clause so "سعر الفندق 3000 ريال" does NOT match:
+ * in Arabic the clause ends with the component word, not the price word.
+ */
+const PRICE_WORD_LABEL =
+  /(?:السعر|سعر|التكلفة|تكلفة|المبلغ|price|cost)\s*[:：\-–—]?\s*$/i;
+/** The parts an offer itemizes; their own price never rivals the total. */
+const COMPONENT_ALT =
+  "hotels?|flights?|airfare|tickets?|rooms?|nights?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+/**
+ * English puts the component BEFORE the price word ("Hotel price SAR 3,000"),
+ * so the clause-end anchor alone would read it as the offer's price. This
+ * rejects that order; Arabic needs no equivalent because its word order puts
+ * the component last, where the anchor already excludes it.
+ */
+const COMPONENT_PRICE_LABEL = new RegExp(
+  `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost)\\s*[:：\\-–—]?\\s*$`,
+  "i"
+);
+/**
+ * A per-unit suffix right after the amount ("4200 ريال للشخص"). Such a figure
+ * is a unit rate, not a competing total, so two of them differing is not a
+ * contradiction.
+ */
+const PER_UNIT_QUALIFIER =
+  /^\s*[/\\]?\s*(?:لكل\s+\S+|للشخص|للفرد|للبالغ|للراشد|للطفل|لليلة|في\s+الليلة|للغرفة|per\s+(?:person|pax|adult|child|night|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
 
 type PriceObservation = NonNullable<OfferObservations["prices"]>[number];
 
 interface PriceMatch extends PriceObservation {
   index: number;
+  length: number;
 }
 
 function collectMatches(
@@ -48,24 +76,45 @@ function collectMatches(
       currency,
       evidence: originalText.slice(match.index, match.index + match[0].length),
       index: match.index,
+      length: match[0].length,
     });
   }
 
   return matches;
 }
 
+/** The text between the previous clause boundary and the match. */
+function clausePrefix(text: string, matchIndex: number): string {
+  return text.slice(0, matchIndex).split(CLAUSE_BOUNDARY).at(-1) ?? "";
+}
+
 function hasFinalPriceContext(text: string, matchIndex: number): boolean {
-  const clausePrefix = text
-    .slice(0, matchIndex)
-    .split(CLAUSE_BOUNDARY)
-    .at(-1);
-  return FINAL_PRICE_LABEL.test(clausePrefix ?? "");
+  return FINAL_PRICE_LABEL.test(clausePrefix(text, matchIndex));
+}
+
+function hasPriceWordContext(text: string, matchIndex: number): boolean {
+  const prefix = clausePrefix(text, matchIndex);
+  return PRICE_WORD_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix);
+}
+
+function isPerUnitAmount(text: string, matchEnd: number): boolean {
+  return PER_UNIT_QUALIFIER.test(text.slice(matchEnd));
 }
 
 /**
- * Collect final/total prices when they are explicitly labelled. Without such a
- * label, preserve the existing single-price extraction fallback. This avoids
- * treating itemized hotel, flight, or fee amounts as competing final prices.
+ * Collect the amounts that claim to BE the price of the offer, so that two
+ * different such amounts are reported as a contradiction rather than silently
+ * resolved. Three tiers, narrowest first:
+ *
+ *  1. Explicitly final — "السعر الإجمالي 5,000 ريال", "total price".
+ *  2. Bare price label — "السعر 6,000 ريال". Counts as a competing total ONLY
+ *     when it is not a per-unit rate and shares the primary currency; a figure
+ *     in another currency is a restatement of the same price, not a rival one.
+ *  3. Neither — an itemized hotel/flight/fee amount. Never competes; the
+ *     existing single-price fallback still confirms the first one found.
+ *
+ * Ordering puts tier 1 first, so the CONFIRMED price stays the first explicitly
+ * final one whenever the offer states it.
  */
 export function extractPriceObservations(text: string): PriceObservation[] {
   const normalizedText = toWesternDigits(text);
@@ -73,11 +122,26 @@ export function extractPriceObservations(text: string): PriceObservation[] {
     ...collectMatches(normalizedText, text, AMOUNT_THEN_CURRENCY, 1, 2),
     ...collectMatches(normalizedText, text, CURRENCY_THEN_AMOUNT, 2, 1),
   ].sort((left, right) => left.index - right.index);
+
   const finalPriceMatches = allMatches.filter((match) =>
     hasFinalPriceContext(normalizedText, match.index)
   );
-  const matches =
-    finalPriceMatches.length > 0 ? finalPriceMatches : allMatches.slice(0, 1);
+  const finalPriceSet = new Set(finalPriceMatches);
+  const labelledMatches = allMatches.filter(
+    (match) =>
+      !finalPriceSet.has(match) &&
+      hasPriceWordContext(normalizedText, match.index) &&
+      !isPerUnitAmount(normalizedText, match.index + match.length)
+  );
+
+  // The currency guard applies to tier 2 only: tier 1 keeps reporting a
+  // cross-currency conflict exactly as it did before.
+  const primaryCurrency = (finalPriceMatches[0] ?? labelledMatches[0])?.currency;
+  const competing = [
+    ...finalPriceMatches,
+    ...labelledMatches.filter((match) => match.currency === primaryCurrency),
+  ];
+  const matches = competing.length > 0 ? competing : allMatches.slice(0, 1);
 
   const seen = new Set<string>();
   const observations: PriceObservation[] = [];
