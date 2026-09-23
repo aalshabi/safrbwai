@@ -19,7 +19,8 @@ describe("flightRule", () => {
 
   it("«الطيران مشمول»", () => {
     expect(included("الطيران مشمول في السعر")).toEqual({ included: true });
-    expect(included("التذاكر مشمولة")).toEqual({ included: true });
+    // NOT «التذاكر مشمولة» — a bare ticket word is not airfare; see below.
+    expect(included("تذاكر الطيران مشمولة")).toEqual({ included: true });
   });
 
   it("English wordings", () => {
@@ -42,6 +43,22 @@ describe("flightRule", () => {
     const r = flightRule.apply("نرتب لك الطيران عند الطلب");
     expect(r.facts.flight).toBeUndefined();
     expect(r.warnings.length).toBe(1);
+  });
+
+  /**
+   * An offer sells museum, event and train tickets too. Reading those as the
+   * airfare would be a materially false claim about what the price covers.
+   */
+  it("a generic «تذاكر» with no aviation word is never a flight", () => {
+    expect(flightRule.apply("يشمل تذاكر المتحف").facts.flight).toBeUndefined();
+    expect(flightRule.apply("يشمل تذاكر دخول المعالم").facts.flight).toBeUndefined();
+    expect(flightRule.apply("تذاكر الفعاليات غير مشمولة").facts.flight).toBeUndefined();
+    expect(flightRule.apply("التذاكر مشمولة").facts.flight).toBeUndefined();
+  });
+
+  it("but a ticket qualified as aviation still counts", () => {
+    expect(included("يشمل تذاكر الطيران")).toEqual({ included: true });
+    expect(included("تذاكر الرحلة الجوية مشمولة")).toEqual({ included: true });
   });
 
   it("returns nothing when no flight is mentioned (no fabrication)", () => {

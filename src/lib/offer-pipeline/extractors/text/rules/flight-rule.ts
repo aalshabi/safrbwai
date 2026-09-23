@@ -15,8 +15,16 @@ import type { ExtractionRule, RuleResult } from "../rule";
 import { detectInclusion } from "../signals";
 import { exact } from "../utils";
 
-/** The words an offer uses for the air ticket itself. */
-const FLIGHT_WORD = "الطيران|طيران|التذاكر|تذاكر|التذكرة|تذكرة|الرحلة\\s*الجوية|رحلة\\s*جوية";
+/**
+ * The words an offer uses for the air ticket itself.
+ *
+ * «تذاكر» alone is NOT one of them: an offer also sells museum, event and train
+ * tickets, and reading «يشمل تذاكر المتحف» as "flight included" would be a
+ * materially false claim about airfare. A generic ticket noun therefore counts
+ * only when an aviation word qualifies it.
+ */
+const FLIGHT_WORD =
+  "الطيران|طيران|الرحلة\\s*الجوية|رحلة\\s*جوية|(?:التذاكر|تذاكر|التذكرة|تذكرة)\\s*(?:ال)?(?:طيران|جوية|الجوية)";
 
 const EXCLUDE = new RegExp(
   `(?:${FLIGHT_WORD})[^.،\\n]{0,20}?(?:غير\\s*مشمول|غير\\s*شامل|غير\\s*مشمولة|not\\s*included|excluded)` +
