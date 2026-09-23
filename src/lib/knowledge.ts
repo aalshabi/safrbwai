@@ -200,8 +200,11 @@ export const knowledgeBase: KnowledgeEntry[] = [
     category: "visa",
     title: { ar: "صلاحية الجواز المطلوبة", en: "Required passport validity" },
     summary: {
-      ar: "أغلب الدول تشترط ٦ أشهر صلاحية — لا تُرفض على البوابة بسببها.",
-      en: "Most countries require 6 months' validity — don't get denied at the gate.",
+      // No fixed period is stated: the requirement differs by destination
+      // (Schengen asks for validity beyond departure, not a flat six months),
+      // and a wrong number here costs the traveller the trip.
+      ar: "الشرط يختلف بحسب الوجهة — تحقّق من مدة الصلاحية المطلوبة قبل الحجز.",
+      en: "The requirement differs by destination — check the validity it asks for before booking.",
     },
     tags: ["passport", "validity", "جواز", "صلاحية", "6 months", "أشهر"],
   },

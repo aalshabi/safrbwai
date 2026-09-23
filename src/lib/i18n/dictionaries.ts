@@ -500,7 +500,7 @@ export const dictionaries = {
     },
     compare: {
       title: "مقارنة الفنادق",
-      subtitle: "قارن حتى أربعة فنادق جنباً إلى جنب باتخاذ قرار موضوعي.",
+      subtitle: "أدخل أسماء الفنادق لمعاينة أداة المقارنة — قيد التطوير، ولا تُنتج مقارنة فعلية بعد.",
       addHotel: "أضف فندقاً",
       hotelName: "اسم الفندق",
       compareBtn: "جرّب المقارنة",
@@ -511,7 +511,7 @@ export const dictionaries = {
     },
     knowledge: {
       title: "محرك معرفة السفر",
-      subtitle: "قاعدة معرفة شاملة عن السفر — ابحث بذكاء واستخرج الإجابة فوراً.",
+      subtitle: "عناوين مختصرة لمواضيع السفر، قابلة للبحث بالعربية والإنجليزية. محتوى أولي قبل الإطلاق.",
       readTime: "دقائق قراءة",
       readArticle: "اقرأ الدليل",
       categories: {
@@ -525,8 +525,8 @@ export const dictionaries = {
         activities: "الأنشطة",
       },
       engine: {
-        searchPlaceholder: "ابحث بذكاء… مثال: أرخص وقت لحجز الطيران",
-        semanticBadge: "بحث دلالي",
+        searchPlaceholder: "ابحث… مثال: أرخص وقت لحجز الطيران",
+        semanticBadge: "بحث بالمرادفات",
         entriesStored: "مدخلاً في ٧ تصنيفات",
         tryExamples: "جرّب:",
         examples: ["فيزا أوروبا", "وجهات رخيصة للعائلة", "الترانزيت الوهمي", "السفر في الحر"],
@@ -1116,7 +1116,7 @@ export const dictionaries = {
     },
     compare: {
       title: "Compare hotels",
-      subtitle: "Compare up to four hotels side by side for an objective decision.",
+      subtitle: "Enter hotel names to preview the comparison tool — in development, it produces no real comparison yet.",
       addHotel: "Add a hotel",
       hotelName: "Hotel name",
       compareBtn: "Try the comparison",
@@ -1127,7 +1127,7 @@ export const dictionaries = {
     },
     knowledge: {
       title: "Travel Knowledge Engine",
-      subtitle: "A comprehensive travel knowledge base — search semantically and get the answer instantly.",
+      subtitle: "Short topic headings for travel subjects, searchable in Arabic and English. Early content, before launch.",
       readTime: "min read",
       readArticle: "Read guide",
       categories: {
@@ -1141,8 +1141,8 @@ export const dictionaries = {
         activities: "Activities",
       },
       engine: {
-        searchPlaceholder: "Search semantically… e.g. cheapest time to book flights",
-        semanticBadge: "Semantic search",
+        searchPlaceholder: "Search… e.g. cheapest time to book flights",
+        semanticBadge: "Synonym search",
         entriesStored: "entries across 7 categories",
         tryExamples: "Try:",
         examples: ["Europe visa", "cheap family destinations", "fake transit", "traveling in the heat"],

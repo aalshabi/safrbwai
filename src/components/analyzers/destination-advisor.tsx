@@ -8,12 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/page-header";
-import { AnalyzerLoading } from "@/components/analyzers/analyzer-loading";
 import { AnalyzerPreview } from "@/components/shared/analyzer-preview";
 
-// UI-preview only: no engine call, no generated weather/season/cost/itinerary,
-// no recommendation, no persistence.
-const PREVIEW_DELAY = 700;
+// UI-preview only: no engine call, no scores, no persistence — and no
+// simulated wait. Nothing is being computed, so the result appears at once
+// rather than behind a spinner that would claim work is happening.
 
 export function DestinationAdvisor() {
   const { t } = useLanguage();
@@ -26,19 +25,14 @@ export function DestinationAdvisor() {
   const [budget, setBudget] = React.useState("");
   const [adults, setAdults] = React.useState("2");
   const [children, setChildren] = React.useState("0");
-  const [loading, setLoading] = React.useState(false);
   const [submitted, setSubmitted] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
 
   const futureItems = [a.weather, a.crowd, a.price, a.safetyTitle, a.events, a.avgCost, a.hotels, a.itinerary];
 
-  async function onSubmit(e: React.FormEvent) {
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!country.trim() || !city.trim()) return;
-    setLoading(true);
-    setSubmitted(false);
-    await new Promise((r) => setTimeout(r, PREVIEW_DELAY));
-    setLoading(false);
     setSubmitted(true);
     requestAnimationFrame(() =>
       resultRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -125,23 +119,16 @@ export function DestinationAdvisor() {
                 </div>
               </div>
 
-              <Button type="submit" size="lg" className="w-full" disabled={loading}>
-                {loading ? (
-                  a.advising
-                ) : (
-                  <>
-                    <Sparkles className="size-4" />
-                    {a.adviseCta}
-                  </>
-                )}
+              <Button type="submit" size="lg" className="w-full">
+                <Sparkles className="size-4" />
+                {a.adviseCta}
               </Button>
             </form>
           </CardContent>
         </Card>
 
         <div ref={resultRef} className="mx-auto mt-8 max-w-4xl scroll-mt-24">
-          {loading && <AnalyzerLoading />}
-          {submitted && !loading && <AnalyzerPreview futureItems={futureItems} />}
+          {submitted && <AnalyzerPreview futureItems={futureItems} />}
         </div>
       </div>
     </>
