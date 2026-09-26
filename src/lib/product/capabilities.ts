@@ -4,6 +4,7 @@ export type CapabilityStatus = "disabled" | "preview" | "enabled";
 
 export type ProductCapabilityKey =
   | "textOfferAnalysis"
+  | "travelGuides"
   | "hotelOfferReview"
   | "destinationChecklist"
   | "hotelComparison"
@@ -29,7 +30,7 @@ export type ProductCapability = Readonly<{
 }>;
 
 export type NavigableProductCapability = ProductCapability &
-  Readonly<{ route: string; status: Exclude<CapabilityStatus, "disabled"> }>;
+  Readonly<{ route: string; status: "enabled" }>;
 
 export const PRODUCT_CAPABILITIES = {
   textOfferAnalysis: {
@@ -47,6 +48,21 @@ export const PRODUCT_CAPABILITIES = {
     },
     requiredForPublicLaunch: true,
   },
+  travelGuides: {
+    key: "travelGuides",
+    status: "enabled",
+    title: { ar: "أدلة مراجعة العرض", en: "Offer review guides" },
+    route: "/guides",
+    reason: {
+      ar: "ثلاثة أدلة عملية موثقة تساعدك قبل الدفع.",
+      en: "Three sourced checklists to use before paying.",
+    },
+    launchRequirement: {
+      ar: "الحفاظ على المصادر وتاريخ المراجعة لكل دليل.",
+      en: "Keep sources and review dates current for every guide.",
+    },
+    requiredForPublicLaunch: true,
+  },
   hotelOfferReview: {
     key: "hotelOfferReview",
     status: "preview",
@@ -60,7 +76,7 @@ export const PRODUCT_CAPABILITIES = {
       ar: "تنفيذ مراجعة حقيقية موثقة واختبارها.",
       en: "Implement and test a documented real review flow.",
     },
-    requiredForPublicLaunch: true,
+    requiredForPublicLaunch: false,
   },
   destinationChecklist: {
     key: "destinationChecklist",
@@ -75,7 +91,7 @@ export const PRODUCT_CAPABILITIES = {
       ar: "تنفيذ قائمة ثابتة واضحة المصدر واختبارها.",
       en: "Implement and test a clearly sourced static checklist.",
     },
-    requiredForPublicLaunch: true,
+    requiredForPublicLaunch: false,
   },
   hotelComparison: {
     key: "hotelComparison",
@@ -90,7 +106,7 @@ export const PRODUCT_CAPABILITIES = {
       ar: "تنفيذ مقارنة حقيقية دون بيانات مختلقة واختبارها.",
       en: "Implement and test a real comparison without fabricated data.",
     },
-    requiredForPublicLaunch: true,
+    requiredForPublicLaunch: false,
   },
   knowledgeLibrary: {
     key: "knowledgeLibrary",
@@ -105,7 +121,7 @@ export const PRODUCT_CAPABILITIES = {
       ar: "مراجعة المحتوى والمصادر والنطاق تحريرياً.",
       en: "Complete editorial review of content, sources, and scope.",
     },
-    requiredForPublicLaunch: true,
+    requiredForPublicLaunch: false,
   },
   localDashboard: {
     key: "localDashboard",
@@ -120,7 +136,7 @@ export const PRODUCT_CAPABILITIES = {
       ar: "تنفيذ حفظ محلي اختياري واضح مع تحكم المستخدم.",
       en: "Implement explicit opt-in local saving with user controls.",
     },
-    requiredForPublicLaunch: true,
+    requiredForPublicLaunch: false,
   },
   accounts: {
     key: "accounts",
@@ -226,7 +242,7 @@ export function getNavigableCapabilities(): NavigableProductCapability[] {
   const capabilities: ProductCapability[] = Object.values(PRODUCT_CAPABILITIES);
   return capabilities.filter(
     (capability): capability is NavigableProductCapability =>
-      capability.route !== null && capability.status !== "disabled"
+      capability.route !== null && capability.status === "enabled"
   );
 }
 

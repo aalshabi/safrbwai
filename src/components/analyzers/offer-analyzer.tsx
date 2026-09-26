@@ -32,6 +32,8 @@ import {
   APPLICATION_RESPONSE_HEADER,
   APPLICATION_RESPONSE_MARKER,
 } from "@/lib/offer-pipeline/api/constants";
+import { campaignSourceFromSearch } from "@/lib/analytics/events";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 type Phase = "input" | "review" | "submitting" | "success" | "error";
 type ErrorCode =
@@ -93,7 +95,7 @@ function mapStatus(status: number): ErrorCode {
 }
 
 export function OfferAnalyzer() {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const v1 = t.analyzeOffer.v1;
   const v2 = t.analyzeOffer.v2;
   const feedbackEnabled = isPublicBetaFeedbackEnabled();
@@ -181,6 +183,12 @@ export function OfferAnalyzer() {
     setErrorRequestId(null);
     setRequestIdCopyStatus("idle");
     setPhase("submitting");
+    const analyticsProperties = {
+      locale,
+      campaignSource:
+        typeof window === "undefined" ? undefined : campaignSourceFromSearch(window.location.search),
+    };
+    trackAnalyticsEvent("offer_analysis_started", analyticsProperties);
     try {
       const res = await fetch("/api/offer/analyze", {
         method: "POST",
@@ -194,6 +202,7 @@ export function OfferAnalyzer() {
         setErrorRequestId(null);
         setCooldown(RATE_LIMIT_COOLDOWN_SECONDS);
         setPhase("error");
+        trackAnalyticsEvent("offer_analysis_failed", analyticsProperties);
         return;
       }
       const body = await res.json().catch(() => null);
@@ -203,6 +212,7 @@ export function OfferAnalyzer() {
         setErrorRequestId(null);
         setAnalysisSequence((current) => current + 1);
         setPhase("success");
+        trackAnalyticsEvent("offer_analysis_completed", analyticsProperties);
         scrollToResult();
       } else {
         setErrorCode(mapStatus(res.status));
@@ -210,11 +220,13 @@ export function OfferAnalyzer() {
           res.headers?.get(APPLICATION_RESPONSE_HEADER) === APPLICATION_RESPONSE_MARKER;
         setErrorRequestId(isApplicationResponse ? applicationErrorRequestId(body) : null);
         setPhase("error");
+        trackAnalyticsEvent("offer_analysis_failed", analyticsProperties);
       }
     } catch {
       setErrorCode("network");
       setErrorRequestId(null);
       setPhase("error");
+      trackAnalyticsEvent("offer_analysis_failed", analyticsProperties);
     }
   }
 

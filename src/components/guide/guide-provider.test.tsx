@@ -131,18 +131,14 @@ describe("SafrBwai Guide", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("auto-starts once on the first offer-analysis visit", async () => {
+  it("does not auto-start and remains available on request", async () => {
     vi.useFakeTimers();
     pathname = "/analyze-offer";
     renderGuide(<div data-guide-id="offer-source-text">Text source</div>);
     await vi.advanceTimersByTimeAsync(300);
-    expect(screen.getByRole("dialog")).toBeTruthy();
-    expect(JSON.parse(window.localStorage.getItem(GUIDE_STORAGE_KEY)!)).toEqual({
-      completed: false,
-      skipped: false,
-      lastRoute: "/analyze-offer",
-      version: 1,
-    });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("button", { name: "افتح مساعد سافر بوعي" })).toBeTruthy();
+    expect(window.localStorage.getItem(GUIDE_STORAGE_KEY)).toBeNull();
   });
 
   it("does not auto-start after completion or skip", async () => {

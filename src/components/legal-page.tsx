@@ -62,7 +62,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "الملاحظات والتحليلات",
-        p: "Feedback غير مفعّل ولا يُسجل. لا يستخدم التطبيق حاليًا Analytics أو أدوات تتبع تسويقي.",
+        p: "جمع الملاحظات غير مفعّل. يحتوي التطبيق على واجهة قياس محايدة للمزوّد تسجل أسماء أحداث محددة فقط: بدء التحليل واكتماله وفشله ونسخ المخرجات، مع لغة الواجهة ومصدر حملة منقّح فقط. الإرسال الخارجي معطّل حاليًا، ولا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
       },
       {
         h: "تفضيلات المتصفح",
@@ -119,7 +119,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Feedback and analytics",
-        p: "Feedback is not enabled and is not recorded. The application currently uses no analytics or marketing tracking tools.",
+        p: "Feedback collection is disabled. The application includes a provider-neutral measurement interface for four allowlisted events: analysis start, completion, failure, and useful-output copy. Only interface locale and a sanitized campaign source are allowed. External transmission is currently disabled; offer text, evidence, results, names, contact information, and payment details cannot enter the analytics payload.",
       },
       {
         h: "Browser preferences",

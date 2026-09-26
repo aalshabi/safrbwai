@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { KnowledgeEngine } from "@/components/knowledge-engine";
 
 export const metadata: Metadata = {
-  title: "محرك معرفة السفر — Travel Knowledge Engine",
+  title: "معاينة محتوى السفر — Travel content preview",
   description:
-    "قاعدة معرفة عن الفنادق والوجهات ونصائح السفر والتأشيرات والطيران والطقس والأنشطة، مع بحث دلالي. A travel knowledge base covering hotels, destinations, tips, visas, flights, weather and activities with semantic search.",
+    "معاينة لمحتوى محلي أولي غير منشور؛ لا تستخدم مصادر مباشرة أو بحثًا دلاليًا. Preview of unpublished local content without live sources or semantic search.",
   alternates: { canonical: "/knowledge" },
 };
 

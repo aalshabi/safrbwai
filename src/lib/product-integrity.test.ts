@@ -75,8 +75,10 @@ describe("current pre-launch product integrity", () => {
     expect(privacyEn).toContain("does not log the offer text or short evidence");
     expect(privacyAr).toContain("لا يدخل هذا الدليل في نص نسخ الأسئلة أو الملخص");
     expect(privacyEn).toContain("excluded from copied questions and summaries");
-    expect(privacyAr).toContain("Feedback غير مفعّل ولا يُسجل");
-    expect(privacyEn).toContain("Feedback is not enabled and is not recorded");
+    expect(privacyAr).toContain("الإرسال الخارجي معطّل حاليًا");
+    expect(privacyAr).toContain("لا يدخل نص العرض أو الدليل أو النتيجة");
+    expect(privacyEn).toContain("External transmission is currently disabled");
+    expect(privacyEn).toContain("offer text, evidence, results, names");
     expect(privacyAr).toContain("تفضيلات اللغة والمظهر");
     expect(privacyEn).toContain("Language and theme preferences");
     expect(privacyAr).toContain("لا يرسل اسم الفندق أو المدينة إلى Google حاليًا");

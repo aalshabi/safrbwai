@@ -35,7 +35,7 @@ describe("public launch gate", () => {
     expect(result.ready).toBe(false);
     expect(result.blockers).toContainEqual({
       code: "capability_not_enabled",
-      capability: "hotelOfferReview",
+      capability: "publicIndexing",
     });
     expect(result.blockers).toContainEqual({ code: "automatedChecksPassed" });
     expect(result.blockers).toContainEqual({ code: "legalDocumentsApproved" });

@@ -8,6 +8,8 @@ import { useLanguage } from "@/lib/i18n/provider";
 import type { OfferAnalysis } from "@/lib/offer-pipeline/analysis/types";
 import { formatQuestionsForCopy } from "@/lib/result-actions/format-questions";
 import { formatSummaryForCopy } from "@/lib/result-actions/format-summary";
+import { campaignSourceFromSearch } from "@/lib/analytics/events";
+import { trackAnalyticsEvent } from "@/lib/analytics/client";
 
 type ResultCopyKind = "questions" | "summary";
 
@@ -82,6 +84,16 @@ export function ResultCopyAction({
 
     try {
       const copyResult = await copyText(text);
+      if (copyResult.copied) {
+        trackAnalyticsEvent("offer_analysis_output_copied", {
+          locale,
+          outputType: kind,
+          campaignSource:
+            typeof window === "undefined"
+              ? undefined
+              : campaignSourceFromSearch(window.location.search),
+        });
+      }
       showStatus(
         copyResult.copied
           ? kind === "questions"

@@ -13,7 +13,8 @@ SafrBwai helps you review the information stated in travel offers and make a cle
 - ملفات PDF والصور والروابط غير مدعومة.
 - لا توجد حسابات مستخدمين مفعّلة في التدفق الحالي.
 - لا تُحفظ نصوص العروض أو نتائج التحليل في قاعدة بيانات.
-- Feedback معطّل، ولا توجد Analytics أو أدوات تتبع تسويقي.
+- Feedback معطّل. توجد واجهة قياس محايدة للمزوّد بأحداث وخصائص محددة، والإرسال الخارجي معطّل.
+- تتوفر ثلاثة أدلة مراجعة موثقة مع تاريخ مراجعة ظاهر، وتبقى الفهرسة العامة معطّلة.
 - النتائج استشارية ولا تضمن صحة العرض أو البائع.
 
 ## Pre-launch scope
@@ -25,7 +26,8 @@ SafrBwai helps you review the information stated in travel offers and make a cle
 - PDF files, images, and links are not supported.
 - User accounts are not enabled in the current flow.
 - Offer text and analysis results are not stored in a database.
-- Feedback is disabled, with no analytics or marketing tracking.
+- Feedback is disabled. A provider-neutral allowlisted event interface exists, with external transmission disabled.
+- Three sourced offer-review guides include visible review dates; public indexing remains disabled.
 - Results are advisory and are not a guarantee of the offer or seller.
 
 ## طريقة العمل

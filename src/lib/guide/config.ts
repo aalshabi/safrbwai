@@ -1,5 +1,5 @@
 export const GUIDE_CONFIG = Object.freeze({
-  autoStartOnFirstOfferVisit: true,
+  autoStartOnFirstOfferVisit: false,
   autoStartDelayMs: 250,
   minimumAutoStartWidth: 320,
 });

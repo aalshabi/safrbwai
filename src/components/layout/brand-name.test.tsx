@@ -16,21 +16,14 @@ const UNAPPROVED_ENGLISH_NAME = ["Safer", "Bewae"].join(" ");
 const HEADER_LINKS = [
   "/",
   "/analyze-offer",
-  "/analyze-hotel",
-  "/analyze-destination",
-  "/compare-hotels",
-  "/knowledge",
+  "/guides",
 ];
 
 const FOOTER_LINKS = [
   "/",
   "/analyze-offer",
-  "/analyze-hotel",
-  "/analyze-destination",
-  "/compare-hotels",
-  "/knowledge",
+  "/guides",
   "/#about",
-  "/#contact",
   "/privacy",
   "/terms",
 ];

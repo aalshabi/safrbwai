@@ -1,16 +1,16 @@
 import type { MetadataRoute } from "next";
+import { getReviewedGuides } from "@/lib/guides";
+import { isFeatureEnabled } from "@/lib/product/capabilities";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (!isFeatureEnabled("publicIndexing")) return [];
   const routes = [
     "",
-    "/analyze-hotel",
-    "/analyze-destination",
     "/analyze-offer",
-    "/compare-hotels",
-    "/knowledge",
-    "/auth",
+    "/guides",
+    ...getReviewedGuides().map((guide) => `/guides/${guide.slug}`),
     "/privacy",
     "/terms",
   ];

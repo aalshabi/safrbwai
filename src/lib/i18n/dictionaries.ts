@@ -130,7 +130,7 @@ export const dictionaries = {
     },
     pillars: {
       title: "مبادئ مراجعة العرض",
-      subtitle: "ما الذي تعرضه نتيجة التحليل النصي الحالية.",
+      subtitle: "سافر بوعي منتج مستقل لمراجعة عروض السفر. هذه هي المبادئ التي تعرضها نتيجة التحليل النصي الحالية.",
       items: [
         { title: "حقائق مؤكدة", desc: "معلومات صريحة مستخرجة من النص نفسه." },
         { title: "معلومات ناقصة", desc: "نقاط مهمة لم يذكرها العرض بوضوح." },
@@ -253,7 +253,7 @@ export const dictionaries = {
     },
     analyzeOffer: {
       title: "تحليل عرض سفر",
-      subtitle: "ارفع عرض السفر (PDF أو صورة أو لقطة واتساب) لمعاينة أداة المراجعة — الاستخراج الفعلي قيد التطوير.",
+      subtitle: "ألصق نص عرض السفر لمراجعة المعلومات المذكورة والناقصة. لا تتحقق الأداة من البائع أو من صحة العرض خارجيًا.",
       inputLabel: "تفاصيل العرض",
       inputPlaceholder: "الصق نص العرض أو الرابط هنا…",
       priceLabel: "السعر المعلن (اختياري)",
@@ -500,7 +500,7 @@ export const dictionaries = {
     },
     compare: {
       title: "مقارنة الفنادق",
-      subtitle: "قارن حتى أربعة فنادق جنباً إلى جنب باتخاذ قرار موضوعي.",
+      subtitle: "معاينة واجهة فقط؛ لا تُنتج مقارنة فنادق أو أسعار أو توفر فعليًا.",
       addHotel: "أضف فندقاً",
       hotelName: "اسم الفندق",
       compareBtn: "جرّب المقارنة",
@@ -511,7 +511,7 @@ export const dictionaries = {
     },
     knowledge: {
       title: "محرك معرفة السفر",
-      subtitle: "قاعدة معرفة شاملة عن السفر — ابحث بذكاء واستخرج الإجابة فوراً.",
+      subtitle: "معاينة لمحتوى محلي أولي؛ ليست قاعدة شاملة ولا تستخدم مصادر مباشرة.",
       readTime: "دقائق قراءة",
       readArticle: "اقرأ الدليل",
       categories: {
@@ -746,7 +746,7 @@ export const dictionaries = {
     },
     pillars: {
       title: "Offer-review principles",
-      subtitle: "What the current text-analysis result presents.",
+      subtitle: "SafrBwai is an independent travel-offer review product. These principles define the current text-analysis result.",
       items: [
         { title: "Confirmed facts", desc: "Explicit information extracted from the text itself." },
         { title: "Missing information", desc: "Important points the offer does not clearly state." },
@@ -870,7 +870,7 @@ export const dictionaries = {
     },
     analyzeOffer: {
       title: "Analyze a travel offer",
-      subtitle: "Upload the offer (PDF, image or WhatsApp screenshot) to preview the review tool — real extraction is under development.",
+      subtitle: "Paste travel-offer text to review stated and missing information. The tool does not verify the seller or validate the offer externally.",
       inputLabel: "Offer details",
       inputPlaceholder: "Paste the offer text or link here…",
       priceLabel: "Advertised price (optional)",
@@ -1116,7 +1116,7 @@ export const dictionaries = {
     },
     compare: {
       title: "Compare hotels",
-      subtitle: "Compare up to four hotels side by side for an objective decision.",
+      subtitle: "Interface preview only; it does not produce live hotel, price, or availability comparisons.",
       addHotel: "Add a hotel",
       hotelName: "Hotel name",
       compareBtn: "Try the comparison",
@@ -1127,7 +1127,7 @@ export const dictionaries = {
     },
     knowledge: {
       title: "Travel Knowledge Engine",
-      subtitle: "A comprehensive travel knowledge base — search semantically and get the answer instantly.",
+      subtitle: "Preview of initial local content; it is not comprehensive and does not use live sources.",
       readTime: "min read",
       readArticle: "Read guide",
       categories: {

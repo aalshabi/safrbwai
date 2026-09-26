@@ -26,8 +26,8 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("pre-launch feature cards", () => {
-  it("shows enabled and preview capabilities while omitting disabled routes", () => {
+describe("first-release feature cards", () => {
+  it("shows only working capabilities", () => {
     const { container } = render(
       <LanguageProvider>
         <Features />
@@ -37,17 +37,11 @@ describe("pre-launch feature cards", () => {
     const links = Array.from(container.querySelectorAll("a")).map(
       (link) => link.getAttribute("href") ?? ""
     );
-    expect(links).toEqual([
-      "/analyze-offer",
-      "/analyze-hotel",
-      "/analyze-destination",
-      "/compare-hotels",
-      "/knowledge",
-    ]);
+    expect(links).toEqual(["/analyze-offer", "/guides"]);
     expect(links).not.toContain("/dashboard");
     expect(links).not.toContain("/auth");
-    expect(screen.getAllByText("متاح")).toHaveLength(1);
-    expect(screen.getAllByText("معاينة")).toHaveLength(4);
+    expect(screen.getAllByText("متاح")).toHaveLength(2);
+    expect(screen.queryByText("معاينة")).toBeNull();
   });
 
   it("uses the capability registry's English titles and reasons", async () => {
@@ -59,8 +53,7 @@ describe("pre-launch feature cards", () => {
     );
 
     expect(await screen.findByText("Travel offer analysis")).toBeTruthy();
-    expect(screen.getByText("Hotel offer review")).toBeTruthy();
-    expect(screen.getByText("Destination checklist")).toBeTruthy();
+    expect(screen.getByText("Offer review guides")).toBeTruthy();
     expect(screen.getByText("Deterministic text analysis is available now.")).toBeTruthy();
   });
 });

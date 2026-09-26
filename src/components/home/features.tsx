@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BarChart3, Building2, Compass, LayoutDashboard, Sparkles, Tag } from "lucide-react";
+import { BarChart3, BookOpenCheck, Building2, Compass, LayoutDashboard, Sparkles, Tag } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/provider";
 import { Card, CardContent } from "@/components/ui/card";
 import { Reveal } from "@/components/shared/reveal";
@@ -14,6 +14,7 @@ const FEATURE_ICONS: Partial<Record<ProductCapabilityKey, typeof Building2>> = {
   hotelOfferReview: Building2,
   destinationChecklist: Compass,
   textOfferAnalysis: Tag,
+  travelGuides: BookOpenCheck,
   hotelComparison: BarChart3,
   knowledgeLibrary: Sparkles,
   localDashboard: LayoutDashboard,

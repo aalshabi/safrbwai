@@ -50,17 +50,14 @@ export function Navbar() {
                   href={link.route}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-                    active
-                      ? "text-teal"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    link.key === "textOfferAnalysis"
+                      ? "bg-teal text-white hover:bg-teal/90"
+                      : active
+                        ? "text-teal"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <span>{link.title[locale]}</span>
-                  {link.status === "preview" && (
-                    <span className="hidden rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] text-amber-700 dark:text-amber-300 xl:inline">
-                      {t.productStage.status.preview}
-                    </span>
-                  )}
                 </Link>
               </li>
             );
@@ -103,11 +100,6 @@ export function Navbar() {
                 )}
               >
                 <span>{link.title[locale]}</span>
-                {link.status === "preview" && (
-                  <span className="rounded bg-amber-500/10 px-2 py-1 text-xs text-amber-700 dark:text-amber-300">
-                    {t.productStage.status.preview}
-                  </span>
-                )}
               </Link>
             </li>
           ))}

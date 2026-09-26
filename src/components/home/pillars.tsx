@@ -7,7 +7,7 @@ export function Pillars() {
   const { t } = useLanguage();
 
   return (
-    <section className="section">
+    <section id="about" className="section scroll-mt-24">
       <div className="container">
         <Reveal className="mx-auto max-w-2xl text-center">
           <h2 className="font-display text-3xl font-extrabold text-foreground md:text-4xl">

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { CompareHotels } from "@/components/analyzers/compare-hotels";
 
 export const metadata: Metadata = {
-  title: "مقارنة الفنادق — Compare Hotels",
+  title: "معاينة مقارنة الفنادق — Hotel comparison preview",
   description:
-    "قارن حتى أربعة فنادق جنباً إلى جنب باتخاذ قرار موضوعي. Compare up to four hotels side by side on objective criteria.",
+    "معاينة واجهة فقط؛ لا تُنتج مقارنة فنادق أو أسعار أو توفر فعليًا. Interface preview only; no live hotel, price, or availability comparison is produced.",
   alternates: { canonical: "/compare-hotels" },
 };
 
