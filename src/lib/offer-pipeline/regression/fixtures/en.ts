@@ -194,7 +194,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "price_total_mismatch",
       description: "A provable arithmetic mismatch uses the stated traveller count",
-      syntheticInput: "Travel offer for 2 adults, price SAR 1,200 per person, total price SAR 2,000.",
+      syntheticInput: "2 adults. Total: SAR 2,000. Price SAR 1,200 per person.",
     },
     {
       mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers"],
