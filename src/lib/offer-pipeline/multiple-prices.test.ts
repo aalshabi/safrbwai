@@ -36,7 +36,7 @@ describe("multiple final price observations", () => {
     const outcome = await runOfferPipeline({ type: "text", text });
 
     expect(extracted.observations?.prices).toEqual([
-      { amount: 3200, currency: "SAR", evidence: "3200 ريال" },
+      { amount: 3200, currency: "SAR", basis: "total", evidence: "3200 ريال" },
     ]);
     expect(outcome.status).toBe("ok");
     if (outcome.status !== "ok") return;
@@ -51,7 +51,7 @@ describe("multiple final price observations", () => {
     );
 
     expect(extracted.observations?.prices).toEqual([
-      { amount: 3200, currency: "SAR", evidence: "3200 ريال" },
+      { amount: 3200, currency: "SAR", basis: "total", evidence: "3200 ريال" },
     ]);
   });
 
@@ -62,8 +62,8 @@ describe("multiple final price observations", () => {
     const outcome = await runOfferPipeline({ type: "text", text });
 
     expect(extracted.observations?.prices).toEqual([
-      { amount: 3200, currency: "SAR", evidence: "SAR 3,200" },
-      { amount: 3500, currency: "SAR", evidence: "SAR 3,500" },
+      { amount: 3200, currency: "SAR", basis: "total", evidence: "SAR 3,200" },
+      { amount: 3500, currency: "SAR", basis: "total", evidence: "SAR 3,500" },
     ]);
     expect(outcome.status).toBe("ok");
     if (outcome.status !== "ok") return;
@@ -85,7 +85,7 @@ describe("multiple final price observations", () => {
     const outcome = await runOfferPipeline({ type: "text", text });
 
     expect(extracted.observations?.prices).toEqual([
-      { amount: 3200, currency: "SAR", evidence: "3200 ريال" },
+      { amount: 3200, currency: "SAR", basis: "total", evidence: "3200 ريال" },
     ]);
     expect(outcome.status).toBe("ok");
     if (outcome.status !== "ok") return;

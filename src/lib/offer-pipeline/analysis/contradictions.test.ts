@@ -21,8 +21,8 @@ describe("detectContradictions", () => {
   it("flags multiple different final prices as critical", () => {
     const obs: OfferObservations = {
       prices: [
-        { amount: 3200, currency: "SAR", evidence: "٣٢٠٠ ر.س" },
-        { amount: 2800, currency: "SAR", evidence: "٢٨٠٠ ر.س" },
+        { amount: 3200, currency: "SAR", basis: "total", evidence: "٣٢٠٠ ر.س" },
+        { amount: 2800, currency: "SAR", basis: "total", evidence: "٢٨٠٠ ر.س" },
       ],
     };
     const c = detectContradictions({}, obs);
@@ -30,6 +30,56 @@ describe("detectContradictions", () => {
     expect(c[0].code).toBe("multiple_prices");
     expect(c[0].severity).toBe("critical");
     expect(c[0].evidence).toEqual(["٣٢٠٠ ر.س", "٢٨٠٠ ر.س"]);
+  });
+
+  it("treats a same-currency unqualified offer price as a rival to an explicit total", () => {
+    const c = detectContradictions(
+      {},
+      {
+        prices: [
+          { amount: 5000, currency: "SAR", basis: "total", evidence: "total SAR 5000" },
+          { amount: 6000, currency: "SAR", basis: "unspecified", evidence: "price SAR 6000" },
+        ],
+      }
+    );
+    expect(c.map((item) => item.code)).toEqual(["multiple_prices"]);
+  });
+
+  it("keeps total, per-person, and per-night prices separate", () => {
+    const c = detectContradictions(
+      { travelers: fact({ adults: 2 }, "2 adults") },
+      {
+        prices: [
+          { amount: 2400, currency: "SAR", basis: "total", evidence: "total SAR 2400" },
+          { amount: 1200, currency: "SAR", basis: "per_person", evidence: "SAR 1200 per person" },
+          { amount: 480, currency: "SAR", basis: "per_night", evidence: "SAR 480 per night" },
+        ],
+      }
+    );
+    expect(c).toEqual([]);
+  });
+
+  it("detects a provable total arithmetic mismatch without inventing a total", () => {
+    const mismatch = detectContradictions(
+      { travelers: fact({ adults: 2 }, "2 adults") },
+      {
+        prices: [
+          { amount: 2000, currency: "SAR", basis: "total", evidence: "total SAR 2000" },
+          { amount: 1200, currency: "SAR", basis: "per_person", evidence: "SAR 1200 per person" },
+        ],
+      }
+    );
+    expect(mismatch.map((item) => item.code)).toEqual(["price_total_mismatch"]);
+
+    const noTotal = detectContradictions(
+      { travelers: fact({ adults: 2 }, "2 adults") },
+      {
+        prices: [
+          { amount: 1200, currency: "SAR", basis: "per_person", evidence: "SAR 1200 per person" },
+        ],
+      }
+    );
+    expect(noTotal).toEqual([]);
   });
 
   it("flags conflicting currency from facts alone (price vs currency)", () => {

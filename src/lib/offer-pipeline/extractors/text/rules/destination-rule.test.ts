@@ -113,3 +113,78 @@ describe("destinations dictionary", () => {
     expect(DESTINATIONS.length).toBeGreaterThanOrEqual(150);
   });
 });
+
+/**
+ * "من وإلى المطار" describes a transfer. The explicit-mention fallback used to
+ * report the traveller's destination as «المطار».
+ */
+describe("destinationRule — a facility is never the destination", () => {
+  const dest = (t: string) => destinationRule.apply(t).facts.destination?.value;
+
+  it("rejects «المطار» after a travel marker", () => {
+    expect(dest("شامل التنقلات من وإلى المطار. السعر الإجمالي 7,450 ريال.")).toBeUndefined();
+    expect(dest("توصيل إلى الفندق")).toBeUndefined();
+    expect(dest("transfer to the airport")).toBeUndefined();
+  });
+
+  it("but still takes a real unlisted destination from the same marker", () => {
+    expect(dest("رحلة إلى وجهة غير مدرجة، شامل التنقلات من وإلى المطار")).toMatchObject({
+      matchType: "explicit_mention",
+    });
+  });
+});
+
+describe("destinationRule — country names", () => {
+  const dest = (t: string) => destinationRule.apply(t).facts.destination?.value;
+
+  it("resolves a country an offer names on its own", () => {
+    expect(dest("باكج ماليزيا 5 ليالٍ")).toMatchObject({ canonicalValue: "Malaysia", countryCode: "MY" });
+    expect(dest("عرض تركيا ٧ ليالٍ")).toMatchObject({ canonicalValue: "Turkey", countryCode: "TR" });
+    expect(dest("جورجيا ٦ ليالٍ لشخصين")).toMatchObject({ canonicalValue: "Georgia", countryCode: "GE" });
+  });
+
+  it("a city still wins over its country — the longest alias decides", () => {
+    expect(dest("كوالالمبور 5 ليالٍ في ماليزيا")).toMatchObject({ canonicalValue: "Kuala Lumpur" });
+    expect(dest("إسطنبول ٤ ليالٍ في تركيا")).toMatchObject({ canonicalValue: "Istanbul" });
+  });
+
+  // Short country names would otherwise match inside longer words.
+  it("does not match an alias sitting inside another word", () => {
+    expect(dest("رحلة الهندسة الجامعية ٣ ليالٍ")).toBeUndefined();
+    expect(dest("٣ ليالٍ على الخطوط القطرية")).toBeUndefined();
+    expect(dest("a Georgian restaurant")).toBeUndefined();
+  });
+
+  it("«عمان» stays Amman — Oman is listed only as «سلطنة عمان»", () => {
+    expect(dest("عمان ٣ ليالٍ")).toMatchObject({ canonicalValue: "Amman", countryCode: "JO" });
+    expect(dest("سلطنة عمان ٣ ليالٍ")).toMatchObject({ canonicalValue: "Oman", countryCode: "OM" });
+  });
+});
+
+describe("destinationRule — which mention is the destination", () => {
+  const dest = (t: string) => destinationRule.apply(t).facts.destination?.value;
+
+  it("an airline's country adjective is not the destination", () => {
+    expect(dest("عرض تركيا ٧ ليالٍ على الخطوط السعودية")).toMatchObject({ canonicalValue: "Turkey" });
+    expect(dest("رحلة إلى تبليسي على طيران الإمارات")).toMatchObject({ canonicalValue: "Tbilisi" });
+    expect(dest("7 nights in Turkey with Qatar Airways")).toMatchObject({ canonicalValue: "Turkey" });
+  });
+
+  it("the city after «إلى» wins over the one after «من»", () => {
+    expect(dest("من الرياض إلى تبليسي ٦ ليالٍ")).toMatchObject({ canonicalValue: "Tbilisi" });
+    expect(dest("from Jeddah to Istanbul, 5 nights")).toMatchObject({ canonicalValue: "Istanbul" });
+  });
+
+  // A country-level package departing from a Saudi city: the departure city is
+  // more specific, but it is the origin, so it must not win.
+  it("a destination COUNTRY beats an origin city", () => {
+    expect(dest("من الرياض إلى ماليزيا 5 ليالٍ")).toMatchObject({ canonicalValue: "Malaysia" });
+    expect(dest("من جدة إلى تركيا ٧ ليالٍ")).toMatchObject({ canonicalValue: "Turkey" });
+  });
+
+  it("a full offer resolves to the city stayed in, not a country named in passing", () => {
+    expect(
+      dest("عرض رحلة إلى جورجيا\n٦ ليالٍ\nفندق في تبليسي\nطيران على الخطوط السعودية")
+    ).toMatchObject({ canonicalValue: "Tbilisi", countryCode: "GE" });
+  });
+});

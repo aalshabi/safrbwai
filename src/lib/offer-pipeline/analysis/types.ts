@@ -6,7 +6,7 @@
  * random scoring, no invented information.
  */
 
-import type { Bi } from "@/lib/offer-pipeline/types";
+import type { Bi, OfferPriceBasis } from "@/lib/offer-pipeline/types";
 
 export type FieldRequirement = "required" | "recommended" | "context-dependent";
 
@@ -28,6 +28,7 @@ export interface MissingField {
 
 export type ContradictionCode =
   | "multiple_prices"
+  | "price_total_mismatch"
   | "conflicting_currency"
   | "conflicting_nights"
   | "conflicting_board"
@@ -98,7 +99,7 @@ export interface OfferAnalysis {
  * (≤ 1 each), so no false contradictions are produced.
  */
 export interface OfferObservations {
-  prices?: { amount: number; currency: string; evidence: string }[];
+  prices?: { amount: number; currency: string; basis: OfferPriceBasis; evidence: string }[];
   currencies?: { code: string; evidence: string }[];
   nights?: { value: number; evidence: string }[];
   boards?: { value: string; evidence: string }[];

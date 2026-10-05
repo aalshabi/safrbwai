@@ -5,7 +5,7 @@ import { runOfferPipeline } from "./pipeline";
 
 describe("runOfferPipeline", () => {
   it("runs text end-to-end: extract → normalize → analyze", async () => {
-    const text = "عرض إلى دبي إقامة ٥ ليالٍ لشخصين شامل الإفطار، السعر ٣٢٠٠ ر.س، التأشيرة غير مشمولة.";
+    const text = "عرض إلى دبي إقامة ٥ ليالٍ لشخصين شامل الإفطار، السعر الإجمالي ٣٢٠٠ ر.س، التأشيرة غير مشمولة.";
     const outcome = await runOfferPipeline({ type: "text", text });
     expect(outcome.status).toBe("ok");
     if (outcome.status !== "ok") return;

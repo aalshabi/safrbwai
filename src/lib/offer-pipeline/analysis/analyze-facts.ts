@@ -32,7 +32,7 @@ export function analyzeFacts(facts: ExtractedOfferFacts, options?: AnalyzeOption
   const context = deriveQuestionContext(facts, options?.text);
 
   return {
-    confirmedFacts: buildConfirmedFacts(facts),
+    confirmedFacts: buildConfirmedFacts(facts, options?.observations),
     missingFields,
     contradictions,
     checklist,

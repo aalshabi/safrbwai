@@ -10,6 +10,9 @@ export const REGRESSION_CATEGORIES = [
   "missing_taxes",
   "explicit_currency",
   "conflicting_prices",
+  "price_basis_consistent",
+  "price_basis_missing",
+  "price_total_mismatch",
   "conflicting_nights",
   "canonical_destination",
   "explicit_destination",
@@ -30,6 +33,9 @@ export type RegressionCategory = (typeof REGRESSION_CATEGORIES)[number];
 
 export const REGRESSION_FIELD_KEYS = [
   "totalPrice",
+  "perPersonPrice",
+  "perNightPrice",
+  "statedPrice",
   "currency",
   "nights",
   "destination",

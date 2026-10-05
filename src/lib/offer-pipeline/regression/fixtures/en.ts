@@ -1,7 +1,7 @@
 import { defineRegressionFixture } from "../types";
 
 const COMPLETE_BASE =
-  "Trip to Dubai for 5 nights for 2 adults at a 4-star hotel with bed and breakfast, total SAR 4200 including all taxes and fees, airport transfers included, 23 kg baggage, free cancellation.";
+  "Trip to Dubai for 5 nights for 2 adults at a 4-star hotel with bed and breakfast, total price SAR 4200 including all taxes and fees, airport transfers included, 23 kg baggage, free cancellation.";
 
 export const ENGLISH_REGRESSION_FIXTURES = [
   defineRegressionFixture(
@@ -25,7 +25,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "airport_transfers",
       description: "Airport transfers explicitly included",
-      syntheticInput: "Trip to Doha for 3 nights, total USD 1500, airport transfers included.",
+      syntheticInput: "Trip to Doha for 3 nights, total price USD 1500, airport transfers included.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "transfers"],
@@ -40,7 +40,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "travellers",
       description: "Adults and children stated with explicit counts",
-      syntheticInput: "Trip to Dubai for 5 nights for 2 adults and 1 child, total SAR 5100.",
+      syntheticInput: "Trip to Dubai for 5 nights for 2 adults and 1 child, total price SAR 5100.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],
@@ -110,7 +110,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "short_analyzable",
       description: "Short but analyzable text with three core values",
-      syntheticInput: "Dubai, 3 nights, SAR 900.",
+      syntheticInput: "Dubai, 3 nights, total price SAR 900.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination"],
@@ -126,7 +126,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "noisy_safe",
       description: "Noisy punctuation around a safe synthetic offer",
-      syntheticInput: "LIMITED OFFER *** trip to Lisbon !!! 6 nights --- total USD 1800 --- bed and breakfast.",
+      syntheticInput: "LIMITED OFFER *** trip to Lisbon !!! 6 nights --- total price USD 1800 --- bed and breakfast.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "board"],
@@ -147,6 +147,64 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       mustMarkMissing: ["totalPrice", "currency", "nights", "destination", "travellers"],
       mustAsk: ["totalPrice", "currency", "nights"],
       mustNotAsk: ["visa", "insurance"],
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-price-basis-consistent",
+      locale: "en",
+      category: "price_basis_consistent",
+      description: "Consistent per-person and total prices preserve breakfast and transfers without treating the airport as a destination",
+      syntheticInput:
+        "Travel offer for 2 adults, one room, 5 nights, price SAR 1,200 per person, total price SAR 2,400, includes breakfast and airport transfers. Cancellation, baggage and transit duration are not stated.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "nights", "travellers", "board", "transfers"],
+      mustNotConfirm: ["destination"],
+      mustMarkMissing: ["destination", "cancellationPolicy", "baggage"],
+      mustDetectContradictions: [],
+      expectedValues: {
+        totalPrice: { amount: 2400, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        nights: 5,
+        travellers: { adults: 2 },
+        board: "BB",
+        transfers: { included: true },
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-price-basis-missing",
+      locale: "en",
+      category: "price_basis_missing",
+      description: "A bare amount without currency or price basis does not become an invented total",
+      syntheticInput:
+        "Travel offer, price 1,200 with no currency and no indication whether it is per person or the total; cancellation is subject to terms.",
+    },
+    {
+      mustNotConfirm: ["totalPrice", "perPersonPrice", "perNightPrice", "statedPrice", "currency"],
+      mustMarkMissing: ["totalPrice", "currency"],
+      mustAsk: ["totalPrice", "currency"],
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-price-total-mismatch",
+      locale: "en",
+      category: "price_total_mismatch",
+      description: "A provable arithmetic mismatch uses the stated traveller count",
+      syntheticInput: "Travel offer for 2 adults, price SAR 1,200 per person, total price SAR 2,000.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        travellers: { adults: 2 },
+      },
     }
   ),
 ] as const;

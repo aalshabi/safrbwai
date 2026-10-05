@@ -29,15 +29,28 @@ function withValue<T>(fact: Fact<unknown>, value: T): Fact<T> {
 export function normalizeFacts(facts: ExtractedOfferFacts): ExtractedOfferFacts {
   const out: ExtractedOfferFacts = {};
 
-  if (facts.price) {
-    const amount = toNormalizedAmount(facts.price.value.amount);
+  const normalizePrice = (fact: typeof facts.price) => {
+    if (!fact) return undefined;
+    const amount = toNormalizedAmount(fact.value.amount);
     if (amount !== null) {
-      out.price = withValue(facts.price, {
+      return withValue(fact, {
         amount,
-        currency: normalizeCurrencyCode(facts.price.value.currency),
+        currency: normalizeCurrencyCode(fact.value.currency),
       });
     }
-  }
+    return undefined;
+  };
+
+  const price = normalizePrice(facts.price);
+  const totalPrice = normalizePrice(facts.totalPrice);
+  const perPersonPrice = normalizePrice(facts.perPersonPrice);
+  const perNightPrice = normalizePrice(facts.perNightPrice);
+  const statedPrice = normalizePrice(facts.statedPrice);
+  if (price) out.price = price;
+  if (totalPrice) out.totalPrice = totalPrice;
+  if (perPersonPrice) out.perPersonPrice = perPersonPrice;
+  if (perNightPrice) out.perNightPrice = perNightPrice;
+  if (statedPrice) out.statedPrice = statedPrice;
 
   if (facts.currency) {
     out.currency = withValue(facts.currency, normalizeCurrencyCode(facts.currency.value));

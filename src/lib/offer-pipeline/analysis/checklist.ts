@@ -19,15 +19,16 @@ function explanationFor(field: FieldDef, status: ChecklistItem["status"]): { ar:
 }
 
 export function buildChecklist(facts: ExtractedOfferFacts, contradictions: Contradiction[]): ChecklistItem[] {
-  const conflictCodes = new Set(contradictions.map((c) => c.code));
-
   return FIELDS.filter((field) => field.inChecklist).map((field) => {
-    const conflicting = field.conflictCode !== undefined && conflictCodes.has(field.conflictCode);
+    const matchingConflicts = contradictions.filter((contradiction) =>
+      field.conflictCodes?.includes(contradiction.code)
+    );
+    const conflicting = matchingConflicts.length > 0;
     const present = isFieldPresent(field, facts);
     const status: ChecklistItem["status"] = conflicting ? "conflicting" : present ? "present" : "missing";
 
     const evidence = conflicting
-      ? contradictions.find((c) => c.code === field.conflictCode)?.evidence ?? []
+      ? [...new Set(matchingConflicts.flatMap((conflict) => conflict.evidence))]
       : fieldEvidence(field, facts);
 
     return { key: field.key, label: field.label, status, evidence, explanation: explanationFor(field, status) };
