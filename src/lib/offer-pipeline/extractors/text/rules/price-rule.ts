@@ -19,7 +19,7 @@ import {
 const AMOUNT_THEN_CURRENCY = new RegExp(`(${AMOUNT_PATTERN})\\s*(${CURRENCY_ALT})`, "gi");
 const CURRENCY_THEN_AMOUNT = new RegExp(`(${CURRENCY_ALT})\\s*(${AMOUNT_PATTERN})`, "gi");
 const TOTAL_PRICE_LABEL =
-  /(?:السعر\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)(?:\s+السعر)?|(?:final|total)\s+(?:price|cost)|grand\s+total)\s*(?:هو|is)?\s*[:：\-–—]?\s*$/i;
+  /(?:السعر\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)(?:\s+السعر)?|\b(?:final|total)\s+(?:price|cost)\b|\bgrand\s+total\b|\btotal\b)\s*(?:هو|is)?\s*[:：\-–—]?\s*$/i;
 const PER_PERSON_LABEL =
   /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:للشخص|للفرد|لكل\s+(?:شخص|فرد))|(?:price|cost)\s+per\s+(?:person|pax|travell?er))\s*[:：\-–—]?\s*$/i;
 const PER_NIGHT_LABEL =
@@ -42,6 +42,13 @@ const COMPONENT_ALT =
  */
 const COMPONENT_PRICE_LABEL = new RegExp(
   `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost)\\s*[:：\\-–—]?\\s*$`,
+  "i"
+);
+/** A component subtotal (for example, "Hotel total") is not the trip total. */
+const COMPONENT_TOTAL_ALT =
+  "hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+const COMPONENT_TOTAL_LABEL = new RegExp(
+  `\\b(?:${COMPONENT_TOTAL_ALT})(?:['’]s)?[\\s\\-–]+total(?:\\s+(?:price|cost))?\\s*[:：\\-–—]?\\s*$`,
   "i"
 );
 /**
@@ -113,7 +120,7 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
       ? "per_person"
       : perNightSuffix || PER_NIGHT_LABEL.test(prefix)
         ? "per_night"
-        : TOTAL_PRICE_LABEL.test(prefix)
+        : TOTAL_PRICE_LABEL.test(prefix) && !COMPONENT_TOTAL_LABEL.test(prefix)
           ? "total"
           : "unspecified";
 

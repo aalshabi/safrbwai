@@ -32,6 +32,42 @@ describe("runOfferPipeline", () => {
     expect(outcome).toEqual({ status: "extraction_failed", source: "text", reason: "empty" });
   });
 
+  it("detects a standalone Total label mismatch without inventing absent totals", async () => {
+    const mismatch = await runOfferPipeline({
+      type: "text",
+      text: "2 adults. Total: SAR 2,000. Price SAR 1,200 per person.",
+    });
+    expect(mismatch.status).toBe("ok");
+    if (mismatch.status !== "ok") return;
+
+    expect(mismatch.extraction.facts.totalPrice?.value).toEqual({
+      amount: 2000,
+      currency: "SAR",
+    });
+    expect(mismatch.extraction.facts.perPersonPrice?.value).toEqual({
+      amount: 1200,
+      currency: "SAR",
+    });
+    expect(
+      mismatch.analysis.contradictions.filter(
+        (contradiction) => contradiction.code === "price_total_mismatch"
+      )
+    ).toHaveLength(1);
+
+    const perPersonOnly = await runOfferPipeline({
+      type: "text",
+      text: "2 adults. Price SAR 1,200 per person.",
+    });
+    expect(perPersonOnly.status).toBe("ok");
+    if (perPersonOnly.status !== "ok") return;
+    expect(perPersonOnly.extraction.facts.totalPrice).toBeUndefined();
+    expect(
+      perPersonOnly.analysis.contradictions.some(
+        (contradiction) => contradiction.code === "price_total_mismatch"
+      )
+    ).toBe(false);
+  });
+
   // ordering guardrail: the orchestrator sequences extract → normalize → analyze
   it("sequences the layers in order (source scan)", () => {
     const source = readFileSync(join(process.cwd(), "src/lib/offer-pipeline/pipeline.ts"), "utf8");
