@@ -13,14 +13,38 @@ import type { Contradiction, OfferObservations } from "./types";
 
 /** Derive per-field observation lists from a single facts object (≤ 1 each). */
 function deriveObservations(facts: ExtractedOfferFacts): Required<OfferObservations> {
+  const explicitPrices = [
+    facts.totalPrice && { ...facts.totalPrice, basis: "total" as const },
+    facts.perPersonPrice && { ...facts.perPersonPrice, basis: "per_person" as const },
+    facts.perNightPrice && { ...facts.perNightPrice, basis: "per_night" as const },
+    facts.statedPrice && { ...facts.statedPrice, basis: "unspecified" as const },
+  ].filter((fact): fact is NonNullable<typeof fact> => Boolean(fact));
+  const prices =
+    explicitPrices.length > 0
+      ? explicitPrices.map((fact) => ({
+          amount: fact.value.amount,
+          currency: fact.value.currency,
+          basis: fact.basis,
+          evidence: fact.evidence,
+        }))
+      : facts.price
+        ? [
+            {
+              amount: facts.price.value.amount,
+              currency: facts.price.value.currency,
+              basis: "unspecified" as const,
+              evidence: facts.price.evidence,
+            },
+          ]
+        : [];
   const currencies: { code: string; evidence: string }[] = [];
   if (facts.currency) currencies.push({ code: facts.currency.value, evidence: facts.currency.evidence });
-  if (facts.price) currencies.push({ code: facts.price.value.currency, evidence: facts.price.evidence });
+  for (const price of prices) {
+    currencies.push({ code: price.currency, evidence: price.evidence });
+  }
 
   return {
-    prices: facts.price
-      ? [{ amount: facts.price.value.amount, currency: facts.price.value.currency, evidence: facts.price.evidence }]
-      : [],
+    prices,
     currencies,
     nights: facts.nights ? [{ value: facts.nights.value, evidence: facts.nights.evidence }] : [],
     boards: facts.board ? [{ value: facts.board.value, evidence: facts.board.evidence }] : [],
@@ -43,12 +67,48 @@ export function detectContradictions(
   const obs = { ...derived, ...(observations ?? {}) };
   const out: Contradiction[] = [];
 
-  // multiple different final prices (by amount) → critical
-  if (distinct(obs.prices.map((p) => p.amount)).length > 1) {
+  // Only prices stated as totals (or legacy unqualified offer prices when no
+  // total exists) can contradict each other. Unit rates are separate facts.
+  const totalPrices = obs.prices.filter((price) => price.basis === "total");
+  const unspecifiedPrices = obs.prices.filter((price) => price.basis === "unspecified");
+  const rivalTotals =
+    totalPrices.length > 0 ? [...totalPrices, ...unspecifiedPrices] : unspecifiedPrices;
+  if (distinct(rivalTotals.map((price) => price.amount)).length > 1) {
     out.push({
       code: "multiple_prices",
       message: { ar: "توجد أكثر من قيمة سعر نهائي مختلفة.", en: "More than one different final price is stated." },
-      evidence: obs.prices.map((p) => p.evidence),
+      evidence: rivalTotals.map((price) => price.evidence),
+      severity: "critical",
+    });
+  }
+
+  // A mismatch is provable only when the offer states one total, one
+  // per-person price in the same currency, and an exact traveller count.
+  // Per-night prices never participate and no missing total is synthesized.
+  const uniqueTotals = uniquePrices(totalPrices);
+  const uniquePerPerson = uniquePrices(
+    obs.prices.filter((price) => price.basis === "per_person")
+  );
+  const travellerCount =
+    (facts.travelers?.value.adults ?? 0) + (facts.travelers?.value.children ?? 0);
+  if (
+    uniqueTotals.length === 1 &&
+    uniquePerPerson.length === 1 &&
+    travellerCount > 0 &&
+    uniqueTotals[0].currency === uniquePerPerson[0].currency &&
+    Math.abs(uniqueTotals[0].amount - uniquePerPerson[0].amount * travellerCount) > 0.01
+  ) {
+    out.push({
+      code: "price_total_mismatch",
+      message: {
+        ar: "السعر الإجمالي لا يطابق سعر الشخص مضروبًا في عدد المسافرين.",
+        en: "The stated total does not match the per-person price multiplied by the traveller count.",
+      },
+      evidence: [
+        uniqueTotals[0].evidence,
+        uniquePerPerson[0].evidence,
+        facts.travelers?.evidence ?? String(travellerCount),
+      ],
       severity: "critical",
     });
   }
@@ -108,6 +168,16 @@ export function detectContradictions(
   });
 
   return out;
+}
+
+function uniquePrices(prices: OfferObservations["prices"] = []) {
+  const seen = new Set<string>();
+  return prices.filter((price) => {
+    const key = `${price.amount}\u0000${price.currency}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function pushBooleanConflict(

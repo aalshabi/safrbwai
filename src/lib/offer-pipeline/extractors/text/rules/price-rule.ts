@@ -4,7 +4,7 @@
  * number with no adjacent currency is intentionally NOT extracted (ambiguous).
  */
 
-import type { OfferPrice } from "@/lib/offer-pipeline/types";
+import type { ExtractedOfferFacts, OfferPrice, OfferPriceBasis } from "@/lib/offer-pipeline/types";
 import type { OfferObservations } from "@/lib/offer-pipeline/analysis/types";
 import type { ExtractionRule, RuleResult } from "../rule";
 import {
@@ -18,8 +18,12 @@ import {
 
 const AMOUNT_THEN_CURRENCY = new RegExp(`(${AMOUNT_PATTERN})\\s*(${CURRENCY_ALT})`, "gi");
 const CURRENCY_THEN_AMOUNT = new RegExp(`(${CURRENCY_ALT})\\s*(${AMOUNT_PATTERN})`, "gi");
-const FINAL_PRICE_LABEL =
-  /(?:السعر\s+(?:النهائي|الإجمالي)|(?:final|total)\s+price)\s*[:：\-–—]?\s*$/i;
+const TOTAL_PRICE_LABEL =
+  /(?:السعر\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)(?:\s+السعر)?|(?:final|total)\s+(?:price|cost)|grand\s+total)\s*(?:هو|is)?\s*[:：\-–—]?\s*$/i;
+const PER_PERSON_LABEL =
+  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:للشخص|للفرد|لكل\s+(?:شخص|فرد))|(?:price|cost)\s+per\s+(?:person|pax|travell?er))\s*[:：\-–—]?\s*$/i;
+const PER_NIGHT_LABEL =
+  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:لليلة|لكل\s+ليلة|في\s+الليلة)|(?:nightly|per[-\s]?night)\s*(?:price|cost)?)\s*[:：\-–—]?\s*$/i;
 /**
  * A bare price label — "السعر 6,000 ريال" — with no "النهائي/الإجمالي".
  * Anchored to the end of the clause so "سعر الفندق 3000 ريال" does NOT match:
@@ -45,8 +49,12 @@ const COMPONENT_PRICE_LABEL = new RegExp(
  * is a unit rate, not a competing total, so two of them differing is not a
  * contradiction.
  */
-const PER_UNIT_QUALIFIER =
-  /^\s*[/\\]?\s*(?:لكل\s+\S+|للشخص|للفرد|للبالغ|للراشد|للطفل|لليلة|في\s+الليلة|للغرفة|per\s+(?:person|pax|adult|child|night|room))/i;
+const PER_PERSON_QUALIFIER =
+  /^\s*[/\\]?\s*(?:لكل\s+(?:شخص|فرد|مسافر)|للشخص|للفرد|per\s+(?:person|pax|travell?er))/i;
+const PER_NIGHT_QUALIFIER =
+  /^\s*[/\\]?\s*(?:لكل\s+ليلة|لليلة|في\s+الليلة|per\s+night)/i;
+const OTHER_PER_UNIT_QUALIFIER =
+  /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
 
 type PriceObservation = NonNullable<OfferObservations["prices"]>[number];
@@ -56,15 +64,17 @@ interface PriceMatch extends PriceObservation {
   length: number;
 }
 
+type RawPriceMatch = Omit<PriceMatch, "basis">;
+
 function collectMatches(
   normalizedText: string,
   originalText: string,
   pattern: RegExp,
   amountGroup: number,
   currencyGroup: number
-): PriceMatch[] {
+): RawPriceMatch[] {
   pattern.lastIndex = 0;
-  const matches: PriceMatch[] = [];
+  const matches: RawPriceMatch[] = [];
 
   for (const match of normalizedText.matchAll(pattern)) {
     const amount = parseAmount(match[amountGroup] ?? "");
@@ -88,17 +98,31 @@ function clausePrefix(text: string, matchIndex: number): string {
   return text.slice(0, matchIndex).split(CLAUSE_BOUNDARY).at(-1) ?? "";
 }
 
-function hasFinalPriceContext(text: string, matchIndex: number): boolean {
-  return FINAL_PRICE_LABEL.test(clausePrefix(text, matchIndex));
-}
-
 function hasPriceWordContext(text: string, matchIndex: number): boolean {
   const prefix = clausePrefix(text, matchIndex);
   return PRICE_WORD_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix);
 }
 
-function isPerUnitAmount(text: string, matchEnd: number): boolean {
-  return PER_UNIT_QUALIFIER.test(text.slice(matchEnd));
+function classifyMatch(normalizedText: string, originalText: string, match: RawPriceMatch): PriceMatch {
+  const prefix = clausePrefix(normalizedText, match.index);
+  const suffix = normalizedText.slice(match.index + match.length);
+  const perPersonSuffix = PER_PERSON_QUALIFIER.exec(suffix);
+  const perNightSuffix = PER_NIGHT_QUALIFIER.exec(suffix);
+  const basis: OfferPriceBasis =
+    perPersonSuffix || PER_PERSON_LABEL.test(prefix)
+      ? "per_person"
+      : perNightSuffix || PER_NIGHT_LABEL.test(prefix)
+        ? "per_night"
+        : TOTAL_PRICE_LABEL.test(prefix)
+          ? "total"
+          : "unspecified";
+
+  const suffixLength = perPersonSuffix?.[0].length ?? perNightSuffix?.[0].length ?? 0;
+  return {
+    ...match,
+    basis,
+    evidence: originalText.slice(match.index, match.index + match.length + suffixLength).trim(),
+  };
 }
 
 /**
@@ -121,35 +145,49 @@ export function extractPriceObservations(text: string): PriceObservation[] {
   const allMatches = [
     ...collectMatches(normalizedText, text, AMOUNT_THEN_CURRENCY, 1, 2),
     ...collectMatches(normalizedText, text, CURRENCY_THEN_AMOUNT, 2, 1),
-  ].sort((left, right) => left.index - right.index);
+  ]
+    .sort((left, right) => left.index - right.index)
+    .map((match) => classifyMatch(normalizedText, text, match));
 
-  const finalPriceMatches = allMatches.filter((match) =>
-    hasFinalPriceContext(normalizedText, match.index)
+  const contextual = allMatches.filter((match) => {
+    if (match.basis !== "unspecified") return true;
+    if (!hasPriceWordContext(normalizedText, match.index)) return false;
+    return !OTHER_PER_UNIT_QUALIFIER.test(
+      normalizedText.slice(match.index + match.length)
+    );
+  });
+  const totalMatches = contextual.filter((match) => match.basis === "total");
+  const contextualMatches =
+    totalMatches.length > 0
+      ? contextual.filter(
+          (match) =>
+            match.basis !== "unspecified" ||
+            totalMatches.some((total) => total.currency === match.currency)
+        )
+      : contextual;
+  const basisPriority: Record<OfferPriceBasis, number> = {
+    total: 0,
+    per_person: 1,
+    per_night: 2,
+    unspecified: 3,
+  };
+  const matches = (contextualMatches.length > 0 ? contextualMatches : allMatches.slice(0, 1)).sort(
+    (left, right) => basisPriority[left.basis] - basisPriority[right.basis] || left.index - right.index
   );
-  const finalPriceSet = new Set(finalPriceMatches);
-  const labelledMatches = allMatches.filter(
-    (match) =>
-      !finalPriceSet.has(match) &&
-      hasPriceWordContext(normalizedText, match.index) &&
-      !isPerUnitAmount(normalizedText, match.index + match.length)
-  );
-
-  // The currency guard applies to tier 2 only: tier 1 keeps reporting a
-  // cross-currency conflict exactly as it did before.
-  const primaryCurrency = (finalPriceMatches[0] ?? labelledMatches[0])?.currency;
-  const competing = [
-    ...finalPriceMatches,
-    ...labelledMatches.filter((match) => match.currency === primaryCurrency),
-  ];
-  const matches = competing.length > 0 ? competing : allMatches.slice(0, 1);
 
   const seen = new Set<string>();
   const observations: PriceObservation[] = [];
-  for (const { amount, currency, evidence } of matches) {
-    const key = `${amount}\u0000${currency}`;
+  for (const { amount, currency, basis, evidence } of matches) {
+    const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;
+    if (
+      basis === "unspecified" &&
+      observations.some((price) => price.amount === amount && price.currency === currency)
+    ) {
+      continue;
+    }
     seen.add(key);
-    observations.push({ amount, currency, evidence });
+    observations.push({ amount, currency, basis, evidence });
   }
   return observations;
 }
@@ -158,12 +196,35 @@ export const priceRule: ExtractionRule = {
   key: "price",
   apply(text: string): RuleResult {
     const prices = extractPriceObservations(text);
-    const first = prices[0];
+    const first =
+      prices.find((price) => price.basis === "total") ??
+      prices.find((price) => price.basis === "unspecified") ??
+      prices.find((price) => price.basis === "per_person") ??
+      prices.find((price) => price.basis === "per_night");
     if (!first) return { facts: {}, warnings: [] };
 
     const value: OfferPrice = { amount: first.amount, currency: first.currency };
+    const fact = exact(value, first.evidence);
+    const facts: Partial<ExtractedOfferFacts> = { price: fact };
+    const basisFact = (basis: OfferPriceBasis) => {
+      const observation = prices.find((price) => price.basis === basis);
+      return observation
+        ? exact(
+            { amount: observation.amount, currency: observation.currency },
+            observation.evidence
+          )
+        : undefined;
+    };
+    const totalPrice = basisFact("total");
+    const perPersonPrice = basisFact("per_person");
+    const perNightPrice = basisFact("per_night");
+    const statedPrice = basisFact("unspecified");
+    if (totalPrice) facts.totalPrice = totalPrice;
+    if (perPersonPrice) facts.perPersonPrice = perPersonPrice;
+    if (perNightPrice) facts.perNightPrice = perNightPrice;
+    if (statedPrice) facts.statedPrice = statedPrice;
     return {
-      facts: { price: exact(value, first.evidence) },
+      facts,
       warnings: [],
       observations: {
         prices,

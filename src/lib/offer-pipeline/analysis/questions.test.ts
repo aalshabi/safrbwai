@@ -9,7 +9,7 @@ function fact<T>(value: T, evidence: string): Fact<T> {
 
 /** A minimal core so tests can focus on the CONTEXTUAL question logic. */
 const core: ExtractedOfferFacts = {
-  price: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
+  totalPrice: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
   currency: fact("SAR", "ر.س"),
   nights: fact(5, "٥ ليالٍ"),
 };
@@ -39,8 +39,8 @@ describe("suggestedQuestions — merging, cap, priority and context", () => {
   it("caps at 5 after merging missing, conflicting and contextual sources", () => {
     const obs: OfferObservations = {
       prices: [
-        { amount: 3200, currency: "SAR", evidence: "٣٢٠٠ ر.س" },
-        { amount: 2800, currency: "SAR", evidence: "٢٨٠٠ ر.س" },
+        { amount: 3200, currency: "SAR", basis: "total", evidence: "٣٢٠٠ ر.س" },
+        { amount: 2800, currency: "SAR", basis: "total", evidence: "٢٨٠٠ ر.س" },
       ],
       nights: [
         { value: 5, evidence: "٥ ليالٍ" },
@@ -53,7 +53,7 @@ describe("suggestedQuestions — merging, cap, priority and context", () => {
     };
     // an almost-empty offer (max missing) + conflicts + rich context
     const a = analyzeFacts(
-      { price: core.price, nights: core.nights, board: fact("BB", "إفطار") },
+      { totalPrice: core.totalPrice, nights: core.nights, board: fact("BB", "إفطار") },
       { text: "رحلة طيران وفندق إلى مدينتين مع طفلين، التأشيرة والتأمين غير مشمولين", observations: obs }
     );
     expect(a.suggestedQuestions.length).toBeLessThanOrEqual(5);

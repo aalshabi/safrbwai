@@ -15,6 +15,9 @@ describe("transfersRule", () => {
 
   it("detects included transfer in English", () => {
     expect(transfersRule.apply("Airport transfers included").facts.transfer?.value).toEqual({ included: true });
+    expect(
+      transfersRule.apply("Includes breakfast and airport transfers").facts.transfer?.value
+    ).toEqual({ included: true });
   });
 
   it("does NOT decide from a bare mention (adds a warning instead)", () => {

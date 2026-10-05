@@ -29,6 +29,7 @@ const INCLUDE = new RegExp(
     `|(?:${TRANSFER_WORD})\\s*(?:من\\s*و?\\s*)?(?:إلى\\s*|الى\\s*)?المطار` +
     `|(?:airport\\s*)?transfers?[^.\\n]{0,20}?included` +
     `|includes?\\s*(?:airport\\s*)?transfers?` +
+    `|includes?[^.\\n]{0,40}?(?:airport\\s*)?transfers?` +
     `|(?:private|shared|complimentary|free)\\s*(?:airport\\s*)?transfers?` +
     `|shared\\s*shuttle|meet\\s*(?:and|&)\\s*greet`,
   "i"

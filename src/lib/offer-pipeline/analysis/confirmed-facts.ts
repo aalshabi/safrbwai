@@ -5,14 +5,17 @@
 
 import type { ExtractedOfferFacts, Fact } from "@/lib/offer-pipeline/types";
 import type { Bi } from "@/lib/offer-pipeline/types";
-import type { ConfirmedFact } from "./types";
+import type { ConfirmedFact, OfferObservations } from "./types";
 import { FIELDS } from "./required-fields";
 
 function labelFor(key: string): Bi {
   return FIELDS.find((f) => f.key === key)?.label ?? { ar: key, en: key };
 }
 
-export function buildConfirmedFacts(facts: ExtractedOfferFacts): ConfirmedFact[] {
+export function buildConfirmedFacts(
+  facts: ExtractedOfferFacts,
+  _observations?: OfferObservations
+): ConfirmedFact[] {
   const out: ConfirmedFact[] = [];
 
   /**
@@ -32,7 +35,28 @@ export function buildConfirmedFacts(facts: ExtractedOfferFacts): ConfirmedFact[]
     });
   };
 
-  add("totalPrice", facts.price);
+  const priceLabels: Record<string, Bi> = {
+    totalPrice: { ar: "إجمالي الرحلة", en: "Trip total" },
+    perPersonPrice: { ar: "السعر للشخص", en: "Price per person" },
+    perNightPrice: { ar: "السعر لليلة", en: "Price per night" },
+    statedPrice: { ar: "السعر المذكور (دون أساس محدد)", en: "Stated price (basis unspecified)" },
+  };
+  const basisFacts = [
+    ["totalPrice", facts.totalPrice],
+    ["perPersonPrice", facts.perPersonPrice],
+    ["perNightPrice", facts.perNightPrice],
+    ["statedPrice", facts.statedPrice],
+  ] as const;
+  for (const [key, fact] of basisFacts) {
+    if (!fact) continue;
+    out.push({
+      key,
+      label: priceLabels[key],
+      value: fact.value,
+      evidence: fact.evidence,
+      confidenceType: "exact",
+    });
+  }
   add("currency", facts.currency);
   add("nights", facts.nights);
   add("destination", facts.destination);

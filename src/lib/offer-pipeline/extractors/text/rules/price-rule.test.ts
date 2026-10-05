@@ -9,12 +9,14 @@ describe("priceRule", () => {
     expect(r.facts.price?.value).toEqual({ amount: 3200, currency: "SAR" });
     expect(r.facts.price?.confidenceType).toBe("exact");
     expect(r.facts.price?.evidence).toContain("٣٢٠٠");
+    expect(r.facts.perPersonPrice?.value).toEqual({ amount: 3200, currency: "SAR" });
   });
 
   it("extracts amount + currency from English (currency before amount)", () => {
     const r = priceRule.apply("Total price SAR 3,200 per person");
     expect(r.facts.price?.value).toEqual({ amount: 3200, currency: "SAR" });
     expect(r.facts.price?.evidence).toContain("3,200");
+    expect(r.facts.perPersonPrice?.value).toEqual({ amount: 3200, currency: "SAR" });
   });
 
   it("handles the $ symbol", () => {
@@ -80,7 +82,7 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     expect(amounts("Total price SAR 5,000. Hotel price SAR 3,000.")).toEqual([5000]);
     expect(amounts("Total price SAR 5,000. Flight cost SAR 2,000.")).toEqual([5000]);
     expect(amounts("Total price SAR 5,000. Ticket cost SAR 1,200.")).toEqual([5000]);
-    expect(amounts("Total price SAR 5,000. Per-night price SAR 700.")).toEqual([5000]);
+    expect(amounts("Total price SAR 5,000. Per-night price SAR 700.")).toEqual([5000, 700]);
     expect(amounts("Total price SAR 5,000. Hotel's price SAR 3,000.")).toEqual([5000]);
   });
 
@@ -90,7 +92,26 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
   });
 
   it("a per-person rate beside a total", () => {
-    expect(amounts("السعر الإجمالي 8,400 ريال. السعر 4,200 ريال للشخص.")).toEqual([8400]);
+    const result = priceRule.apply("السعر الإجمالي 8,400 ريال. السعر 4,200 ريال للشخص.");
+    expect(result.observations?.prices?.map(({ amount, basis }) => ({ amount, basis }))).toEqual([
+      { amount: 8400, basis: "total" },
+      { amount: 4200, basis: "per_person" },
+    ]);
+    expect(result.facts.totalPrice?.value).toEqual({ amount: 8400, currency: "SAR" });
+    expect(result.facts.perPersonPrice?.value).toEqual({ amount: 4200, currency: "SAR" });
+  });
+
+  it("keeps a per-night rate separate from the trip total", () => {
+    const result = priceRule.apply("Total price SAR 2,400. Price SAR 480 per night.");
+    expect(result.facts.totalPrice?.value).toEqual({ amount: 2400, currency: "SAR" });
+    expect(result.facts.perNightPrice?.value).toEqual({ amount: 480, currency: "SAR" });
+    expect(result.facts.perPersonPrice).toBeUndefined();
+  });
+
+  it("does not promote an unqualified stated price to a trip total", () => {
+    const result = priceRule.apply("السعر 4,200 ريال.");
+    expect(result.facts.statedPrice?.value).toEqual({ amount: 4200, currency: "SAR" });
+    expect(result.facts.totalPrice).toBeUndefined();
   });
 
   it("adult and child rates, which legitimately differ", () => {

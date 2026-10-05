@@ -2,6 +2,10 @@ import { describe, it, expect } from "vitest";
 import { boardRule } from "./board-rule";
 
 describe("boardRule", () => {
+  it("preserves Arabic and English stated breakfast inclusion", () => {
+    expect(boardRule.apply("يشمل الإفطار").facts.board?.value).toBe("BB");
+    expect(boardRule.apply("includes breakfast").facts.board?.value).toBe("BB");
+  });
   it("extracts BB from Arabic", () => {
     const r = boardRule.apply("الباقة شاملة الإفطار");
     expect(r.facts.board?.value).toBe("BB");

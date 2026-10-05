@@ -33,7 +33,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       category: "relatively_complete",
       description: "عرض عربي صناعي يغطي الحقول الأساسية ومعظم الحقول الموصى بها",
       syntheticInput:
-        "عرض إلى جدة لمدة 4 ليالٍ لشخصين، الإقامة في فندق 4 نجوم، شامل الإفطار، السعر 4800 ريال شامل الضرائب والرسوم، استقبال وتوصيل خاص من المطار، أمتعة 23 كجم، إلغاء مجاني.",
+        "عرض إلى جدة لمدة 4 ليالٍ لشخصين، الإقامة في فندق 4 نجوم، شامل الإفطار، السعر الإجمالي 4800 ريال شامل الضرائب والرسوم، استقبال وتوصيل خاص من المطار، أمتعة 23 كجم، إلغاء مجاني.",
     },
     {
       mustConfirm: [
@@ -79,7 +79,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       category: "missing_cancellation",
       description: "عرض عربي مكتمل نسبيًا دون سياسة إلغاء",
       syntheticInput:
-        "عرض إلى الرياض لمدة 3 ليالٍ لشخصين في فندق 5 نجوم، شامل الإفطار، شامل الضرائب والرسوم، السعر 2600 ريال، استقبال وتوصيل خاص، أمتعة 20 كجم.",
+        "عرض إلى الرياض لمدة 3 ليالٍ لشخصين في فندق 5 نجوم، شامل الإفطار، شامل الضرائب والرسوم، السعر الإجمالي 2600 ريال، استقبال وتوصيل خاص، أمتعة 20 كجم.",
     },
     {
       mustMarkMissing: ["cancellationPolicy"],
@@ -95,7 +95,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       category: "missing_taxes",
       description: "عرض عربي يذكر سياسة الإلغاء ولا يذكر الضرائب",
       syntheticInput:
-        "عرض إلى أبوظبي لمدة ليلتين لشخصين في فندق 4 نجوم مع الإفطار، السعر 2100 ريال، استقبال وتوصيل خاص، أمتعة 15 كجم، الإلغاء مجاني.",
+        "عرض إلى أبوظبي لمدة ليلتين لشخصين في فندق 4 نجوم مع الإفطار، السعر الإجمالي 2100 ريال، استقبال وتوصيل خاص، أمتعة 15 كجم، الإلغاء مجاني.",
     },
     {
       mustMarkMissing: ["taxes"],
@@ -140,7 +140,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       locale: "ar",
       category: "conflicting_nights",
       description: "عرض صناعي يذكر عددين مختلفين لليالي",
-      syntheticInput: "عرض إلى مسقط بسعر 2900 ريال، يتضمن 4 ليالٍ، ويذكر لاحقًا 6 ليالٍ.",
+      syntheticInput: "عرض إلى مسقط بسعر إجمالي 2900 ريال، يتضمن 4 ليالٍ، ويذكر لاحقًا 6 ليالٍ.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination"],
@@ -154,7 +154,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       locale: "ar",
       category: "canonical_destination",
       description: "وجهة عربية من قاموس الوجهات القياسي",
-      syntheticInput: "باقة إلى دبي لمدة 3 ليالٍ بسعر 1800 ريال.",
+      syntheticInput: "باقة إلى دبي لمدة 3 ليالٍ بسعر إجمالي 1800 ريال.",
     },
     {
       mustConfirm: ["destination", "nights", "totalPrice", "currency"],
@@ -174,7 +174,7 @@ export const ARABIC_REGRESSION_FIXTURES = [
       locale: "ar",
       category: "explicit_destination",
       description: "وجهة خيالية مذكورة صراحة خارج القاموس",
-      syntheticInput: "عرض إلى وادي النجوم لمدة 3 ليالٍ بسعر 1700 ريال.",
+      syntheticInput: "عرض إلى وادي النجوم لمدة 3 ليالٍ بسعر إجمالي 1700 ريال.",
     },
     {
       mustConfirm: ["destination", "nights", "totalPrice", "currency"],
@@ -189,13 +189,71 @@ export const ARABIC_REGRESSION_FIXTURES = [
       locale: "ar",
       category: "board_and_accommodation",
       description: "نوع إقامة وفئة فندق مذكوران بوضوح",
-      syntheticInput: "الإقامة في فندق 5 نجوم لمدة 2 ليلة، شامل الإفطار، بسعر 2400 ريال في جدة.",
+      syntheticInput: "الإقامة في فندق 5 نجوم لمدة 2 ليلة، شامل الإفطار، بسعر إجمالي 2400 ريال في جدة.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "board"],
       mustNotMarkMissing: ["accommodation", "board"],
       mustNotAsk: ["board", "accommodation", "visa", "insurance"],
       expectedValues: { accommodation: "فندق 5 نجوم", board: "BB" },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-price-basis-consistent",
+      locale: "ar",
+      category: "price_basis_consistent",
+      description: "سعر للشخص وإجمالي متسقان مع الإفطار والنقل دون اختراع وجهة من المطار",
+      syntheticInput:
+        "عرض لشخصين بالغين، غرفة واحدة، لمدة 5 ليالٍ، السعر 1,200 ريال للشخص، والإجمالي 2,400 ريال، يشمل الإفطار والنقل من وإلى المطار، ولا توجد معلومات عن الإلغاء أو الأمتعة أو مدة الترانزيت.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "nights", "travellers", "board", "transfers"],
+      mustNotConfirm: ["destination"],
+      mustMarkMissing: ["destination", "cancellationPolicy", "baggage"],
+      mustDetectContradictions: [],
+      expectedValues: {
+        totalPrice: { amount: 2400, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        nights: 5,
+        travellers: { adults: 2 },
+        board: "BB",
+        transfers: { included: true },
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-price-basis-missing",
+      locale: "ar",
+      category: "price_basis_missing",
+      description: "مبلغ بلا عملة أو أساس سعر لا يتحول إلى إجمالي مخترع",
+      syntheticInput:
+        "عرض سفر، السعر 1,200 بلا عملة أو تحديد هل هو للشخص أم للإجمالي، والإلغاء حسب الشروط.",
+    },
+    {
+      mustNotConfirm: ["totalPrice", "perPersonPrice", "perNightPrice", "statedPrice", "currency"],
+      mustMarkMissing: ["totalPrice", "currency"],
+      mustAsk: ["totalPrice", "currency"],
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-price-total-mismatch",
+      locale: "ar",
+      category: "price_total_mismatch",
+      description: "تعارض حسابي مثبت بين سعر الشخص والإجمالي وعدد المسافرين",
+      syntheticInput: "عرض سفر لشخصين، السعر 1,200 ريال للشخص، والإجمالي 2,000 ريال.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        travellers: { adults: 2 },
+      },
     }
   ),
 ] as const;

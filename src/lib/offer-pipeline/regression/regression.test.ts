@@ -16,9 +16,21 @@ function failure(fixture: RegressionFixture, expectation: string, detail: string
 function valueFor(key: RegressionFieldKey, facts: ExtractedOfferFacts): unknown {
   switch (key) {
     case "totalPrice":
-      return facts.price?.value;
+      return facts.totalPrice?.value;
+    case "perPersonPrice":
+      return facts.perPersonPrice?.value;
+    case "perNightPrice":
+      return facts.perNightPrice?.value;
+    case "statedPrice":
+      return facts.statedPrice?.value;
     case "currency":
-      return facts.currency?.value ?? facts.price?.value.currency;
+      return (
+        facts.currency?.value ??
+        facts.totalPrice?.value.currency ??
+        facts.perPersonPrice?.value.currency ??
+        facts.perNightPrice?.value.currency ??
+        facts.statedPrice?.value.currency
+      );
     case "nights":
       return facts.nights?.value;
     case "destination":

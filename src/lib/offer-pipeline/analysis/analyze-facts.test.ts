@@ -8,7 +8,7 @@ function fact<T>(value: T, evidence: string): Fact<T> {
 }
 
 const fullArabic: ExtractedOfferFacts = {
-  price: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
+  totalPrice: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
   currency: fact("SAR", "ر.س"),
   nights: fact(5, "٥ ليالٍ"),
   destination: fact({ value: "دبي", canonicalValue: "Dubai", countryCode: "AE", matchType: "canonical_alias" as const }, "دبي"),
@@ -57,8 +57,8 @@ describe("analyzeFacts", () => {
   it("marks price conflicting on the checklist when prices differ", () => {
     const obs: OfferObservations = {
       prices: [
-        { amount: 3200, currency: "SAR", evidence: "٣٢٠٠ ر.س" },
-        { amount: 2800, currency: "SAR", evidence: "٢٨٠٠ ر.س" },
+        { amount: 3200, currency: "SAR", basis: "total", evidence: "٣٢٠٠ ر.س" },
+        { amount: 2800, currency: "SAR", basis: "total", evidence: "٢٨٠٠ ر.س" },
       ],
     };
     const a = analyzeFacts(fullArabic, { observations: obs });
@@ -69,7 +69,7 @@ describe("analyzeFacts", () => {
   // Regression: completeness must not read "full" while core info is absent.
   it("never reports full completeness when destination/travellers/accommodation are missing", () => {
     const a = analyzeFacts({
-      price: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
+      totalPrice: fact({ amount: 3200, currency: "SAR" }, "٣٢٠٠ ر.س"),
       currency: fact("SAR", "ر.س"),
       nights: fact(5, "٥ ليالٍ"),
     });
@@ -129,14 +129,14 @@ describe("analyzeFacts", () => {
     const a = analyzeFacts(fullArabic);
     const price = a.confirmedFacts.find((c) => c.key === "totalPrice");
     expect(price?.evidence).toBe("٣٢٠٠ ر.س");
-    expect(price?.label.ar).toBe("السعر النهائي");
+    expect(price?.label.ar).toBe("إجمالي الرحلة");
     expect(price?.confidenceType).toBe("exact");
   });
 
   // (17) English evidence flows through
   it("works with English evidence", () => {
     const a = analyzeFacts({
-      price: fact({ amount: 3200, currency: "SAR" }, "SAR 3,200"),
+      totalPrice: fact({ amount: 3200, currency: "SAR" }, "SAR 3,200"),
       nights: fact(5, "5 nights"),
     });
     expect(a.confirmedFacts.find((c) => c.key === "totalPrice")?.evidence).toBe("SAR 3,200");

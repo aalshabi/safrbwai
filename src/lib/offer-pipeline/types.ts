@@ -76,6 +76,9 @@ export interface OfferPrice {
   currency: string;
 }
 
+/** The exact basis attached to a stated monetary amount. */
+export type OfferPriceBasis = "total" | "per_person" | "per_night" | "unspecified";
+
 export interface OfferTravelers {
   adults?: number;
   children?: number;
@@ -108,7 +111,16 @@ export interface OfferDestination {
  * pipeline never fabricates them. Uncertain captures become `warnings`, not facts.
  */
 export interface ExtractedOfferFacts {
+  /**
+   * Backward-compatible alias for the preferred stated price. New analysis
+   * code must use the basis-specific facts below instead of assuming this is
+   * a trip total.
+   */
   price?: Fact<OfferPrice>;
+  totalPrice?: Fact<OfferPrice>;
+  perPersonPrice?: Fact<OfferPrice>;
+  perNightPrice?: Fact<OfferPrice>;
+  statedPrice?: Fact<OfferPrice>;
   /** Currency stated in the offer, even when no complete price is present. */
   currency?: Fact<string>;
   destination?: Fact<OfferDestination>;

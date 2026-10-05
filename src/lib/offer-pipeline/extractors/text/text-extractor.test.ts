@@ -9,7 +9,7 @@ describe("TextExtractor orchestrator", () => {
   });
 
   it("merges facts from multiple rules over a full Arabic offer", () => {
-    const text = "عرض إلى دبي: إقامة ٥ ليالٍ لشخصين، شاملة الإفطار، السعر ٣٢٠٠ ر.س، التأشيرة غير مشمولة، أمتعة ٢٠ كجم.";
+    const text = "عرض إلى دبي: إقامة ٥ ليالٍ لشخصين، شاملة الإفطار، السعر الإجمالي ٣٢٠٠ ر.س، التأشيرة غير مشمولة، أمتعة ٢٠ كجم.";
     const res = createTextExtractor().extract({ type: "text", text });
     expect(res.ok).toBe(true);
     if (!res.ok) return;

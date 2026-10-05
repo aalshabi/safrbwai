@@ -27,7 +27,7 @@ export interface FieldDef {
   inChecklist: boolean;
   question: Bi;
   /** Contradiction code that marks this field "conflicting", if applicable. */
-  conflictCode?: ContradictionCode;
+  conflictCodes?: ContradictionCode[];
   /** Backing fact accessor (presence + evidence), when the field is fact-backed. */
   fact?: (f: ExtractedOfferFacts) => Fact<unknown> | undefined;
   /** Presence override (e.g. currency is present via a standalone fact OR a price). */
@@ -42,18 +42,29 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "السعر النهائي", en: "Total price" },
     requirement: "required",
     inChecklist: true,
-    conflictCode: "multiple_prices",
-    fact: (f) => f.price,
-    question: { ar: "أي سعر هو السعر النهائي الصحيح؟", en: "Which price is the correct final price?" },
+    conflictCodes: ["multiple_prices", "price_total_mismatch"],
+    fact: (f) => f.totalPrice,
+    question: {
+      ar: "ما إجمالي الرحلة الصحيح، وهل يطابق سعر الشخص وعدد المسافرين؟",
+      en: "What is the correct trip total, and does it match the per-person price and traveller count?",
+    },
   },
   {
     key: "currency",
     label: { ar: "العملة", en: "Currency" },
     requirement: "required",
     inChecklist: true,
-    conflictCode: "conflicting_currency",
-    isPresent: (f) => Boolean(f.currency) || Boolean(f.price),
-    evidence: (f) => (f.currency ? [f.currency.evidence] : f.price ? [f.price.evidence] : []),
+    conflictCodes: ["conflicting_currency"],
+    isPresent: (f) =>
+      Boolean(f.currency) ||
+      Boolean(f.totalPrice) ||
+      Boolean(f.perPersonPrice) ||
+      Boolean(f.perNightPrice) ||
+      Boolean(f.statedPrice),
+    evidence: (f) => {
+      const price = f.totalPrice ?? f.perPersonPrice ?? f.perNightPrice ?? f.statedPrice;
+      return f.currency ? [f.currency.evidence] : price ? [price.evidence] : [];
+    },
     question: { ar: "ما العملة المعتمدة للسعر؟", en: "Which currency does the price use?" },
   },
   {
@@ -61,7 +72,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "عدد الليالي", en: "Number of nights" },
     requirement: "required",
     inChecklist: true,
-    conflictCode: "conflicting_nights",
+    conflictCodes: ["conflicting_nights"],
     fact: (f) => f.nights,
     question: { ar: "كم عدد الليالي بالضبط؟", en: "Exactly how many nights?" },
   },
@@ -94,7 +105,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "نوع الوجبة", en: "Board" },
     requirement: "required",
     inChecklist: true,
-    conflictCode: "conflicting_board",
+    conflictCodes: ["conflicting_board"],
     fact: (f) => f.board,
     question: { ar: "ما نوع الإقامة (إفطار/نصف/كامل)؟", en: "What board type (BB/HB/FB)?" },
   },
@@ -103,7 +114,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "الأمتعة", en: "Baggage" },
     requirement: "recommended",
     inChecklist: true,
-    conflictCode: "conflicting_baggage",
+    conflictCodes: ["conflicting_baggage"],
     fact: (f) => f.baggage,
     question: { ar: "كم وزن الأمتعة المسموح؟", en: "What is the baggage allowance?" },
   },
@@ -112,7 +123,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "التحويلات", en: "Transfers" },
     requirement: "required",
     inChecklist: true,
-    conflictCode: "conflicting_transfers",
+    conflictCodes: ["conflicting_transfers"],
     fact: (f) => f.transfer,
     question: { ar: "هل النقل من وإلى المطار مشمول؟", en: "Are airport transfers included?" },
   },
@@ -144,7 +155,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "التأشيرة", en: "Visa" },
     requirement: "context-dependent",
     inChecklist: true,
-    conflictCode: "conflicting_visa",
+    conflictCodes: ["conflicting_visa"],
     fact: (f) => f.visa,
     question: { ar: "هل التأشيرة مشمولة؟", en: "Is the visa included?" },
   },
@@ -153,7 +164,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "التأمين", en: "Insurance" },
     requirement: "context-dependent",
     inChecklist: true,
-    conflictCode: "conflicting_insurance",
+    conflictCodes: ["conflicting_insurance"],
     fact: (f) => f.insurance,
     question: { ar: "هل التأمين مشمول؟", en: "Is travel insurance included?" },
   },
