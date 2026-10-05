@@ -14,6 +14,7 @@ export const REGRESSION_CATEGORIES = [
   "price_basis_missing",
   "price_total_mismatch",
   "decision_integrity_details",
+  "ground_transport_not_flight",
   "conflicting_nights",
   "canonical_destination",
   "explicit_destination",

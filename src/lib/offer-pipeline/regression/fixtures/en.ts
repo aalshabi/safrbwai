@@ -258,4 +258,23 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "en-ground-transport-not-flight",
+      locale: "en",
+      category: "ground_transport_not_flight",
+      description: "Ground-transport stops do not become a transit duration or flight stop count",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights. Total: SAR 2,000. Airport shuttle stops in the hotel for 2 hours. The bus stops in Doha for 2 hours.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],
+      mustNotConfirm: ["transitDuration", "stopCount"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        transitDuration: undefined,
+        stopCount: undefined,
+      },
+    }
+  ),
 ] as const;

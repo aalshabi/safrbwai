@@ -307,4 +307,23 @@ export const ARABIC_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "ar-ground-transport-not-flight",
+      locale: "ar",
+      category: "ground_transport_not_flight",
+      description: "توقفات النقل الأرضي لا تتحول إلى مدة ترانزيت أو عدد توقفات جوية",
+      syntheticInput:
+        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ، والإجمالي 2,000 ريال. تتوقف الحافلة في الدوحة لمدة 2 ساعات، وخدمة النقل بها 2 توقفات قبل الفندق.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],
+      mustNotConfirm: ["transitDuration", "stopCount"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        transitDuration: undefined,
+        stopCount: undefined,
+      },
+    }
+  ),
 ] as const;

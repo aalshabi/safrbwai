@@ -21,6 +21,12 @@ const EN_EXPLICIT_STOPS = /(\d+)\s+(?:flight\s+)?stops?\b/i;
 const AR_ONE_STOP = /(?:توقف\s+واحد|تتوقف\s+في\s+[\p{L}\-']+(?:\s+[\p{L}\-']+){0,2})/iu;
 const EN_ONE_STOP = /(?:one\s+stop|stops?\s+in\s+[\p{L}\-']+(?:\s+[\p{L}\-']+){0,2})/iu;
 
+const EXPLICIT_TRANSIT_CONTEXT = /(?:ترانزيت|عبور|layover|stopover|\btransit\b)/i;
+const FLIGHT_CONTEXT =
+  /(?:رحلة\s+(?:جوية|الذهاب|العودة)|مسار\s+الرحلة|الطيران|طيران)|\b(?:flight|flights|airline|airfare|outbound|inbound)\b/i;
+const GROUND_STOP_CONTEXT =
+  /(?:حافلة|الحافلة|باص|خدمة\s+النقل|النقل\s+البري|المواصلات|جولة\s+سياحية)|\b(?:bus|shuttle|coach|ground\s+transport|airport\s+transfer|sightseeing|tour)\b/i;
+
 const AIRPORT_CHANGE_UNKNOWN =
   /(?:لا\s*(?:يذكر|تذكر|توجد\s+معلومات)|غير\s*مذكور)[^.،\n]{0,35}?تغيير\s*(?:ال)?مطار|(?:not\s+(?:stated|specified|mentioned)|no\s+information)[^.\n]{0,35}?airport\s+change|airport\s+change[^.\n]{0,20}?not\s+(?:stated|specified|mentioned)/i;
 const NO_AIRPORT_CHANGE =
@@ -28,12 +34,40 @@ const NO_AIRPORT_CHANGE =
 const AIRPORT_CHANGE =
   /(?:يتطلب|يلزم|مع)\s+تغيير\s*(?:ال)?مطار|تبديل\s*(?:ال)?مطار|(?:requires?|with)\s+(?:an?\s+)?airport\s+change|change\s+airports?/i;
 
+function clauseAround(text: string, index: number): string {
+  const before = text.slice(0, index).split(/[.!?؟،,؛;\n]/).at(-1) ?? "";
+  const after = text.slice(index).split(/[.!?؟،,؛;\n]/)[0] ?? "";
+  return `${before}${after}`;
+}
+
+function hasAviationContext(text: string, index: number): boolean {
+  const clause = clauseAround(text, index);
+  if (GROUND_STOP_CONTEXT.test(clause)) return false;
+  return EXPLICIT_TRANSIT_CONTEXT.test(clause) || FLIGHT_CONTEXT.test(clause);
+}
+
+function firstAviationMatch(
+  original: string,
+  normalized: string,
+  patterns: readonly RegExp[]
+): RegExpExecArray | undefined {
+  return patterns
+    .flatMap((pattern) => [
+      ...normalized.matchAll(
+        new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`)
+      ),
+    ])
+    .filter((match) => match.index !== undefined && hasAviationContext(original, match.index))
+    .sort((left, right) => (left.index ?? 0) - (right.index ?? 0))[0];
+}
+
 function durationFact(original: string, normalized: string) {
-  const match =
-    AR_DURATION.exec(normalized) ??
-    EN_DURATION.exec(normalized) ??
-    AR_DURATION_FIRST.exec(normalized) ??
-    EN_DURATION_FIRST.exec(normalized);
+  const match = firstAviationMatch(original, normalized, [
+    AR_DURATION,
+    EN_DURATION,
+    AR_DURATION_FIRST,
+    EN_DURATION_FIRST,
+  ]);
   if (!match || match.index === undefined) return undefined;
   const numeric = Number(match[1]);
   if (!Number.isFinite(numeric) || numeric <= 0) return undefined;
@@ -44,7 +78,7 @@ function durationFact(original: string, normalized: string) {
 }
 
 function stopCountFact(original: string, normalized: string) {
-  const explicit = AR_EXPLICIT_STOPS.exec(normalized) ?? EN_EXPLICIT_STOPS.exec(normalized);
+  const explicit = firstAviationMatch(original, normalized, [AR_EXPLICIT_STOPS, EN_EXPLICIT_STOPS]);
   if (explicit?.index !== undefined) {
     const value = Number(explicit[1]);
     if (Number.isInteger(value) && value >= 0) {
@@ -53,7 +87,7 @@ function stopCountFact(original: string, normalized: string) {
     }
   }
 
-  const singular = AR_ONE_STOP.exec(normalized) ?? EN_ONE_STOP.exec(normalized);
+  const singular = firstAviationMatch(original, normalized, [AR_ONE_STOP, EN_ONE_STOP]);
   if (singular?.index !== undefined) {
     const evidence = original.slice(singular.index, singular.index + singular[0].length).trim();
     return exact(1, evidence);
