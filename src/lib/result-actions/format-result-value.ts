@@ -55,6 +55,18 @@ export function formatResultValue(
       return record.included ? labels.yes : labels.no;
     }
 
+    if (typeof record.minutes === "number") {
+      if (record.minutes % 60 === 0) {
+        const hours = record.minutes / 60;
+        return locale === "ar"
+          ? `${formatNumber(hours, locale)} ساعات`
+          : `${formatNumber(hours, locale)} hours`;
+      }
+      return locale === "ar"
+        ? `${formatNumber(record.minutes, locale)} دقيقة`
+        : `${formatNumber(record.minutes, locale)} minutes`;
+    }
+
     if ("adults" in record || "children" in record) {
       const parts: string[] = [];
       if (typeof record.adults === "number") {

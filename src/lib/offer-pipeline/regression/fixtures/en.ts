@@ -207,4 +207,55 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "en-decision-integrity-details",
+      locale: "en",
+      category: "decision_integrity_details",
+      description: "Decision-ready offer preserves inclusions, room type and transit details without inventing airport-change status",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights in one deluxe room. Price SAR 1,200 per person. Total: SAR 2,000 including taxes and breakfast; airport transfers included. Flights are not included, baggage 23 kg. Cancellation is subject to terms. The outbound flight stops in Doha for 7 hours, and the offer does not state whether an airport change is required.",
+    },
+    {
+      mustConfirm: [
+        "totalPrice",
+        "perPersonPrice",
+        "currency",
+        "nights",
+        "destination",
+        "travellers",
+        "roomType",
+        "board",
+        "baggage",
+        "transfers",
+        "taxes",
+        "flight",
+        "transitDuration",
+        "stopCount",
+      ],
+      mustNotConfirm: ["airportChange", "cancellationPolicy"],
+      mustMarkMissing: ["cancellationPolicy"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice", "cancellationPolicy", "airportChange"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        destination: {
+          value: "Istanbul",
+          canonicalValue: "Istanbul",
+          countryCode: "TR",
+          matchType: "canonical_alias",
+        },
+        travellers: { adults: 2 },
+        roomType: "deluxe room",
+        board: "BB",
+        baggage: "23kg",
+        transfers: { included: true },
+        taxes: { included: true },
+        flight: { included: false },
+        transitDuration: { minutes: 420 },
+        stopCount: 1,
+      },
+    }
+  ),
 ] as const;

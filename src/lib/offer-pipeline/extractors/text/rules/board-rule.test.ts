@@ -5,6 +5,8 @@ describe("boardRule", () => {
   it("preserves Arabic and English stated breakfast inclusion", () => {
     expect(boardRule.apply("يشمل الإفطار").facts.board?.value).toBe("BB");
     expect(boardRule.apply("includes breakfast").facts.board?.value).toBe("BB");
+    expect(boardRule.apply("شامل الضرائب والإفطار").facts.board?.value).toBe("BB");
+    expect(boardRule.apply("includes taxes and breakfast").facts.board?.value).toBe("BB");
   });
   it("extracts BB from Arabic", () => {
     const r = boardRule.apply("الباقة شاملة الإفطار");

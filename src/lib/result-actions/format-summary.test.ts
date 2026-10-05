@@ -34,6 +34,13 @@ const analysis: OfferAnalysis = {
       evidence: INTERNAL_EVIDENCE,
       confidenceType: "exact",
     },
+    {
+      key: "transitDuration",
+      label: { ar: "مدة الترانزيت", en: "Transit duration" },
+      value: { minutes: 420 },
+      evidence: INTERNAL_EVIDENCE,
+      confidenceType: "exact",
+    },
   ],
   missingFields: [
     {
@@ -124,6 +131,7 @@ describe("formatSummaryForCopy", () => {
     expect(confirmedSection).toContain("- الوجهة: دبي");
     expect(confirmedSection).toContain("- عدد الليالي: ٥");
     expect(confirmedSection).toContain("- السعر: ٣٬٢٠٠ SAR");
+    expect(confirmedSection).toContain("- مدة الترانزيت: ٧ ساعات");
     expect(confirmedSection).not.toContain("سياسة الإلغاء");
   });
 
@@ -138,6 +146,7 @@ describe("formatSummaryForCopy", () => {
     expect(confirmedSection).toContain("- Destination: دبي");
     expect(confirmedSection).toContain("- Nights: 5");
     expect(confirmedSection).toContain("- Price: 3,200 SAR");
+    expect(confirmedSection).toContain("- Transit duration: 7 hours");
     expect(confirmedSection).not.toContain("Cancellation policy");
   });
 

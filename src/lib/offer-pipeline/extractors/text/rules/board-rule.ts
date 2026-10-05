@@ -17,7 +17,10 @@ const BOARD_SIGNALS: BoardSignal[] = [
   { code: "AI", re: /all[-\s]?inclusive|(?:شامل|الكل)\s*(?:كلي|شامل)|الكل\s*شامل/i },
   { code: "FB", re: /full[-\s]?board|إقامة\s*كاملة|جميع\s*الوجبات|ثلاث\s*وجبات|\bFB\b/i },
   { code: "HB", re: /half[-\s]?board|نصف\s*إقامة|إفطار\s*و?عشاء|\bHB\b/i },
-  { code: "BB", re: /bed\s*(?:and|&|\+)?\s*breakfast|(?:شامل[ةه]?|يشمل|تشمل)\s*الإفطار|includes?\s+breakfast|with\s+breakfast|مع\s*الإفطار|الإفطار\s*فقط|\bBB\b/i },
+  {
+    code: "BB",
+    re: /bed\s*(?:and|&|\+)?\s*breakfast|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
+  },
   { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*إفطار|\bRO\b/i },
 ];
 

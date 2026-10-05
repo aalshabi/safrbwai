@@ -127,6 +127,13 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     expect(result.facts.perPersonPrice).toBeUndefined();
   });
 
+  it("keeps an Arabic per-night rate separate without inventing a total", () => {
+    const result = priceRule.apply("السعر 480 ريال لليلة.");
+    expect(result.facts.perNightPrice?.value).toEqual({ amount: 480, currency: "SAR" });
+    expect(result.facts.totalPrice).toBeUndefined();
+    expect(result.facts.perPersonPrice).toBeUndefined();
+  });
+
   it("does not promote an unqualified stated price to a trip total", () => {
     const result = priceRule.apply("السعر 4,200 ريال.");
     expect(result.facts.statedPrice?.value).toEqual({ amount: 4200, currency: "SAR" });

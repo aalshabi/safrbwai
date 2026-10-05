@@ -21,6 +21,8 @@ describe("RuleRegistry", () => {
       "taxes",
       "cancellationPolicy",
       "accommodation",
+      "roomType",
+      "flightDetails",
       "destination",
     ]);
   });

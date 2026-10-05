@@ -62,6 +62,7 @@ export function buildConfirmedFacts(
   add("destination", facts.destination);
   add("travellers", facts.travelers);
   add("accommodation", facts.accommodation);
+  add("roomType", facts.roomType, { ar: "نوع الغرفة", en: "Room type" });
   add("board", facts.board);
   add("baggage", facts.baggage);
   add("flight", facts.flight, { ar: "الطيران", en: "Flight" });
@@ -70,6 +71,9 @@ export function buildConfirmedFacts(
   add("cancellationPolicy", facts.cancellationPolicy);
   add("insurance", facts.insurance);
   add("visa", facts.visa);
+  add("transitDuration", facts.transitDuration, { ar: "مدة الترانزيت", en: "Transit duration" });
+  add("stopCount", facts.stopCount, { ar: "عدد التوقفات", en: "Number of stops" });
+  add("airportChange", facts.airportChange, { ar: "تغيير المطار", en: "Airport change" });
 
   return out;
 }

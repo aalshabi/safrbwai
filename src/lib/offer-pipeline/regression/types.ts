@@ -13,6 +13,7 @@ export const REGRESSION_CATEGORIES = [
   "price_basis_consistent",
   "price_basis_missing",
   "price_total_mismatch",
+  "decision_integrity_details",
   "conflicting_nights",
   "canonical_destination",
   "explicit_destination",
@@ -41,6 +42,7 @@ export const REGRESSION_FIELD_KEYS = [
   "destination",
   "travellers",
   "accommodation",
+  "roomType",
   "board",
   "baggage",
   "transfers",
@@ -49,6 +51,10 @@ export const REGRESSION_FIELD_KEYS = [
   "travelDates",
   "visa",
   "insurance",
+  "flight",
+  "transitDuration",
+  "stopCount",
+  "airportChange",
 ] as const;
 
 export type RegressionFieldKey = (typeof REGRESSION_FIELD_KEYS)[number];

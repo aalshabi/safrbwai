@@ -99,6 +99,19 @@ export function normalizeFacts(facts: ExtractedOfferFacts): ExtractedOfferFacts 
     const v = facts.accommodation.value.trim();
     if (v) out.accommodation = withValue(facts.accommodation, v);
   }
+  if (facts.roomType) {
+    const v = facts.roomType.value.trim();
+    if (v) out.roomType = withValue(facts.roomType, v);
+  }
+  if (facts.transitDuration) {
+    const minutes = toNormalizedAmount(facts.transitDuration.value.minutes);
+    if (minutes !== null) out.transitDuration = withValue(facts.transitDuration, { minutes });
+  }
+  if (facts.stopCount) {
+    const count = toNormalizedCount(facts.stopCount.value);
+    if (count !== null) out.stopCount = withValue(facts.stopCount, count);
+  }
+  if (facts.airportChange) out.airportChange = facts.airportChange;
 
   return out;
 }
