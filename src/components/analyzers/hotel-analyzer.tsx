@@ -33,6 +33,11 @@ type SafeHotel = Readonly<{
   source: "google_places";
 }>;
 
+type SafeLocalizedName = Readonly<{
+  text: string;
+  languageCode: "ar" | "en";
+}>;
+
 type SearchState =
   | { kind: "idle" }
   | { kind: "loading" }
@@ -160,7 +165,11 @@ function parseSearchResponse(value: unknown): readonly SafeHotel[] | null {
   return hotels.every((hotel): hotel is SafeHotel => hotel !== null) ? hotels : null;
 }
 
-function parseLocalizedName(value: unknown, expectedPlaceId: string): string | null | undefined {
+function parseLocalizedName(
+  value: unknown,
+  expectedPlaceId: string,
+  expectedLocale: "ar" | "en"
+): SafeLocalizedName | null | undefined {
   if (
     !isRecord(value) ||
     value.ok !== true ||
@@ -172,7 +181,11 @@ function parseLocalizedName(value: unknown, expectedPlaceId: string): string | n
     return undefined;
   }
   if (value.data.localizedName === null) return null;
-  return safeString(value.data.localizedName, 300);
+  if (!isRecord(value.data.localizedName)) return undefined;
+  const text = safeString(value.data.localizedName.text, 300);
+  const languageCode = value.data.localizedName.languageCode;
+  if (!text || (languageCode !== "ar" && languageCode !== "en")) return undefined;
+  return languageCode === expectedLocale ? { text, languageCode } : null;
 }
 
 function statusFromResponse(status: number): "invalid" | "rateLimited" | "unavailable" {
@@ -181,9 +194,12 @@ function statusFromResponse(status: number): "invalid" | "rateLimited" | "unavai
   return "unavailable";
 }
 
-function distinctName(alternate: string | null, primary: string): string | null {
+function distinctName(
+  alternate: SafeLocalizedName | null,
+  primary: string
+): SafeLocalizedName | null {
   if (!alternate) return null;
-  return alternate.normalize("NFKC").toLocaleLowerCase() ===
+  return alternate.text.normalize("NFKC").toLocaleLowerCase() ===
     primary.normalize("NFKC").toLocaleLowerCase()
     ? null
     : alternate;
@@ -197,7 +213,7 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
   const [city, setCity] = React.useState("");
   const [state, setState] = React.useState<SearchState>({ kind: "idle" });
   const [selected, setSelected] = React.useState<SafeHotel | null>(null);
-  const [alternateName, setAlternateName] = React.useState<string | null>(null);
+  const [alternateName, setAlternateName] = React.useState<SafeLocalizedName | null>(null);
   const [alternateError, setAlternateError] = React.useState(false);
   const resultRef = React.useRef<HTMLDivElement>(null);
 
@@ -249,17 +265,22 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
     setAlternateName(null);
     setAlternateError(false);
     try {
+      const alternateLocale = locale === "ar" ? "en" : "ar";
       const response = await fetch("/api/hotels/name", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ placeId: hotel.placeId, locale: locale === "ar" ? "en" : "ar" }),
+        body: JSON.stringify({ placeId: hotel.placeId, locale: alternateLocale }),
       });
       if (!response.ok) {
         await response.body?.cancel().catch(() => undefined);
         setAlternateError(true);
         return;
       }
-      const localizedName = parseLocalizedName(await response.json(), hotel.placeId);
+      const localizedName = parseLocalizedName(
+        await response.json(),
+        hotel.placeId,
+        alternateLocale
+      );
       if (localizedName === undefined) {
         setAlternateError(true);
         return;
@@ -346,7 +367,7 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
               <Card><CardContent className="p-6 md:p-8">
                 <p className="text-sm font-semibold text-teal">{identity.selectedTitle}</p>
                 <h2 id="selected-hotel-title" className="mt-1 font-display text-2xl font-bold">{selected.requestedLocaleName}</h2>
-                {alternateName && <p className="mt-2 text-sm"><span className="font-semibold">{identity.alternateName}: </span><span lang={locale === "ar" ? "en" : "ar"}>{alternateName}</span></p>}
+                {alternateName && <p className="mt-2 text-sm"><span className="font-semibold">{identity.alternateName}: </span><span lang={alternateName.languageCode}>{alternateName.text}</span></p>}
                 {alternateError && <p className="mt-3 text-sm text-muted-foreground">{identity.errors.alternateUnavailable}</p>}
                 <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
                   {selected.formattedAddress && <div><dt className="font-semibold">{identity.address}</dt><dd className="mt-1 text-muted-foreground">{selected.formattedAddress}</dd></div>}

@@ -19,7 +19,10 @@ function request(body: unknown, ip = "203.0.113.20") {
 }
 
 function provider(
-  getLocalizedName = vi.fn().mockResolvedValue("Test Hotel")
+  getLocalizedName = vi.fn().mockResolvedValue({
+    text: "Test Hotel",
+    languageCode: "en",
+  })
 ): HotelDataProvider {
   return {
     search: vi.fn().mockResolvedValue([]),
@@ -67,7 +70,10 @@ describe("POST /api/hotels/name", () => {
   });
 
   it("returns only the selected source ID and source-provided localized name", async () => {
-    const getLocalizedName = vi.fn().mockResolvedValue("فندق الاختبار");
+    const getLocalizedName = vi.fn().mockResolvedValue({
+      text: "فندق الاختبار",
+      languageCode: "ar",
+    });
     const source = provider(getLocalizedName);
     const { handler } = setup({ providerFactory: () => source });
     const response = await handler(
@@ -83,8 +89,24 @@ describe("POST /api/hotels/name", () => {
       data: {
         source: "google_places",
         placeId: "ChIJTestHotel123",
-        localizedName: "فندق الاختبار",
+        localizedName: { text: "فندق الاختبار", languageCode: "ar" },
       },
+    });
+  });
+
+  it("preserves a valid fallback language through the safe contract", async () => {
+    const source = provider(
+      vi.fn().mockResolvedValue({ text: "فندق الاختبار", languageCode: "ar" })
+    );
+    const { handler } = setup({ providerFactory: () => source });
+    const response = await handler(
+      request({ placeId: "ChIJTestHotel123", locale: "en" })
+    );
+
+    expect(response.status).toBe(200);
+    expect((await response.json()).data.localizedName).toEqual({
+      text: "فندق الاختبار",
+      languageCode: "ar",
     });
   });
 
@@ -100,7 +122,9 @@ describe("POST /api/hotels/name", () => {
 
   it("fails closed when a provider returns a malformed localized name", async () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => {});
-    const source = provider(vi.fn().mockResolvedValue("Unsafe\u0000Name"));
+    const source = provider(
+      vi.fn().mockResolvedValue({ text: "Unsafe\u0000Name", languageCode: "en" })
+    );
     const { handler } = setup({ providerFactory: () => source });
     const response = await handler(
       request({ placeId: "ChIJTestHotel123", locale: "ar" })
@@ -109,6 +133,21 @@ describe("POST /api/hotels/name", () => {
     expect(response.status).toBe(503);
     expect(JSON.stringify(await response.json())).not.toContain("Unsafe");
     expect(log.mock.calls.flat().join(" ")).not.toContain("Unsafe");
+  });
+
+  it("fails closed when a provider returns an unsupported language code", async () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    const source = provider(
+      vi.fn().mockResolvedValue({ text: "Hôtel test", languageCode: "fr" })
+    );
+    const { handler } = setup({ providerFactory: () => source });
+    const response = await handler(
+      request({ placeId: "ChIJTestHotel123", locale: "en" })
+    );
+
+    expect(response.status).toBe(503);
+    expect(JSON.stringify(await response.json())).not.toContain("Hôtel test");
+    expect(log.mock.calls.flat().join(" ")).not.toContain("Hôtel test");
   });
 
   it("rejects invalid input before provider construction", async () => {

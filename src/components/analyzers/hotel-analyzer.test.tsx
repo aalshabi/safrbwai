@@ -49,7 +49,10 @@ function searchResponse(results: unknown[] = HOTELS) {
   });
 }
 
-function nameResponse(placeId: string, localizedName: string | null) {
+function nameResponse(
+  placeId: string,
+  localizedName: { text: string; languageCode: string } | null
+) {
   return apiResponse({
     ok: true,
     schemaVersion: "hotel-name.v1",
@@ -157,7 +160,9 @@ describe("HotelAnalyzer enabled flow with mocked transport", () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(searchResponse())
-      .mockResolvedValueOnce(nameResponse("place_one", "Source Hotel One"));
+      .mockResolvedValueOnce(
+        nameResponse("place_one", { text: "Source Hotel One", languageCode: "en" })
+      );
     vi.stubGlobal("fetch", fetchMock);
     renderAnalyzer(true);
     await submitSearch();
@@ -193,6 +198,48 @@ describe("HotelAnalyzer enabled flow with mocked transport", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     expect(screen.queryByText(ar.identity.alternateName)).toBeNull();
     expect(screen.queryByText(ar.identity.errors.alternateUnavailable)).toBeNull();
+  });
+
+  it.each([
+    ["ar", { text: "اسم عربي احتياطي", languageCode: "ar" }],
+    ["en", { text: "English fallback", languageCode: "en" }],
+  ] as const)(
+    "does not label a valid %s fallback as the requested alternate locale",
+    async (locale, fallback) => {
+      const hotel = locale === "ar"
+        ? HOTELS[0]
+        : { ...HOTELS[0], requestedLocaleName: "Source Hotel One" };
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValueOnce(searchResponse([hotel]))
+        .mockResolvedValueOnce(nameResponse("place_one", fallback));
+      vi.stubGlobal("fetch", fetchMock);
+      renderAnalyzer(true, locale);
+      await submitSearch(locale);
+      const dictionary = locale === "ar" ? ar : en;
+      fireEvent.click(await screen.findByRole("button", { name: dictionary.identity.selectAction }));
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+
+      expect(screen.queryByText(fallback.text)).toBeNull();
+      expect(screen.queryByText(dictionary.identity.alternateName)).toBeNull();
+    }
+  );
+
+  it.each([
+    { text: "Unknown language", languageCode: "fr" },
+    { text: "Missing language", languageCode: "" },
+  ])("fails closed for an unknown or malformed source language %#", async (localizedName) => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(searchResponse([HOTELS[0]]))
+      .mockResolvedValueOnce(nameResponse("place_one", localizedName));
+    vi.stubGlobal("fetch", fetchMock);
+    renderAnalyzer(true);
+    await submitSearch();
+    fireEvent.click(await screen.findByRole("button", { name: ar.identity.selectAction }));
+
+    expect(await screen.findByText(ar.identity.errors.alternateUnavailable)).toBeTruthy();
+    expect(document.body.textContent).not.toContain(localizedName.text);
   });
 
   it("shows empty and closed-hotel states without generating a replacement", async () => {
@@ -253,7 +300,9 @@ describe("HotelAnalyzer enabled flow with mocked transport", () => {
       vi
         .fn()
         .mockResolvedValueOnce(searchResponse([englishHotel]))
-        .mockResolvedValueOnce(nameResponse("place_one", "فندق المصدر الأول"))
+        .mockResolvedValueOnce(
+          nameResponse("place_one", { text: "فندق المصدر الأول", languageCode: "ar" })
+        )
     );
     renderAnalyzer(true, "en");
     expect(await screen.findByLabelText(en.inputLabel)).toBeTruthy();

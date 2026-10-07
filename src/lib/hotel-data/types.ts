@@ -16,6 +16,11 @@ export type HotelNameInput = Readonly<{
   locale: HotelLocale;
 }>;
 
+export type SourcedLocalizedHotelName = Readonly<{
+  text: string;
+  languageCode: HotelLocale;
+}>;
+
 export type SourcedHotel = Readonly<{
   placeId: string;
   requestedLocaleName: string;
@@ -47,7 +52,10 @@ export type HotelApiErrorResponse<SchemaVersion extends string> = Readonly<{
 
 export interface HotelDataProvider {
   search(input: HotelSearchInput): Promise<readonly SourcedHotel[]>;
-  getLocalizedName(placeId: string, locale: HotelLocale): Promise<string | null>;
+  getLocalizedName(
+    placeId: string,
+    locale: HotelLocale
+  ): Promise<SourcedLocalizedHotelName | null>;
 }
 
 export interface GoogleAccessTokenProvider {

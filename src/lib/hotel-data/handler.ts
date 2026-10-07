@@ -13,6 +13,7 @@ import type {
   HotelApiErrorCode,
   HotelApiErrorResponse,
   HotelDataProvider,
+  SourcedLocalizedHotelName,
   SourcedHotel,
 } from "./types";
 import type { RateLimiter } from "@/lib/offer-pipeline/api/rate-limit";
@@ -60,7 +61,7 @@ type HotelNameResponse =
       data: Readonly<{
         source: "google_places";
         placeId: string;
-        localizedName: string | null;
+        localizedName: SourcedLocalizedHotelName | null;
       }>;
     }>
   | HotelApiErrorResponse<typeof HOTEL_NAME_SCHEMA_VERSION>;
@@ -73,17 +74,28 @@ type HotelSearchHandlerDependencies = Readonly<{
 
 type HotelNameHandlerDependencies = HotelSearchHandlerDependencies;
 
-function safeLocalizedName(value: string | null): string | null {
+function safeLocalizedName(value: unknown): SourcedLocalizedHotelName | null {
   if (value === null) return null;
-  const normalized = value.normalize("NFKC").trim();
+  if (typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid localized hotel name");
+  }
+  const candidate = value as Record<string, unknown>;
+  if (Object.keys(candidate).some((key) => !["text", "languageCode"].includes(key))) {
+    throw new Error("Invalid localized hotel name");
+  }
+  if (typeof candidate.text !== "string") {
+    throw new Error("Invalid localized hotel name");
+  }
+  const normalized = candidate.text.normalize("NFKC").trim();
   if (
     !normalized ||
     normalized.length > 300 ||
-    /[\u0000-\u001F\u007F-\u009F]/u.test(normalized)
+    /[\u0000-\u001F\u007F-\u009F]/u.test(normalized) ||
+    (candidate.languageCode !== "ar" && candidate.languageCode !== "en")
   ) {
     throw new Error("Invalid localized hotel name");
   }
-  return normalized;
+  return { text: normalized, languageCode: candidate.languageCode };
 }
 
 function json(
