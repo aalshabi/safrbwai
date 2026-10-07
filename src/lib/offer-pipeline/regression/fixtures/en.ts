@@ -260,12 +260,29 @@ export const ENGLISH_REGRESSION_FIXTURES = [
   ),
   defineRegressionFixture(
     {
+      id: "en-mixed-flight-ground-context",
+      locale: "en",
+      category: "decision_integrity_details",
+      description: "An explicit flight stop remains confirmed when a ground-transfer inclusion follows in the same clause",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights. The outbound flight stops in Doha for 3 hours and airport shuttle is included.",
+    },
+    {
+      mustConfirm: ["nights", "destination", "travellers", "transitDuration", "stopCount"],
+      expectedValues: {
+        transitDuration: { minutes: 180 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
       id: "en-ground-transport-not-flight",
       locale: "en",
       category: "ground_transport_not_flight",
       description: "Ground-transport stops do not become a transit duration or flight stop count",
       syntheticInput:
-        "Travel offer to Istanbul for 2 adults and 5 nights. Total: SAR 2,000. Airport shuttle stops in the hotel for 2 hours. The bus stops in Doha for 2 hours.",
+        "Travel offer to Istanbul for 2 adults and 5 nights. Total: SAR 2,000. Flights are included and the airport shuttle stops at the hotel for 2 hours. The offer includes flights and the bus stops in Doha for 2 hours.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],

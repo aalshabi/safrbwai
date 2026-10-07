@@ -71,7 +71,11 @@ describe("runOfferPipeline", () => {
   it("does not emit flight details for ground-transport stops", async () => {
     for (const text of [
       "Travel offer to Istanbul for 2 adults and 5 nights. Total: SAR 2,000. Airport shuttle stops in the hotel for 2 hours. The bus stops in Doha for 2 hours.",
+      "Travel offer to Istanbul for 2 adults and 5 nights. Flights are included and the airport shuttle stops at the hotel for 2 hours.",
+      "Travel offer to Istanbul for 2 adults and 5 nights. The offer includes flights and the bus stops in Doha for 2 hours.",
       "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ، والإجمالي 2,000 ريال. تتوقف الحافلة في الدوحة لمدة 2 ساعات، وخدمة النقل بها 2 توقفات قبل الفندق.",
+      "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ. الطيران مشمول وخدمة النقل من المطار تتوقف عند الفندق لمدة ساعتين.",
+      "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ. يشمل العرض الطيران وتتوقف الحافلة في الدوحة لمدة ساعتين.",
     ]) {
       const outcome = await runOfferPipeline({ type: "text", text });
       expect(outcome.status).toBe("ok");
@@ -80,6 +84,23 @@ describe("runOfferPipeline", () => {
       expect(outcome.extraction.facts.stopCount).toBeUndefined();
       expect(outcome.analysis.confirmedFacts.some((fact) => fact.key === "transitDuration")).toBe(false);
       expect(outcome.analysis.confirmedFacts.some((fact) => fact.key === "stopCount")).toBe(false);
+    }
+  });
+
+  it("preserves explicit flight stops followed by ground-transfer inclusions", async () => {
+    for (const text of [
+      "Travel offer to Istanbul for 2 adults and 5 nights. The outbound flight stops in Doha for 3 hours and airport shuttle is included.",
+      "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ. رحلة الذهاب تتوقف في الدوحة لمدة 3 ساعات وخدمة النقل من المطار مشمولة.",
+    ]) {
+      const outcome = await runOfferPipeline({ type: "text", text });
+      expect(outcome.status).toBe("ok");
+      if (outcome.status !== "ok") continue;
+      expect(outcome.extraction.facts.transitDuration?.value).toEqual({ minutes: 180 });
+      expect(outcome.extraction.facts.stopCount?.value).toBe(1);
+      expect(
+        outcome.analysis.confirmedFacts.find((fact) => fact.key === "transitDuration")?.value
+      ).toEqual({ minutes: 180 });
+      expect(outcome.analysis.confirmedFacts.find((fact) => fact.key === "stopCount")?.value).toBe(1);
     }
   });
 

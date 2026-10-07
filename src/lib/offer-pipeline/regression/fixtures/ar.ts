@@ -309,12 +309,29 @@ export const ARABIC_REGRESSION_FIXTURES = [
   ),
   defineRegressionFixture(
     {
+      id: "ar-mixed-flight-ground-context",
+      locale: "ar",
+      category: "decision_integrity_details",
+      description: "يبقى توقف الرحلة الصريح مؤكدًا عند ورود خدمة النقل الأرضي بعده في العبارة نفسها",
+      syntheticInput:
+        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ. رحلة الذهاب تتوقف في الدوحة لمدة 3 ساعات وخدمة النقل من المطار مشمولة.",
+    },
+    {
+      mustConfirm: ["nights", "destination", "travellers", "transitDuration", "stopCount"],
+      expectedValues: {
+        transitDuration: { minutes: 180 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
       id: "ar-ground-transport-not-flight",
       locale: "ar",
       category: "ground_transport_not_flight",
       description: "توقفات النقل الأرضي لا تتحول إلى مدة ترانزيت أو عدد توقفات جوية",
       syntheticInput:
-        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ، والإجمالي 2,000 ريال. تتوقف الحافلة في الدوحة لمدة 2 ساعات، وخدمة النقل بها 2 توقفات قبل الفندق.",
+        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ، والإجمالي 2,000 ريال. الطيران مشمول وخدمة النقل من المطار تتوقف عند الفندق لمدة ساعتين. يشمل العرض الطيران وتتوقف الحافلة في الدوحة لمدة ساعتين.",
     },
     {
       mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],

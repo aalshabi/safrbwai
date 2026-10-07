@@ -34,16 +34,51 @@ const NO_AIRPORT_CHANGE =
 const AIRPORT_CHANGE =
   /(?:يتطلب|يلزم|مع)\s+تغيير\s*(?:ال)?مطار|تبديل\s*(?:ال)?مطار|(?:requires?|with)\s+(?:an?\s+)?airport\s+change|change\s+airports?/i;
 
-function clauseAround(text: string, index: number): string {
-  const before = text.slice(0, index).split(/[.!?؟،,؛;\n]/).at(-1) ?? "";
-  const after = text.slice(index).split(/[.!?؟،,؛;\n]/)[0] ?? "";
-  return `${before}${after}`;
+function clauseAt(text: string, index: number): { text: string; matchIndex: number } {
+  const before = text.slice(0, index);
+  const clauseStart = Math.max(
+    before.lastIndexOf("."),
+    before.lastIndexOf("!"),
+    before.lastIndexOf("?"),
+    before.lastIndexOf("؟"),
+    before.lastIndexOf("،"),
+    before.lastIndexOf(","),
+    before.lastIndexOf("؛"),
+    before.lastIndexOf(";"),
+    before.lastIndexOf("\n")
+  ) + 1;
+  const after = text.slice(index);
+  const nextDelimiter = after.search(/[.!?؟،,؛;\n]/);
+  const clauseEnd = nextDelimiter === -1 ? text.length : index + nextDelimiter;
+  return {
+    text: text.slice(clauseStart, clauseEnd),
+    matchIndex: index - clauseStart,
+  };
+}
+
+function nearestContextDistance(text: string, index: number, pattern: RegExp): number {
+  const flags = pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`;
+  return [...text.matchAll(new RegExp(pattern.source, flags))].reduce((nearest, match) => {
+    if (match.index === undefined) return nearest;
+    const start = match.index;
+    const end = start + match[0].length;
+    const distance = index < start ? start - index : index > end ? index - end : 0;
+    return Math.min(nearest, distance);
+  }, Number.POSITIVE_INFINITY);
 }
 
 function hasAviationContext(text: string, index: number): boolean {
-  const clause = clauseAround(text, index);
-  if (GROUND_STOP_CONTEXT.test(clause)) return false;
-  return EXPLICIT_TRANSIT_CONTEXT.test(clause) || FLIGHT_CONTEXT.test(clause);
+  const clause = clauseAt(text, index);
+  const aviationDistance = Math.min(
+    nearestContextDistance(clause.text, clause.matchIndex, EXPLICIT_TRANSIT_CONTEXT),
+    nearestContextDistance(clause.text, clause.matchIndex, FLIGHT_CONTEXT)
+  );
+  const groundDistance = nearestContextDistance(
+    clause.text,
+    clause.matchIndex,
+    GROUND_STOP_CONTEXT
+  );
+  return aviationDistance < Number.POSITIVE_INFINITY && aviationDistance <= groundDistance;
 }
 
 function firstAviationMatch(

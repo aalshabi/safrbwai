@@ -55,6 +55,44 @@ describe("flightDetailsRule", () => {
     expect(facts.stopCount?.value).toBe(1);
   });
 
+  it("keeps English flight-stop facts when a ground-transfer inclusion follows in the same clause", () => {
+    const facts = flightDetailsRule.apply(
+      "The outbound flight stops in Doha for 3 hours and airport shuttle is included."
+    ).facts;
+    expect(facts.transitDuration?.value).toEqual({ minutes: 180 });
+    expect(facts.stopCount?.value).toBe(1);
+  });
+
+  it("keeps Arabic flight-stop facts when a ground-transfer inclusion follows in the same clause", () => {
+    const facts = flightDetailsRule.apply(
+      "رحلة الذهاب تتوقف في الدوحة لمدة 3 ساعات وخدمة النقل من المطار مشمولة."
+    ).facts;
+    expect(facts.transitDuration?.value).toEqual({ minutes: 180 });
+    expect(facts.stopCount?.value).toBe(1);
+  });
+
+  it("uses the nearest English subject when flights and ground stops share a clause", () => {
+    for (const text of [
+      "Flights are included and the airport shuttle stops at the hotel for 2 hours.",
+      "The offer includes flights and the bus stops in Doha for 2 hours.",
+    ]) {
+      const facts = flightDetailsRule.apply(text).facts;
+      expect(facts.transitDuration).toBeUndefined();
+      expect(facts.stopCount).toBeUndefined();
+    }
+  });
+
+  it("uses the nearest Arabic subject when flights and ground stops share a clause", () => {
+    for (const text of [
+      "الطيران مشمول وخدمة النقل من المطار تتوقف عند الفندق لمدة ساعتين.",
+      "يشمل العرض الطيران وتتوقف الحافلة في الدوحة لمدة ساعتين.",
+    ]) {
+      const facts = flightDetailsRule.apply(text).facts;
+      expect(facts.transitDuration).toBeUndefined();
+      expect(facts.stopCount).toBeUndefined();
+    }
+  });
+
   it("continues past an earlier ground stop to a later explicit flight stop", () => {
     const facts = flightDetailsRule.apply(
       "The bus stops in the hotel for 2 hours. The flight stops in Doha for 3 hours."
