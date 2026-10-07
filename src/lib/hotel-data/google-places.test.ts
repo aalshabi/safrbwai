@@ -179,6 +179,27 @@ describe("Google Places hotel provider", () => {
     });
   });
 
+  it.each([
+    ["en-US", "en"],
+    ["EN-gb", "en"],
+    ["ar-SA", "ar"],
+    ["ar-Arab-EG", "ar"],
+  ] as const)("reduces BCP-47 source language %s to %s", async (languageCode, expected) => {
+    const provider = createGooglePlacesHotelProvider({
+      accessTokenProvider: accessTokenProvider(),
+      transport: vi.fn<HotelTransport>().mockResolvedValue(
+        Response.json({
+          id: "ChIJTestHotel123",
+          displayName: { text: "Test Hotel", languageCode },
+        })
+      ),
+    });
+    await expect(provider.getLocalizedName("ChIJTestHotel123", expected)).resolves.toEqual({
+      text: "Test Hotel",
+      languageCode: expected,
+    });
+  });
+
   it("does not invent a missing alternate-locale name", async () => {
     const provider = createGooglePlacesHotelProvider({
       accessTokenProvider: accessTokenProvider(),
@@ -193,6 +214,10 @@ describe("Google Places hotel provider", () => {
     { text: "Test Hotel" },
     { text: "Test Hotel", languageCode: "fr" },
     { text: "Test Hotel", languageCode: "en\u0000" },
+    { text: "Test Hotel", languageCode: "fr-SA" },
+    { text: "Test Hotel", languageCode: "en_US" },
+    { text: "Test Hotel", languageCode: "en-" },
+    { text: "Test Hotel", languageCode: "english" },
   ])("rejects a missing, unknown, or malformed source language code %#", async (displayName) => {
     const provider = createGooglePlacesHotelProvider({
       accessTokenProvider: accessTokenProvider(),

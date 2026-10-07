@@ -54,9 +54,11 @@ After merge, on `https://www.safrbwai.com/analyze-hotel` (Production deployment 
 
 ## Open items for 6C-3
 
-- Attribution is currently the text `Google Maps` with `translate="no"`. The spec prefers the official logo; the attribution design review gate must decide.
-- Google may return a region-qualified code such as `en-US`. The current provider treats it as unsupported and hides the alternate name. Confirm real responses during Preview verification.
-- `/api/hotels/name` reports the source language even when it differs from the requested locale; only the UI rejects the mismatch. Any future consumer must apply the same check, or the server should return `null` on mismatch.
+All three were resolved in the 6C-3 Preview-readiness PR (branch `claude/phase-6c-3-preview-readiness`):
+
+- Attribution was the text `Google Maps`. Google's policy requires the logo "whenever possible", and the Product Owner chose the official logo on 2026-10-08. The UI now shows the unmodified logo from `Google_Maps_Attribution_Assets.zip`: gray in light mode, white in dark mode, 18px high, with the required clear space. The attribution design-review gate still requires visual review in Arabic, English, and at 390px on Preview.
+- Google documents `displayName.languageCode` as BCP-47 ("en-US", "sr-Latn"). The provider now reduces a well-formed tag to its primary language, so region-qualified Arabic and English names are no longer dropped.
+- `/api/hotels/name` now returns `localizedName: null` when the source language differs from the requested locale, so a fallback-language name never leaves the server.
 
 ## Explicit non-authorization
 

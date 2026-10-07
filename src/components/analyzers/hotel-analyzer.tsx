@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Image from "next/image";
 import {
   AlertCircle,
   Building2,
@@ -205,6 +206,18 @@ function distinctName(
     : alternate;
 }
 
+// Official, unmodified Google Maps logo (Google_Maps_Attribution_Assets.zip):
+// non-outlined variants for plain backgrounds, 18px high (policy: 16–19dp),
+// with the required 10dp clear space on the sides and top and 5dp below.
+function GoogleMapsAttribution({ label }: { label: string }) {
+  return (
+    <span className="inline-flex px-[10px] pb-[5px] pt-[10px] align-middle" translate="no">
+      <Image src="/attribution/GoogleMaps_Logo_Gray.svg" alt={label} width={98} height={18} unoptimized className="h-[18px] w-auto dark:hidden" />
+      <Image src="/attribution/GoogleMaps_Logo_White.svg" alt={label} width={98} height={18} unoptimized className="hidden h-[18px] w-auto dark:block" />
+    </span>
+  );
+}
+
 export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
   const { locale, t } = useLanguage();
   const th = t.analyzeHotel;
@@ -356,9 +369,9 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
                   </Card>
                 ))}
               </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                <span className="font-semibold">{identity.source}: </span>
-                <span translate="no">{identity.attribution}</span>
+              <p className="mt-4 flex items-center text-sm text-muted-foreground">
+                <span className="font-semibold">{identity.source}:</span>
+                <GoogleMapsAttribution label={identity.attribution} />
               </p>
             </section>
           )}
@@ -375,9 +388,9 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
                   <div><dt className="font-semibold">{identity.placeType}</dt><dd className="mt-1 text-muted-foreground">{selected.primaryType.replaceAll("_", " ")}</dd></div>
                   {selected.businessStatus && <div><dt className="font-semibold">{identity.businessStatus}</dt><dd className="mt-1 text-muted-foreground">{statusLabel(selected.businessStatus)}</dd></div>}
                 </dl>
-                <div className="mt-6 border-t border-border pt-4 text-sm">
-                  <span className="font-semibold">{identity.source}: </span><span translate="no">{identity.attribution}</span>
-                  {selected.googleMapsUri && <a href={selected.googleMapsUri} target="_blank" rel="noopener noreferrer" className="ms-4 inline-flex items-center gap-1 font-semibold text-teal underline-offset-4 hover:underline">{identity.openSource}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}
+                <div className="mt-6 flex flex-wrap items-center border-t border-border pt-4 text-sm">
+                  <span className="font-semibold">{identity.source}:</span><GoogleMapsAttribution label={identity.attribution} />
+                  {selected.googleMapsUri && <a href={selected.googleMapsUri} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-semibold text-teal underline-offset-4 hover:underline">{identity.openSource}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}
                 </div>
               </CardContent></Card>
             </section>

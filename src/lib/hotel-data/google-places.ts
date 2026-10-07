@@ -154,9 +154,18 @@ function mapDetailsName(
     throw new HotelProviderError("PROVIDER_RESPONSE_INVALID");
   }
   const text = safeString(raw.displayName.text, 300);
-  const languageCode = safeString(raw.displayName.languageCode, 16)?.toLowerCase();
-  if (!text || (languageCode !== "ar" && languageCode !== "en")) return null;
+  const languageCode = sourceLanguage(raw.displayName.languageCode);
+  if (!text || !languageCode) return null;
   return { text, languageCode };
+}
+
+// Google documents displayName.languageCode as BCP-47, so region or script
+// subtags ("en-US", "ar-SA") may follow the primary language.
+function sourceLanguage(value: unknown): HotelLocale | null {
+  const tag = safeString(value, 35)?.toLowerCase();
+  if (!tag || !/^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/.test(tag)) return null;
+  const primary = tag.split("-")[0];
+  return primary === "ar" || primary === "en" ? primary : null;
 }
 
 function mapHttpError(status: number): HotelProviderError {
