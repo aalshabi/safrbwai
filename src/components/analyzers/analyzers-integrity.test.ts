@@ -10,6 +10,7 @@ const hotel = src("src/components/analyzers/hotel-analyzer.tsx");
 const dest = src("src/components/analyzers/destination-advisor.tsx");
 const cmp = src("src/components/analyzers/compare-hotels.tsx");
 const offer = src("src/components/analyzers/offer-analyzer.tsx");
+const hotelPage = src("src/app/analyze-hotel/page.tsx");
 
 describe("public analyzers do not generate demo data", () => {
   // (4) hotel: entering a name never yields a numeric score
@@ -17,7 +18,11 @@ describe("public analyzers do not generate demo data", () => {
     expect(hotel).not.toMatch(/analyzeHotelDeep\s*\(/);
     expect(hotel).not.toMatch(/saveAnalysis\s*\(/);
     expect(hotel).not.toContain("ScoreRing");
-    expect(hotel).toContain("AnalyzerPreview");
+    expect(hotel).not.toContain("AnalyzerPreview");
+    expect(hotel).not.toMatch(/setTimeout\s*\(/);
+    expect(hotel).not.toMatch(/localStorage|sessionStorage|console\./);
+    expect(hotel).toContain("hotel-search.v1");
+    expect(hotel).toContain("hotel-name.v1");
   });
 
   // (5) destination: no fabricated recommendation / season
@@ -40,5 +45,11 @@ describe("public analyzers do not generate demo data", () => {
     for (const file of [hotel, dest, cmp, offer]) {
       expect(file).not.toMatch(/saveAnalysis\s*\(/);
     }
+  });
+
+  it("keeps the hotel UI behind both the product capability and server flag", () => {
+    expect(hotelPage).toContain('isFeatureEnabled("hotelIdentityLookup")');
+    expect(hotelPage).toContain("isServerHotelIdentityLookupEnabled()");
+    expect(hotelPage).toContain("<HotelAnalyzer enabled={enabled}");
   });
 });

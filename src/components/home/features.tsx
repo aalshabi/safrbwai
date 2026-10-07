@@ -11,6 +11,7 @@ import {
 } from "@/lib/product/capabilities";
 
 const FEATURE_ICONS: Partial<Record<ProductCapabilityKey, typeof Building2>> = {
+  hotelIdentityLookup: Building2,
   hotelOfferReview: Building2,
   destinationChecklist: Compass,
   textOfferAnalysis: Tag,

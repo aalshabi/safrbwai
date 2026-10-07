@@ -43,6 +43,7 @@ describe("central guide definitions", () => {
       }
     }
     expect(getCapability("textOfferAnalysis").status).toBe("enabled");
+    expect(getCapability("hotelIdentityLookup").status).toBe("preview");
     expect(getCapability("hotelOfferReview").status).toBe("preview");
     expect(getCapability("destinationChecklist").status).toBe("preview");
     expect(getCapability("hotelComparison").status).toBe("preview");

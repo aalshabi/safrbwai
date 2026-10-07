@@ -19,6 +19,7 @@ import type {
   HotelLocale,
   HotelSearchInput,
   HotelTransport,
+  SourcedLocalizedHotelName,
   SourcedHotel,
 } from "./types";
 
@@ -139,7 +140,10 @@ function mapSearchResponse(raw: unknown): readonly SourcedHotel[] {
     .slice(0, HOTEL_SEARCH_MAX_RESULTS);
 }
 
-function mapDetailsName(raw: unknown, expectedPlaceId: string): string | null {
+function mapDetailsName(
+  raw: unknown,
+  expectedPlaceId: string
+): SourcedLocalizedHotelName | null {
   if (!isRecord(raw)) throw new HotelProviderError("PROVIDER_RESPONSE_INVALID");
   const placeId = safePlaceId(raw.id);
   if (!placeId || placeId !== expectedPlaceId) {
@@ -149,7 +153,10 @@ function mapDetailsName(raw: unknown, expectedPlaceId: string): string | null {
   if (!isRecord(raw.displayName)) {
     throw new HotelProviderError("PROVIDER_RESPONSE_INVALID");
   }
-  return safeString(raw.displayName.text, 300) ?? null;
+  const text = safeString(raw.displayName.text, 300);
+  const languageCode = safeString(raw.displayName.languageCode, 16)?.toLowerCase();
+  if (!text || (languageCode !== "ar" && languageCode !== "en")) return null;
+  return { text, languageCode };
 }
 
 function mapHttpError(status: number): HotelProviderError {
@@ -226,7 +233,10 @@ export function createGooglePlacesHotelProvider({
       return mapSearchResponse(raw);
     },
 
-    async getLocalizedName(placeId: string, locale: HotelLocale): Promise<string | null> {
+    async getLocalizedName(
+      placeId: string,
+      locale: HotelLocale
+    ): Promise<SourcedLocalizedHotelName | null> {
       const safeId = safePlaceId(placeId);
       if (!safeId) throw new HotelProviderError("PROVIDER_CONFIG");
       const url = new URL(`${GOOGLE_PLACE_DETAILS_ENDPOINT}/${encodeURIComponent(safeId)}`);

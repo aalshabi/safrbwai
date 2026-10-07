@@ -5,6 +5,7 @@ export type CapabilityStatus = "disabled" | "preview" | "enabled";
 export type ProductCapabilityKey =
   | "textOfferAnalysis"
   | "travelGuides"
+  | "hotelIdentityLookup"
   | "hotelOfferReview"
   | "destinationChecklist"
   | "hotelComparison"
@@ -62,6 +63,21 @@ export const PRODUCT_CAPABILITIES = {
       en: "Keep sources and review dates current for every guide.",
     },
     requiredForPublicLaunch: true,
+  },
+  hotelIdentityLookup: {
+    key: "hotelIdentityLookup",
+    status: "preview",
+    title: { ar: "بحث هوية الفندق", en: "Hotel identity lookup" },
+    route: "/analyze-hotel",
+    reason: {
+      ar: "واجهة البحث المبنية على مصدر رسمي جاهزة للمراجعة، لكنها غير مفعّلة ولا ترسل بيانات حاليًا.",
+      en: "The source-backed lookup interface is ready for review, but it is disabled and sends no data.",
+    },
+    launchRequirement: {
+      ar: "إكمال مراجعة الإسناد والتكلفة والاعتمادات ثم اعتماد تفعيل مستقل.",
+      en: "Complete attribution, cost, and credential review, then approve activation separately.",
+    },
+    requiredForPublicLaunch: false,
   },
   hotelOfferReview: {
     key: "hotelOfferReview",

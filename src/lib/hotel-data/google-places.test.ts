@@ -123,16 +123,20 @@ describe("Google Places hotel provider", () => {
   it("looks up only the selected Place ID using the details scope and minimal field mask", async () => {
     const tokenProvider = accessTokenProvider();
     const transport = vi.fn<HotelTransport>().mockResolvedValue(
-      Response.json({ id: "ChIJTestHotel123", displayName: { text: "Test Hotel" } })
+      Response.json({
+        id: "ChIJTestHotel123",
+        displayName: { text: "Test Hotel", languageCode: "en" },
+      })
     );
     const provider = createGooglePlacesHotelProvider({
       accessTokenProvider: tokenProvider,
       transport,
     });
 
-    await expect(provider.getLocalizedName("ChIJTestHotel123", "en")).resolves.toBe(
-      "Test Hotel"
-    );
+    await expect(provider.getLocalizedName("ChIJTestHotel123", "en")).resolves.toEqual({
+      text: "Test Hotel",
+      languageCode: "en",
+    });
     expect(tokenProvider.getAccessToken).toHaveBeenCalledWith(GOOGLE_PLACE_DETAILS_SCOPE);
     const [url, init] = transport.mock.calls[0];
     expect(String(url)).toContain("/v1/places/ChIJTestHotel123?languageCode=en");
@@ -141,11 +145,59 @@ describe("Google Places hotel provider", () => {
     });
   });
 
+  it("preserves a valid Arabic source language code", async () => {
+    const provider = createGooglePlacesHotelProvider({
+      accessTokenProvider: accessTokenProvider(),
+      transport: vi.fn<HotelTransport>().mockResolvedValue(
+        Response.json({
+          id: "ChIJTestHotel123",
+          displayName: { text: "فندق الاختبار", languageCode: "ar" },
+        })
+      ),
+    });
+
+    await expect(provider.getLocalizedName("ChIJTestHotel123", "ar")).resolves.toEqual({
+      text: "فندق الاختبار",
+      languageCode: "ar",
+    });
+  });
+
+  it("preserves a valid source fallback language for the caller to reject", async () => {
+    const provider = createGooglePlacesHotelProvider({
+      accessTokenProvider: accessTokenProvider(),
+      transport: vi.fn<HotelTransport>().mockResolvedValue(
+        Response.json({
+          id: "ChIJTestHotel123",
+          displayName: { text: "فندق الاختبار", languageCode: "ar" },
+        })
+      ),
+    });
+
+    await expect(provider.getLocalizedName("ChIJTestHotel123", "en")).resolves.toEqual({
+      text: "فندق الاختبار",
+      languageCode: "ar",
+    });
+  });
+
   it("does not invent a missing alternate-locale name", async () => {
     const provider = createGooglePlacesHotelProvider({
       accessTokenProvider: accessTokenProvider(),
       transport: vi.fn<HotelTransport>().mockResolvedValue(
         Response.json({ id: "ChIJTestHotel123" })
+      ),
+    });
+    await expect(provider.getLocalizedName("ChIJTestHotel123", "en")).resolves.toBeNull();
+  });
+
+  it.each([
+    { text: "Test Hotel" },
+    { text: "Test Hotel", languageCode: "fr" },
+    { text: "Test Hotel", languageCode: "en\u0000" },
+  ])("rejects a missing, unknown, or malformed source language code %#", async (displayName) => {
+    const provider = createGooglePlacesHotelProvider({
+      accessTokenProvider: accessTokenProvider(),
+      transport: vi.fn<HotelTransport>().mockResolvedValue(
+        Response.json({ id: "ChIJTestHotel123", displayName })
       ),
     });
     await expect(provider.getLocalizedName("ChIJTestHotel123", "en")).resolves.toBeNull();
