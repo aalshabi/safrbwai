@@ -1,8 +1,11 @@
 export const HOTEL_SEARCH_SCHEMA_VERSION = "hotel-search.v1" as const;
+export const HOTEL_NAME_SCHEMA_VERSION = "hotel-name.v1" as const;
 export const HOTEL_SEARCH_MAX_BODY_BYTES = 1_024;
+export const HOTEL_NAME_MAX_BODY_BYTES = 512;
 export const HOTEL_QUERY_MIN_CHARS = 2;
 export const HOTEL_QUERY_MAX_CHARS = 120;
 export const HOTEL_CITY_MAX_CHARS = 80;
+export const HOTEL_PLACE_ID_MAX_CHARS = 256;
 export const HOTEL_SEARCH_MAX_RESULTS = 5;
 export const GOOGLE_PLACES_TIMEOUT_MS = 3_500;
 

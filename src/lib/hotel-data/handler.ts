@@ -1,22 +1,21 @@
 import { randomUUID } from "node:crypto";
 import { ipAddress } from "@vercel/functions";
 import {
+  HOTEL_NAME_MAX_BODY_BYTES,
+  HOTEL_NAME_SCHEMA_VERSION,
   HOTEL_SEARCH_MAX_BODY_BYTES,
   HOTEL_SEARCH_SCHEMA_VERSION,
 } from "./constants";
 import { isHotelProviderError } from "./errors";
 import { logHotelServerError } from "./logging";
-import { validateHotelSearchInput } from "./validation";
-import type { HotelDataProvider, SourcedHotel } from "./types";
+import { validateHotelNameInput, validateHotelSearchInput } from "./validation";
+import type {
+  HotelApiErrorCode,
+  HotelApiErrorResponse,
+  HotelDataProvider,
+  SourcedHotel,
+} from "./types";
 import type { RateLimiter } from "@/lib/offer-pipeline/api/rate-limit";
-
-type HotelSearchErrorCode =
-  | "HOTEL_SEARCH_DISABLED"
-  | "BAD_REQUEST"
-  | "PAYLOAD_TOO_LARGE"
-  | "RATE_LIMIT_EXCEEDED"
-  | "PROVIDER_UNAVAILABLE"
-  | "INTERNAL_ERROR";
 
 const MESSAGES = {
   disabled: {
@@ -41,7 +40,6 @@ const MESSAGES = {
   },
 } as const;
 
-type Message = Readonly<{ ar: string; en: string }>;
 type HotelSearchResponse =
   | Readonly<{
       ok: true;
@@ -52,12 +50,20 @@ type HotelSearchResponse =
         results: readonly SourcedHotel[];
       }>;
     }>
+  | HotelApiErrorResponse<typeof HOTEL_SEARCH_SCHEMA_VERSION>;
+
+type HotelNameResponse =
   | Readonly<{
-      ok: false;
-      schemaVersion: typeof HOTEL_SEARCH_SCHEMA_VERSION;
+      ok: true;
+      schemaVersion: typeof HOTEL_NAME_SCHEMA_VERSION;
       requestId: string;
-      error: Readonly<{ code: HotelSearchErrorCode; message: Message }>;
-    }>;
+      data: Readonly<{
+        source: "google_places";
+        placeId: string;
+        localizedName: string | null;
+      }>;
+    }>
+  | HotelApiErrorResponse<typeof HOTEL_NAME_SCHEMA_VERSION>;
 
 type HotelSearchHandlerDependencies = Readonly<{
   enabled?: boolean;
@@ -65,8 +71,23 @@ type HotelSearchHandlerDependencies = Readonly<{
   rateLimiter: RateLimiter;
 }>;
 
+type HotelNameHandlerDependencies = HotelSearchHandlerDependencies;
+
+function safeLocalizedName(value: string | null): string | null {
+  if (value === null) return null;
+  const normalized = value.normalize("NFKC").trim();
+  if (
+    !normalized ||
+    normalized.length > 300 ||
+    /[\u0000-\u001F\u007F-\u009F]/u.test(normalized)
+  ) {
+    throw new Error("Invalid localized hotel name");
+  }
+  return normalized;
+}
+
 function json(
-  body: HotelSearchResponse,
+  body: HotelSearchResponse | HotelNameResponse,
   status: number,
   headers?: Record<string, string>
 ): Response {
@@ -80,14 +101,17 @@ function json(
   });
 }
 
-function error(
+function error<SchemaVersion extends
+  | typeof HOTEL_SEARCH_SCHEMA_VERSION
+  | typeof HOTEL_NAME_SCHEMA_VERSION>(
   requestId: string,
-  code: HotelSearchErrorCode,
-  message: Message
-): HotelSearchResponse {
+  code: HotelApiErrorCode,
+  message: (typeof MESSAGES)[keyof typeof MESSAGES],
+  schemaVersion: SchemaVersion
+): HotelApiErrorResponse<SchemaVersion> {
   return {
     ok: false,
-    schemaVersion: HOTEL_SEARCH_SCHEMA_VERSION,
+    schemaVersion,
     requestId,
     error: { code, message },
   };
@@ -104,10 +128,11 @@ function clientKey(request: Request): string {
 }
 
 async function readLimitedBody(
-  request: Request
+  request: Request,
+  maxBytes: number
 ): Promise<{ ok: true; text: string } | { ok: false }> {
   const declaredLength = Number(request.headers.get("content-length"));
-  if (Number.isFinite(declaredLength) && declaredLength > HOTEL_SEARCH_MAX_BODY_BYTES) {
+  if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     return { ok: false };
   }
   if (!request.body) return { ok: true, text: "" };
@@ -119,7 +144,7 @@ async function readLimitedBody(
     const { done, value } = await reader.read();
     if (done) break;
     total += value.byteLength;
-    if (total > HOTEL_SEARCH_MAX_BODY_BYTES) {
+    if (total > maxBytes) {
       await reader.cancel();
       return { ok: false };
     }
@@ -146,35 +171,62 @@ export function createHotelSearchHandler({
 
     try {
       if (!enabled) {
-        return json(error(requestId, "HOTEL_SEARCH_DISABLED", MESSAGES.disabled), 503);
+        return json(
+          error(requestId, "HOTEL_SEARCH_DISABLED", MESSAGES.disabled, HOTEL_SEARCH_SCHEMA_VERSION),
+          503
+        );
       }
 
       const rate = rateLimiter.check(clientKey(request));
       if (!rate.allowed) {
-        return json(error(requestId, "RATE_LIMIT_EXCEEDED", MESSAGES.rateLimited), 429, {
-          "retry-after": String(rate.retryAfterSeconds),
-        });
+        return json(
+          error(
+            requestId,
+            "RATE_LIMIT_EXCEEDED",
+            MESSAGES.rateLimited,
+            HOTEL_SEARCH_SCHEMA_VERSION
+          ),
+          429,
+          { "retry-after": String(rate.retryAfterSeconds) }
+        );
       }
 
       if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
-        return json(error(requestId, "BAD_REQUEST", MESSAGES.invalid), 400);
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_SEARCH_SCHEMA_VERSION),
+          400
+        );
       }
 
-      const body = await readLimitedBody(request);
+      const body = await readLimitedBody(request, HOTEL_SEARCH_MAX_BODY_BYTES);
       if (!body.ok) {
-        return json(error(requestId, "PAYLOAD_TOO_LARGE", MESSAGES.tooLarge), 413);
+        return json(
+          error(
+            requestId,
+            "PAYLOAD_TOO_LARGE",
+            MESSAGES.tooLarge,
+            HOTEL_SEARCH_SCHEMA_VERSION
+          ),
+          413
+        );
       }
 
       let raw: unknown;
       try {
         raw = JSON.parse(body.text);
       } catch {
-        return json(error(requestId, "BAD_REQUEST", MESSAGES.invalid), 400);
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_SEARCH_SCHEMA_VERSION),
+          400
+        );
       }
 
       const validation = validateHotelSearchInput(raw);
       if (!validation.ok) {
-        return json(error(requestId, "BAD_REQUEST", MESSAGES.invalid), 400);
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_SEARCH_SCHEMA_VERSION),
+          400
+        );
       }
 
       try {
@@ -200,7 +252,15 @@ export function createHotelSearchHandler({
           durationMs: Date.now() - startedAt,
           providerMethod: "text_search",
         });
-        return json(error(requestId, "PROVIDER_UNAVAILABLE", MESSAGES.unavailable), 503);
+        return json(
+          error(
+            requestId,
+            "PROVIDER_UNAVAILABLE",
+            MESSAGES.unavailable,
+            HOTEL_SEARCH_SCHEMA_VERSION
+          ),
+          503
+        );
       }
     } catch {
       logHotelServerError({
@@ -209,7 +269,136 @@ export function createHotelSearchHandler({
         status: 500,
         durationMs: Date.now() - startedAt,
       });
-      return json(error(requestId, "INTERNAL_ERROR", MESSAGES.unavailable), 500);
+      return json(
+        error(requestId, "INTERNAL_ERROR", MESSAGES.unavailable, HOTEL_SEARCH_SCHEMA_VERSION),
+        500
+      );
+    }
+  };
+}
+
+export function createHotelNameHandler({
+  enabled = false,
+  providerFactory,
+  rateLimiter,
+}: HotelNameHandlerDependencies) {
+  return async function handleHotelName(request: Request): Promise<Response> {
+    const requestId = randomUUID();
+    const startedAt = Date.now();
+
+    try {
+      if (!enabled) {
+        return json(
+          error(requestId, "HOTEL_SEARCH_DISABLED", MESSAGES.disabled, HOTEL_NAME_SCHEMA_VERSION),
+          503
+        );
+      }
+
+      const rate = rateLimiter.check(clientKey(request));
+      if (!rate.allowed) {
+        return json(
+          error(
+            requestId,
+            "RATE_LIMIT_EXCEEDED",
+            MESSAGES.rateLimited,
+            HOTEL_NAME_SCHEMA_VERSION
+          ),
+          429,
+          { "retry-after": String(rate.retryAfterSeconds) }
+        );
+      }
+
+      if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) {
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_NAME_SCHEMA_VERSION),
+          400
+        );
+      }
+
+      const body = await readLimitedBody(request, HOTEL_NAME_MAX_BODY_BYTES);
+      if (!body.ok) {
+        return json(
+          error(
+            requestId,
+            "PAYLOAD_TOO_LARGE",
+            MESSAGES.tooLarge,
+            HOTEL_NAME_SCHEMA_VERSION
+          ),
+          413
+        );
+      }
+
+      let raw: unknown;
+      try {
+        raw = JSON.parse(body.text);
+      } catch {
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_NAME_SCHEMA_VERSION),
+          400
+        );
+      }
+
+      const validation = validateHotelNameInput(raw);
+      if (!validation.ok) {
+        return json(
+          error(requestId, "BAD_REQUEST", MESSAGES.invalid, HOTEL_NAME_SCHEMA_VERSION),
+          400
+        );
+      }
+
+      try {
+        const provider = providerFactory();
+        const localizedName = safeLocalizedName(
+          await provider.getLocalizedName(
+            validation.value.placeId,
+            validation.value.locale
+          )
+        );
+        return json(
+          {
+            ok: true,
+            schemaVersion: HOTEL_NAME_SCHEMA_VERSION,
+            requestId,
+            data: {
+              source: "google_places",
+              placeId: validation.value.placeId,
+              localizedName,
+            },
+          },
+          200
+        );
+      } catch (providerError) {
+        const code = isHotelProviderError(providerError)
+          ? providerError.code
+          : "PROVIDER_UNAVAILABLE";
+        logHotelServerError({
+          requestId,
+          code,
+          status: 503,
+          durationMs: Date.now() - startedAt,
+          providerMethod: "place_details",
+        });
+        return json(
+          error(
+            requestId,
+            "PROVIDER_UNAVAILABLE",
+            MESSAGES.unavailable,
+            HOTEL_NAME_SCHEMA_VERSION
+          ),
+          503
+        );
+      }
+    } catch {
+      logHotelServerError({
+        requestId,
+        code: "INTERNAL_ERROR",
+        status: 500,
+        durationMs: Date.now() - startedAt,
+      });
+      return json(
+        error(requestId, "INTERNAL_ERROR", MESSAGES.unavailable, HOTEL_NAME_SCHEMA_VERSION),
+        500
+      );
     }
   };
 }

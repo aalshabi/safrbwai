@@ -1,9 +1,10 @@
 import {
   HOTEL_CITY_MAX_CHARS,
+  HOTEL_PLACE_ID_MAX_CHARS,
   HOTEL_QUERY_MAX_CHARS,
   HOTEL_QUERY_MIN_CHARS,
 } from "./constants";
-import type { HotelSearchInput } from "./types";
+import type { HotelNameInput, HotelSearchInput } from "./types";
 
 export type HotelInputValidation =
   | { ok: true; value: HotelSearchInput }
@@ -14,6 +15,8 @@ const URL_LIKE = /(?:https?:\/\/|www\.)/iu;
 const SECRET_LIKE = /(?:api[\s_-]*key|password|secret|access[\s_-]*token)\s*[:=]/iu;
 const PAYMENT_LIKE = /(?:\d[\s-]?){13,19}/u;
 const ALLOWED_KEYS = new Set(["query", "city", "locale"]);
+const NAME_ALLOWED_KEYS = new Set(["placeId", "locale"]);
+const PLACE_ID = /^[A-Za-z0-9_-]+$/;
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -68,4 +71,30 @@ export function validateHotelSearchInput(raw: unknown): HotelInputValidation {
     ok: true,
     value: city ? { query, city, locale: raw.locale } : { query, locale: raw.locale },
   };
+}
+
+export type HotelNameValidation =
+  | { ok: true; value: HotelNameInput }
+  | { ok: false; code: "BAD_REQUEST" };
+
+export function validateHotelNameInput(raw: unknown): HotelNameValidation {
+  if (!isPlainObject(raw)) return { ok: false, code: "BAD_REQUEST" };
+  if (Object.keys(raw).some((key) => !NAME_ALLOWED_KEYS.has(key))) {
+    return { ok: false, code: "BAD_REQUEST" };
+  }
+  if (typeof raw.placeId !== "string") return { ok: false, code: "BAD_REQUEST" };
+  if (raw.locale !== "ar" && raw.locale !== "en") {
+    return { ok: false, code: "BAD_REQUEST" };
+  }
+
+  const placeId = raw.placeId.trim();
+  if (
+    placeId.length === 0 ||
+    placeId.length > HOTEL_PLACE_ID_MAX_CHARS ||
+    !PLACE_ID.test(placeId)
+  ) {
+    return { ok: false, code: "BAD_REQUEST" };
+  }
+
+  return { ok: true, value: { placeId, locale: raw.locale } };
 }

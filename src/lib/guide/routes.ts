@@ -100,7 +100,12 @@ const offerSteps: readonly GuideStep[] = [
 
 function previewSteps(
   route: GuideRoute,
-  capability: "hotelOfferReview" | "destinationChecklist" | "hotelComparison" | "knowledgeLibrary",
+  capability:
+    | "hotelIdentityLookup"
+    | "hotelOfferReview"
+    | "destinationChecklist"
+    | "hotelComparison"
+    | "knowledgeLibrary",
   future: LocalizedGuideText
 ): readonly GuideStep[] {
   return [
@@ -114,9 +119,9 @@ export const GUIDE_DEFINITIONS: Readonly<Record<GuideRoute, GuideDefinition>> = 
   "/analyze-offer": { route: "/analyze-offer", steps: offerSteps },
   "/analyze-hotel": {
     route: "/analyze-hotel",
-    steps: previewSteps("/analyze-hotel", "hotelOfferReview", text(
-      "هذه معاينة فقط ولا تعرض نتائج أو تقييمات إنترنت حقيقية. سيُنفّذ الفحص الفعلي في المرحلة 6C بعد ربط مصدر موثوق.",
-      "This is a preview only and shows no real results or internet ratings. Real review will be implemented in Stage 6C after a trusted source is connected."
+    steps: previewSteps("/analyze-hotel", "hotelIdentityLookup", text(
+      "الواجهة مخصصة للبحث عن هوية الفندق من مصدر رسمي فقط. لا تعرض تقييمات أو أسعارًا أو توصيات، والاتصال بالمصدر غير مفعّل حاليًا.",
+      "This preview only presents a disabled, source-backed hotel identity lookup interface. It shows no ratings, prices, or recommendations, and provider access is currently disabled."
     )),
   },
   "/analyze-destination": {

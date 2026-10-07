@@ -10,6 +10,7 @@ import {
 const EXPECTED_KEYS: ProductCapabilityKey[] = [
   "textOfferAnalysis",
   "travelGuides",
+  "hotelIdentityLookup",
   "hotelOfferReview",
   "destinationChecklist",
   "hotelComparison",
