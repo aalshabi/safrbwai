@@ -3,7 +3,7 @@
 ## Status
 
 - Decision status: Provider, first-release cost tier, OIDC design, and bilingual legal copy approved by the Product Owner; consolidated approval recorded on 2026-08-21 (Asia/Riyadh).
-- Implementation status: Phase 6C-1 provider boundary is implemented for review, disabled by default, with no visible feature activation.
+- Implementation status: Phase 6C-1 provider boundary (PR #26) and Phase 6C-2 selection UI (PR #41, merge commit `5518a8a352f4e464847cafb89f277a7ee53e41c7`) are merged and deployed, disabled by default on both the client and the server. Phase 6C-3 activation has not started.
 - Stable production baseline: `production-2026-08-01-phase-6b`.
 - Baseline commit: `e0922a0aa544108a22833f6c11f162a729a72bc9`.
 - Product stage remains `prelaunch`.
@@ -469,6 +469,8 @@ Implementation record: `docs/PHASE_6C_1_IMPLEMENTATION.md`.
 - empty/error/ambiguous states;
 - accessibility and responsive tests;
 - still disabled in Production.
+
+Implementation record: `docs/PHASE_6C_2_IMPLEMENTATION.md`.
 
 ### 6C-3 — Compliance and controlled activation
 
