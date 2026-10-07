@@ -12,6 +12,10 @@ describe("normalizeFacts", () => {
       board: { value: "شامل الإفطار", evidence: "شامل الإفطار", confidenceType: "exact" },
       baggage: { value: "٢٠ كجم", evidence: "٢٠ كجم", confidenceType: "exact" },
       insurance: { value: false, evidence: "غير مشمول", confidenceType: "exact" },
+      roomType: { value: "  غرفة ديلوكس  ", evidence: "غرفة ديلوكس", confidenceType: "exact" },
+      transitDuration: { value: { minutes: 420 }, evidence: "٧ ساعات", confidenceType: "exact" },
+      stopCount: { value: 1, evidence: "توقف واحد", confidenceType: "exact" },
+      airportChange: { value: false, evidence: "بدون تغيير مطار", confidenceType: "exact" },
     };
 
     const out = normalizeFacts(facts);
@@ -22,6 +26,10 @@ describe("normalizeFacts", () => {
     expect(out.board?.value).toBe("BB");
     expect(out.baggage?.value).toBe("20kg");
     expect(out.insurance?.value).toBe(false);
+    expect(out.roomType?.value).toBe("غرفة ديلوكس");
+    expect(out.transitDuration?.value).toEqual({ minutes: 420 });
+    expect(out.stopCount?.value).toBe(1);
+    expect(out.airportChange?.value).toBe(false);
   });
 
   it("preserves evidence and confidenceType exactly (invariant)", () => {

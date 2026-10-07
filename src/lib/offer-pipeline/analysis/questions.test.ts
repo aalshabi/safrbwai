@@ -131,6 +131,24 @@ describe("suggestedQuestions — merging, cap, priority and context", () => {
     expect(a.suggestedQuestions.some((q) => q.key === "interCityTransfers")).toBe(true);
   });
 
+  it("asks for unknown transit details without asking for facts already extracted", () => {
+    const unknown = analyzeFacts(rich, { text: `${RICH_TEXT}، يوجد ترانزيت في الدوحة` });
+    expect(unknown.suggestedQuestions.some((q) => q.key === "airportChange")).toBe(true);
+
+    const explicit = analyzeFacts(
+      {
+        ...rich,
+        transitDuration: fact({ minutes: 420 }, "ترانزيت لمدة 7 ساعات"),
+        stopCount: fact(1, "توقف واحد"),
+        airportChange: fact(false, "بدون تغيير مطار"),
+      },
+      { text: `${RICH_TEXT}، ترانزيت لمدة 7 ساعات، توقف واحد، بدون تغيير مطار` }
+    );
+    for (const key of ["transitDuration", "stopCount", "airportChange"]) {
+      expect(explicit.suggestedQuestions.some((q) => q.key === key)).toBe(false);
+    }
+  });
+
   it("asks for the room type when accommodation lacks one", () => {
     const a = analyzeFacts(core, { text: "الإقامة في فندق خمس نجوم بمدينة دبي" });
     expect(a.suggestedQuestions.some((q) => q.question.ar === "ما نوع الغرفة وعدد الأسرّة المشمولة؟")).toBe(true);

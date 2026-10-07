@@ -39,6 +39,8 @@ function valueFor(key: RegressionFieldKey, facts: ExtractedOfferFacts): unknown 
       return facts.travelers?.value;
     case "accommodation":
       return facts.accommodation?.value;
+    case "roomType":
+      return facts.roomType?.value;
     case "board":
       return facts.board?.value;
     case "baggage":
@@ -53,6 +55,14 @@ function valueFor(key: RegressionFieldKey, facts: ExtractedOfferFacts): unknown 
       return facts.visa?.value;
     case "insurance":
       return facts.insurance?.value;
+    case "flight":
+      return facts.flight?.value;
+    case "transitDuration":
+      return facts.transitDuration?.value;
+    case "stopCount":
+      return facts.stopCount?.value;
+    case "airportChange":
+      return facts.airportChange?.value;
     case "travelDates":
       return undefined;
   }

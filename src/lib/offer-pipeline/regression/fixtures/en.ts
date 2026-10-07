@@ -194,7 +194,7 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       locale: "en",
       category: "price_total_mismatch",
       description: "A provable arithmetic mismatch uses the stated traveller count",
-      syntheticInput: "Travel offer for 2 adults, price SAR 1,200 per person, total price SAR 2,000.",
+      syntheticInput: "2 adults. Total: SAR 2,000. Price SAR 1,200 per person.",
     },
     {
       mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers"],
@@ -204,6 +204,93 @@ export const ENGLISH_REGRESSION_FIXTURES = [
         totalPrice: { amount: 2000, currency: "SAR" },
         perPersonPrice: { amount: 1200, currency: "SAR" },
         travellers: { adults: 2 },
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-decision-integrity-details",
+      locale: "en",
+      category: "decision_integrity_details",
+      description: "Decision-ready offer preserves inclusions, room type and transit details without inventing airport-change status",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights in one deluxe room. Price SAR 1,200 per person. Total: SAR 2,000 including taxes and breakfast; airport transfers included. Flights are not included, baggage 23 kg. Cancellation is subject to terms. The outbound flight stops in Doha for 7 hours, and the offer does not state whether an airport change is required.",
+    },
+    {
+      mustConfirm: [
+        "totalPrice",
+        "perPersonPrice",
+        "currency",
+        "nights",
+        "destination",
+        "travellers",
+        "roomType",
+        "board",
+        "baggage",
+        "transfers",
+        "taxes",
+        "flight",
+        "transitDuration",
+        "stopCount",
+      ],
+      mustNotConfirm: ["airportChange", "cancellationPolicy"],
+      mustMarkMissing: ["cancellationPolicy"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice", "cancellationPolicy", "airportChange"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        destination: {
+          value: "Istanbul",
+          canonicalValue: "Istanbul",
+          countryCode: "TR",
+          matchType: "canonical_alias",
+        },
+        travellers: { adults: 2 },
+        roomType: "deluxe room",
+        board: "BB",
+        baggage: "23kg",
+        transfers: { included: true },
+        taxes: { included: true },
+        flight: { included: false },
+        transitDuration: { minutes: 420 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-mixed-flight-ground-context",
+      locale: "en",
+      category: "decision_integrity_details",
+      description: "An explicit flight stop remains confirmed when a ground-transfer inclusion follows in the same clause",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights. The outbound flight stops in Doha for 3 hours and airport shuttle is included.",
+    },
+    {
+      mustConfirm: ["nights", "destination", "travellers", "transitDuration", "stopCount"],
+      expectedValues: {
+        transitDuration: { minutes: 180 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-ground-transport-not-flight",
+      locale: "en",
+      category: "ground_transport_not_flight",
+      description: "Ground-transport stops do not become a transit duration or flight stop count",
+      syntheticInput:
+        "Travel offer to Istanbul for 2 adults and 5 nights. Total: SAR 2,000. Flights are included and the airport shuttle stops at the hotel for 2 hours. The offer includes flights and the bus stops in Doha for 2 hours.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],
+      mustNotConfirm: ["transitDuration", "stopCount"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        transitDuration: undefined,
+        stopCount: undefined,
       },
     }
   ),

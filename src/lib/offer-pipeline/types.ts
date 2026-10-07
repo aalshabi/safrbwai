@@ -84,6 +84,11 @@ export interface OfferTravelers {
   children?: number;
 }
 
+/** A stated transit duration, normalized without losing the original evidence. */
+export interface OfferDuration {
+  minutes: number;
+}
+
 /**
  * How a destination was identified.
  *  - "canonical_alias":  matched a curated dictionary entry, so a standard name
@@ -138,6 +143,14 @@ export interface ExtractedOfferFacts {
   cancellationPolicy?: Fact<string>;
   /** Accommodation CATEGORY as stated (e.g. "فندق ٥ نجوم") — never a guessed name. */
   accommodation?: Fact<string>;
+  /** Room type exactly as stated (e.g. "غرفة ديلوكس", "deluxe room"). */
+  roomType?: Fact<string>;
+  /** Transit duration only when the offer states a numeric duration. */
+  transitDuration?: Fact<OfferDuration>;
+  /** Number of flight stops only when explicitly stated or singularly named. */
+  stopCount?: Fact<number>;
+  /** Whether an airport change is required, only when explicitly stated. */
+  airportChange?: Fact<boolean>;
 }
 
 // ---- extraction result (kept separate from analysis) -----------------------

@@ -20,6 +20,8 @@ import { taxesRule } from "./rules/taxes-rule";
 import { cancellationRule } from "./rules/cancellation-rule";
 import { accommodationRule } from "./rules/accommodation-rule";
 import { destinationRule } from "./rules/destination-rule";
+import { roomTypeRule } from "./rules/room-type-rule";
+import { flightDetailsRule } from "./rules/flight-details-rule";
 
 export class RuleRegistry {
   private readonly rules: ExtractionRule[] = [];
@@ -50,5 +52,7 @@ export function createDefaultRuleRegistry(): RuleRegistry {
     .register(taxesRule)
     .register(cancellationRule)
     .register(accommodationRule)
+    .register(roomTypeRule)
+    .register(flightDetailsRule)
     .register(destinationRule);
 }

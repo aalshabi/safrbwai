@@ -256,4 +256,91 @@ export const ARABIC_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "ar-decision-integrity-details",
+      locale: "ar",
+      category: "decision_integrity_details",
+      description: "عرض قرار كامل يحفظ المشمولات ونوع الغرفة وتفاصيل الترانزيت دون اختراع تغيير مطار",
+      syntheticInput:
+        "عرض إلى إسطنبول لشخصين بالغين لمدة 5 ليالٍ، غرفة ديلوكس واحدة، السعر 1,200 ريال للشخص، والإجمالي 2,000 ريال شامل الضرائب والإفطار والنقل من وإلى المطار. تذاكر الطيران غير مشمولة، أمتعة 23 كجم. الإلغاء حسب الشروط. رحلة الذهاب تتوقف في الدوحة لمدة 7 ساعات، ولا يذكر العرض إن كان هناك تغيير مطار.",
+    },
+    {
+      mustConfirm: [
+        "totalPrice",
+        "perPersonPrice",
+        "currency",
+        "nights",
+        "destination",
+        "travellers",
+        "roomType",
+        "board",
+        "baggage",
+        "transfers",
+        "taxes",
+        "flight",
+        "transitDuration",
+        "stopCount",
+      ],
+      mustNotConfirm: ["airportChange", "cancellationPolicy"],
+      mustMarkMissing: ["cancellationPolicy"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice", "cancellationPolicy", "airportChange"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        perPersonPrice: { amount: 1200, currency: "SAR" },
+        destination: {
+          value: "إسطنبول",
+          canonicalValue: "Istanbul",
+          countryCode: "TR",
+          matchType: "canonical_alias",
+        },
+        travellers: { adults: 2 },
+        roomType: "غرفة ديلوكس",
+        board: "BB",
+        baggage: "23kg",
+        transfers: { included: true },
+        taxes: { included: true },
+        flight: { included: false },
+        transitDuration: { minutes: 420 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-mixed-flight-ground-context",
+      locale: "ar",
+      category: "decision_integrity_details",
+      description: "يبقى توقف الرحلة الصريح مؤكدًا عند ورود خدمة النقل الأرضي بعده في العبارة نفسها",
+      syntheticInput:
+        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ. رحلة الذهاب تتوقف في الدوحة لمدة 3 ساعات وخدمة النقل من المطار مشمولة.",
+    },
+    {
+      mustConfirm: ["nights", "destination", "travellers", "transitDuration", "stopCount"],
+      expectedValues: {
+        transitDuration: { minutes: 180 },
+        stopCount: 1,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-ground-transport-not-flight",
+      locale: "ar",
+      category: "ground_transport_not_flight",
+      description: "توقفات النقل الأرضي لا تتحول إلى مدة ترانزيت أو عدد توقفات جوية",
+      syntheticInput:
+        "عرض إلى إسطنبول لشخصين لمدة 5 ليالٍ، والإجمالي 2,000 ريال. الطيران مشمول وخدمة النقل من المطار تتوقف عند الفندق لمدة ساعتين. يشمل العرض الطيران وتتوقف الحافلة في الدوحة لمدة ساعتين.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "travellers"],
+      mustNotConfirm: ["transitDuration", "stopCount"],
+      expectedValues: {
+        totalPrice: { amount: 2000, currency: "SAR" },
+        transitDuration: undefined,
+        stopCount: undefined,
+      },
+    }
+  ),
 ] as const;

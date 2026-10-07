@@ -19,6 +19,16 @@ describe("priceRule", () => {
     expect(r.facts.perPersonPrice?.value).toEqual({ amount: 3200, currency: "SAR" });
   });
 
+  it("recognizes standalone English Total labels as the trip total", () => {
+    for (const text of ["Total: SAR 2,000.", "Total SAR 2,000."]) {
+      const r = priceRule.apply(text);
+      expect(r.facts.totalPrice?.value).toEqual({ amount: 2000, currency: "SAR" });
+      expect(r.observations?.prices).toEqual([
+        expect.objectContaining({ amount: 2000, currency: "SAR", basis: "total" }),
+      ]);
+    }
+  });
+
   it("handles the $ symbol", () => {
     const r = priceRule.apply("Package for $1200 only");
     expect(r.facts.price?.value).toEqual({ amount: 1200, currency: "USD" });
@@ -86,6 +96,15 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     expect(amounts("Total price SAR 5,000. Hotel's price SAR 3,000.")).toEqual([5000]);
   });
 
+  it("does not promote an English component total to the trip total", () => {
+    const result = priceRule.apply("Hotel total: SAR 2,000.");
+    expect(result.facts.totalPrice).toBeUndefined();
+    expect(result.observations?.prices).toEqual([
+      expect.objectContaining({ amount: 2000, currency: "SAR", basis: "unspecified" }),
+    ]);
+    expect(amounts("Total: SAR 5,000. Hotel total: SAR 2,000.")).toEqual([5000]);
+  });
+
   it("but an English label naming the whole offer still competes", () => {
     expect(amounts("Total price SAR 5,000. Package price SAR 6,000.")).toEqual([5000, 6000]);
     expect(amounts("Total price SAR 5,000. Price SAR 6,000.")).toEqual([5000, 6000]);
@@ -105,6 +124,13 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     const result = priceRule.apply("Total price SAR 2,400. Price SAR 480 per night.");
     expect(result.facts.totalPrice?.value).toEqual({ amount: 2400, currency: "SAR" });
     expect(result.facts.perNightPrice?.value).toEqual({ amount: 480, currency: "SAR" });
+    expect(result.facts.perPersonPrice).toBeUndefined();
+  });
+
+  it("keeps an Arabic per-night rate separate without inventing a total", () => {
+    const result = priceRule.apply("السعر 480 ريال لليلة.");
+    expect(result.facts.perNightPrice?.value).toEqual({ amount: 480, currency: "SAR" });
+    expect(result.facts.totalPrice).toBeUndefined();
     expect(result.facts.perPersonPrice).toBeUndefined();
   });
 

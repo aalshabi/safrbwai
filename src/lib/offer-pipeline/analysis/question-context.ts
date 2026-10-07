@@ -35,6 +35,14 @@ export interface QuestionContext {
   mealsMentioned: boolean;
   /** Flight schedule (times / stops / transit) is stated. */
   flightTimesKnown: boolean;
+  /** Transit/layover is explicitly raised by the offer. */
+  transitMentioned: boolean;
+  /** A numeric transit duration was extracted. */
+  transitDurationKnown: boolean;
+  /** A stop count was extracted. */
+  stopCountKnown: boolean;
+  /** Airport-change status was explicitly stated. */
+  airportChangeKnown: boolean;
   /** Fees payable on arrival are explicitly addressed. */
   arrivalFeesMentioned: boolean;
   /** Excluded / not-included services are explicitly addressed. */
@@ -56,6 +64,7 @@ const KEYWORDS = {
   childBeds: ["سرير إضافي", "أسرّة الأطفال", "اسرة الاطفال", "سرير الطفل", "مهد", "extra bed", "child bed", "children bed", "cot", "crib"],
   meals: ["وجبات", "الوجبات", "إفطار", "الافطار", "الإفطار", "نصف إقامة", "إقامة كاملة", "عشاء", "غداء", "meals", "breakfast", "half board", "full board", "all inclusive", "bed and breakfast"],
   flightTimes: ["مواعيد الرحلة", "موعد الإقلاع", "موعد الوصول", "توقيت الرحلة", "الإقلاع", "الهبوط", "ترانزيت", "توقف", "departure time", "arrival time", "flight time", "layover", "stopover", "transit", "direct flight", "nonstop", "non-stop"],
+  transit: ["ترانزيت", "عبور", "توقف", "تتوقف", "layover", "stopover", "transit", " stop", "stops"],
   arrivalFees: ["رسوم عند الوصول", "تدفع عند الوصول", "تُدفع في المطار", "رسوم إضافية عند الوصول", "pay on arrival", "payable on arrival", "arrival fee", "arrival fees", "at the airport"],
   excluded: ["غير مشمول", "غير شامل", "لا يشمل", "مستثنى", "مستثناة", "غير مشمولة", "not included", "excluded", "excludes", "excluding", "exclusions"],
   visa: ["تأشيرة", "التأشيرة", "فيزا", "الفيزا", "رسوم تأشيرة", "إصدار التأشيرة", "visa"],
@@ -83,11 +92,16 @@ export function deriveQuestionContext(facts: ExtractedOfferFacts, text?: string)
     transportMentionedInText,
     transportTypeKnown: has(KEYWORDS.transportType),
     multiCityOrHotel: has(KEYWORDS.multiCity),
-    roomTypeMentioned: has(KEYWORDS.roomType),
+    roomTypeMentioned: facts.roomType !== undefined || has(KEYWORDS.roomType),
     hasChildren: childrenFact || has(KEYWORDS.children),
     childBedsMentioned: has(KEYWORDS.childBeds),
     mealsMentioned: facts.board !== undefined || has(KEYWORDS.meals),
     flightTimesKnown: has(KEYWORDS.flightTimes),
+    transitMentioned:
+      facts.transitDuration !== undefined || facts.stopCount !== undefined || has(KEYWORDS.transit),
+    transitDurationKnown: facts.transitDuration !== undefined,
+    stopCountKnown: facts.stopCount !== undefined,
+    airportChangeKnown: facts.airportChange !== undefined,
     arrivalFeesMentioned: has(KEYWORDS.arrivalFees),
     excludedServicesMentioned: has(KEYWORDS.excluded),
     visaMentioned: facts.visa !== undefined || has(KEYWORDS.visa),

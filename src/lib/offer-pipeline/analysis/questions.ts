@@ -89,6 +89,14 @@ export function buildSuggestedQuestions(
   // 4) Cancellation / change policy.
   candidates.push({ key: "cancellationPolicy", priority: "high", when: missing.has("cancellationPolicy"), question: registryQuestion("cancellationPolicy") });
 
+  // Transit risks stay unknown unless the offer states them explicitly.
+  candidates.push({
+    key: "airportChange",
+    priority: "high",
+    when: context.transitMentioned && !context.airportChangeKnown,
+    question: { ar: "هل يتطلب الترانزيت تغيير المطار؟", en: "Does the transit require an airport change?" },
+  });
+
   // 5) Baggage allowance.
   candidates.push({ key: "baggage", priority: "high", when: missing.has("baggage"), question: registryQuestion("baggage") });
 
@@ -126,6 +134,18 @@ export function buildSuggestedQuestions(
     priority: "medium",
     when: context.hasFlight && !context.flightTimesKnown,
     question: { ar: "ما مواعيد الرحلات وعدد التوقفات؟", en: "What are the flight times and number of stops?" },
+  });
+  candidates.push({
+    key: "transitDuration",
+    priority: "medium",
+    when: context.transitMentioned && !context.transitDurationKnown,
+    question: { ar: "ما مدة الترانزيت؟", en: "How long is the transit?" },
+  });
+  candidates.push({
+    key: "stopCount",
+    priority: "medium",
+    when: context.hasFlight && !context.stopCountKnown,
+    question: { ar: "كم عدد التوقفات في مسار الرحلة؟", en: "How many stops are in the flight itinerary?" },
   });
 
   // Remaining core gaps.
