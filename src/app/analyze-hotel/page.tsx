@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { HotelAnalyzer } from "@/components/analyzers/hotel-analyzer";
-import { isServerHotelIdentityLookupEnabled } from "@/lib/hotel-data/config";
+import {
+  isPreviewDeployment,
+  isServerHotelIdentityLookupEnabled,
+} from "@/lib/hotel-data/config";
 import { isFeatureEnabled } from "@/lib/product/capabilities";
 
 export const metadata: Metadata = {
@@ -12,7 +15,7 @@ export const metadata: Metadata = {
 
 export default function Page() {
   const enabled =
-    isFeatureEnabled("hotelIdentityLookup") &&
-    isServerHotelIdentityLookupEnabled();
+    isServerHotelIdentityLookupEnabled() &&
+    (isFeatureEnabled("hotelIdentityLookup") || isPreviewDeployment());
   return <HotelAnalyzer enabled={enabled} />;
 }
