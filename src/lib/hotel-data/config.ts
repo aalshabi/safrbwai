@@ -34,6 +34,12 @@ export function isServerHotelIdentityLookupEnabled(
   return value === "true";
 }
 
+// True only on a Vercel Preview deployment. Lets Preview verify the real UI with
+// the server flag alone; Production still also needs the product capability.
+export function isPreviewDeployment(env: Environment = process.env): boolean {
+  return (env.VERCEL_TARGET_ENV ?? env.VERCEL_ENV) === "preview";
+}
+
 function requireMatch(
   env: Environment,
   name: string,

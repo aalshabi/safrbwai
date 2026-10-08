@@ -94,21 +94,22 @@ describe("POST /api/hotels/name", () => {
     });
   });
 
-  it("preserves a valid fallback language through the safe contract", async () => {
-    const source = provider(
-      vi.fn().mockResolvedValue({ text: "فندق الاختبار", languageCode: "ar" })
-    );
-    const { handler } = setup({ providerFactory: () => source });
-    const response = await handler(
-      request({ placeId: "ChIJTestHotel123", locale: "en" })
-    );
+  it.each([
+    ["en", { text: "فندق الاختبار", languageCode: "ar" }],
+    ["ar", { text: "English fallback", languageCode: "en" }],
+  ] as const)(
+    "returns null when the source name for %s is in a fallback language",
+    async (locale, sourced) => {
+      const source = provider(vi.fn().mockResolvedValue(sourced));
+      const { handler } = setup({ providerFactory: () => source });
+      const response = await handler(request({ placeId: "ChIJTestHotel123", locale }));
 
-    expect(response.status).toBe(200);
-    expect((await response.json()).data.localizedName).toEqual({
-      text: "فندق الاختبار",
-      languageCode: "ar",
-    });
-  });
+      expect(response.status).toBe(200);
+      const body = await response.json();
+      expect(body.data.localizedName).toBeNull();
+      expect(JSON.stringify(body)).not.toContain(sourced.text);
+    }
+  );
 
   it("preserves a missing alternate name as null without inventing one", async () => {
     const source = provider(vi.fn().mockResolvedValue(null));

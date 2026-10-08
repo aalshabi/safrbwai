@@ -360,12 +360,16 @@ export function createHotelNameHandler({
 
       try {
         const provider = providerFactory();
-        const localizedName = safeLocalizedName(
+        const sourcedName = safeLocalizedName(
           await provider.getLocalizedName(
             validation.value.placeId,
             validation.value.locale
           )
         );
+        // A name Google returned in a fallback language is not the requested
+        // alternate-locale name, so the public contract reports none.
+        const localizedName =
+          sourcedName?.languageCode === validation.value.locale ? sourcedName : null;
         return json(
           {
             ok: true,

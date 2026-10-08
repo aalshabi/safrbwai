@@ -186,6 +186,41 @@ describe("HotelAnalyzer enabled flow with mocked transport", () => {
     });
   });
 
+  it.each(["ar", "en"] as const)(
+    "shows the official Google Maps logo with results and the selected hotel (%s)",
+    async (locale) => {
+      const dictionary = locale === "ar" ? ar : en;
+      vi.stubGlobal(
+        "fetch",
+        vi.fn()
+          .mockResolvedValueOnce(searchResponse())
+          .mockResolvedValueOnce(nameResponse("place_one", null))
+      );
+      renderAnalyzer(true, locale);
+      await submitSearch(locale);
+      const selectButtons = await screen.findAllByRole("button", { name: dictionary.identity.selectAction });
+
+      // Light and dark variants render together; CSS shows one per theme.
+      const expectLogosIn = (sectionLabelId: string) => {
+        const logos = screen.getAllByRole("img", { name: "Google Maps" });
+        expect(logos.map((logo) => logo.getAttribute("src")).sort()).toEqual([
+          "/attribution/GoogleMaps_Logo_Gray.svg",
+          "/attribution/GoogleMaps_Logo_White.svg",
+        ]);
+        for (const logo of logos) {
+          expect(logo.getAttribute("height")).toBe("18");
+          expect(logo.closest("[translate='no']")).not.toBeNull();
+          expect(logo.closest(`section[aria-labelledby='${sectionLabelId}']`)).not.toBeNull();
+        }
+      };
+
+      expectLogosIn("hotel-results-title");
+      fireEvent.click(selectButtons[0]);
+      await screen.findByText(dictionary.identity.selectedTitle);
+      expectLogosIn("selected-hotel-title");
+    }
+  );
+
   it("does not invent or repeat a missing alternate name", async () => {
     const fetchMock = vi
       .fn()
