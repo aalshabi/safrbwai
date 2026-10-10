@@ -361,4 +361,24 @@ export const ARABIC_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "ar-no-unsupported-destination-or-flight",
+      locale: "ar",
+      category: "no_unsupported_destination_or_flight",
+      description: "مدينة المغادرة وصلاة المغرب واسم شركة الطيران لا تتحول إلى وجهة أو طيران مشمول",
+      syntheticInput:
+        "المغادرة من الرياض لمدة 5 ليالٍ لشخصين، السعر الإجمالي 3000 ريال. العودة بعد صلاة المغرب، والسفر مع طيران ناس.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "travellers"],
+      mustNotConfirm: ["destination", "flight"],
+      mustMarkMissing: ["destination"],
+      expectedValues: {
+        totalPrice: { amount: 3000, currency: "SAR" },
+        destination: undefined,
+        flight: undefined,
+      },
+    }
+  ),
 ] as const;

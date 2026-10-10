@@ -34,6 +34,14 @@ const FLIGHT_NOUN =
 const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?داخلي)`;
 const EN_FLIGHT = "(?<!(?:domestic|internal)\\s)(?:flights?|airfare|air\\s*tickets?)";
 
+/**
+ * After «مع» only a definite flight noun is an inclusion ("مع الطيران",
+ * "مع تذاكر الطيران"). An indefinite «طيران X» is a carrier name, and a
+ * definite noun followed by an adjective («الطيران العماني») is one too.
+ */
+const WITH_FLIGHT =
+  "(?:الطيران|تذاكر\\s*الطيران|التذاكر\\s*الجوية|الرحلة\\s*الجوية)(?!\\s*ال[\\p{L}]*ي(?![\\p{L}]))";
+
 const EXCLUDE = new RegExp(
   `(?:${FLIGHT_WORD})[^.،\\n]{0,20}?(?:غير\\s*مشمول|غير\\s*شامل|غير\\s*مشمولة|not\\s*included|excluded)` +
     `|بدون\\s*(?:${FLIGHT_WORD})` +
@@ -44,8 +52,11 @@ const EXCLUDE = new RegExp(
 );
 
 const INCLUDE = new RegExp(
-  // "شامل الطيران"، "يشمل تذاكر الطيران"، "مع الطيران"
-  `(?:شامل|شاملة|يشمل|تشمل|مع)\\s*(?:${FLIGHT_WORD})` +
+  // "شامل الطيران"، "يشمل تذاكر الطيران"
+  `(?:شامل|شاملة|يشمل|تشمل)\\s*(?:${FLIGHT_WORD})` +
+    // "مع الطيران" — but «مع طيران ناس» / «مع الطيران العماني» name the carrier
+    // the traveller flies with; they do not say the ticket is in the price.
+    `|مع\\s*${WITH_FLIGHT}` +
     // "الطيران مشمول"، "التذاكر مشمولة"
     `|(?:${FLIGHT_WORD})\\s*(?:مشمول|مشمولة|شامل|شاملة)` +
     // "تذاكر طيران ذهاب وعودة" — stating the trip shape asserts the ticket is in the offer.
@@ -53,7 +64,7 @@ const INCLUDE = new RegExp(
     `|(?:round[\\s-]?trip|one[\\s-]?way|return)\\s*(?:flights?|air\\s*)?tickets?` +
     `|${EN_FLIGHT}[^.\\n]{0,20}?included` +
     `|includes?\\s*(?:return\\s*|round[\\s-]?trip\\s*)?${EN_FLIGHT}`,
-  "i"
+  "iu"
 );
 
 // Broader than FLIGHT_WORD on purpose: a domestic flight is still a mention, so

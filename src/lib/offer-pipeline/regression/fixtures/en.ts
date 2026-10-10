@@ -312,4 +312,23 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "en-no-unsupported-destination-or-flight",
+      locale: "en",
+      category: "no_unsupported_destination_or_flight",
+      description: "An origin city and an alias inside another word never become the destination",
+      syntheticInput:
+        "Female traveler departing from Riyadh, 5 nights for 1 adult, total price SAR 3000.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "travellers"],
+      mustNotConfirm: ["destination"],
+      mustMarkMissing: ["destination"],
+      expectedValues: {
+        totalPrice: { amount: 3000, currency: "SAR" },
+        destination: undefined,
+      },
+    }
+  ),
 ] as const;
