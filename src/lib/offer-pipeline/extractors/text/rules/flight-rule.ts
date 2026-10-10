@@ -23,13 +23,21 @@ import { exact } from "../utils";
  * materially false claim about airfare. A generic ticket noun therefore counts
  * only when an aviation word qualifies it.
  */
-const FLIGHT_WORD =
+const FLIGHT_NOUN =
   "الطيران|طيران|الرحلة\\s*الجوية|رحلة\\s*جوية|(?:التذاكر|تذاكر|التذكرة|تذكرة)\\s*(?:ال)?(?:طيران|جوية|الجوية)";
+
+/**
+ * A domestic flight («الطيران الداخلي», "domestic flights") is a leg inside the
+ * destination, not the trip's air ticket, so it never answers "is the flight
+ * included" — reading it that way would overstate what the price covers.
+ */
+const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?داخلي)`;
+const EN_FLIGHT = "(?<!(?:domestic|internal)\\s)(?:flights?|airfare|air\\s*tickets?)";
 
 const EXCLUDE = new RegExp(
   `(?:${FLIGHT_WORD})[^.،\\n]{0,20}?(?:غير\\s*مشمول|غير\\s*شامل|غير\\s*مشمولة|not\\s*included|excluded)` +
     `|بدون\\s*(?:${FLIGHT_WORD})` +
-    `|(?:flights?|airfare|air\\s*tickets?)[^.،\\n]{0,20}?(?:not\\s*included|excluded)` +
+    `|${EN_FLIGHT}[^.،\\n]{0,20}?(?:not\\s*included|excluded)` +
     `|(?:excluding|without)\\s*(?:flights?|airfare)` +
     `|land\\s*only`,
   "i"
@@ -43,12 +51,14 @@ const INCLUDE = new RegExp(
     // "تذاكر طيران ذهاب وعودة" — stating the trip shape asserts the ticket is in the offer.
     `|(?:${FLIGHT_WORD})[^.،\\n]{0,15}?(?:ذهاب\\s*و\\s*(?:عودة|إياب)|ذهاب\\s*فقط)` +
     `|(?:round[\\s-]?trip|one[\\s-]?way|return)\\s*(?:flights?|air\\s*)?tickets?` +
-    `|(?:flights?|airfare|air\\s*tickets?)[^.\\n]{0,20}?included` +
-    `|includes?\\s*(?:return\\s*|round[\\s-]?trip\\s*)?(?:flights?|airfare|air\\s*tickets?)`,
+    `|${EN_FLIGHT}[^.\\n]{0,20}?included` +
+    `|includes?\\s*(?:return\\s*|round[\\s-]?trip\\s*)?${EN_FLIGHT}`,
   "i"
 );
 
-const MENTION = new RegExp(`${FLIGHT_WORD}|flights?|airfare`, "i");
+// Broader than FLIGHT_WORD on purpose: a domestic flight is still a mention, so
+// it yields the "inclusion not stated" warning instead of silence.
+const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
 export const flightRule: ExtractionRule = {
   key: "flight",
