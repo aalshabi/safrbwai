@@ -4,6 +4,7 @@ import { FileText, FileType2, ImageIcon, LinkIcon, type LucideIcon } from "lucid
 import { useLanguage } from "@/lib/i18n/provider";
 import { cn } from "@/lib/utils";
 import type { TravelOfferInputType } from "@/lib/offer-input/types";
+import { isPdfInputAvailable } from "@/lib/offer-input/availability";
 
 const ICONS: Record<TravelOfferInputType, LucideIcon> = {
   text: FileText,
@@ -23,6 +24,7 @@ export function TravelOfferInputSelector({
   const labels = t.analyzeOffer.v1.methods;
   const unavailableLabel = t.analyzeOffer.v2.unsupportedInputLabel;
   const methods: TravelOfferInputType[] = ["text", "pdf", "image", "url"];
+  const pdfAvailable = isPdfInputAvailable();
 
   return (
     <div
@@ -34,7 +36,7 @@ export function TravelOfferInputSelector({
       {methods.map((m) => {
         const Icon = ICONS[m];
         const active = m === method;
-        const disabled = m !== "text";
+        const disabled = !(m === "text" || (m === "pdf" && pdfAvailable));
         return (
           <button
             key={m}

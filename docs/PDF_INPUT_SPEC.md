@@ -2,8 +2,8 @@
 
 ## Status
 
-- Decision status: **proposed**. Awaiting Product Owner decisions (see "Decisions required").
-- Capability: `pdfInput` stays `disabled` until the activation gates below pass.
+- Decision status: the four decisions below were **approved** by the Product Owner on 2026-10-10. A proof of concept and implementation followed on `feat/pdf-input-browser-extraction`.
+- Capability: `pdfInput` stays `disabled` in Production until the activation gates below pass. The PDF tab is offered only on Vercel Preview deployments, for verification.
 - This document does not authorize implementation, a new dependency, a deployment, or enabling the capability.
 
 ## Problem
@@ -53,9 +53,10 @@ It can be reconsidered if a later phase needs server-side features.
 Recommended: **`unpdf`**, a pdf.js distribution packaged for serverless and browser use (`extractText`, `getDocumentProxy`).
 
 - Use it client-side only, loaded with a dynamic `import()` when the PDF tab is used, so the default page bundle does not grow.
-- Pass `isEvalSupported: false`. Disable any remote loading of fonts or CMaps, or bundle the needed resources locally, so extraction makes no network request.
-- Pin an exact version that is at least two weeks old, record it here, and re-check its license and security advisories before adding it.
-- Verification before adoption: a proof of concept on the synthetic corpus below, measuring bundle cost, extraction quality and time.
+- No script evaluation: the pdf.js bundled in `unpdf@1.8.1` contains no `eval`/`new Function` code path, so the former `isEvalSupported` switch no longer exists, and text extraction never runs PDF scripts.
+- No network: verified in a production build. Extraction loads only the app's own worker chunk, with no font, CMap or third-party request.
+- Pinned: `unpdf@1.8.1` (released 2026-08-13, MIT, no runtime dependencies; the optional `@napi-rs/canvas` peer is not installed). `npm audit --omit=dev` reports the same 12 pre-existing advisories with and without it, and none in `unpdf`.
+- Verification before adoption: a proof of concept on the synthetic corpus below, measuring bundle cost, extraction quality and time. Results are under "Proof of concept results".
 
 ## Scope
 
@@ -89,7 +90,7 @@ Out of scope:
 | Encrypted or password-protected | Refuse: «الملف محمي بكلمة مرور ولا يمكن قراءته.» |
 | No text layer, or fewer than 20 characters after normalization | Refuse: «لا يحتوي الملف على نص قابل للقراءة (قد يكون صورة ممسوحة). الصق نص العرض بدلًا من ذلك.» Never guess and never run OCR. |
 | More than 15,000 characters after normalization | Refuse with a request to paste only the offer part. **Never truncate silently**: truncation can drop an exclusion such as «غير شامل الطيران». |
-| Parsing error or timeout (5 seconds) | Generic safe error; nothing is analyzed. |
+| Parsing error or timeout (10 seconds) | Generic safe error; nothing is analyzed. The worker is terminated. |
 | Success | The text appears in the review box. Analysis runs only after the user presses "Analyze". |
 
 The UI labels the text "نص مستخرج من الملف — راجعه قبل التحليل" / "Text extracted from the file — review it before analysis". The result screen does not claim the PDF itself was verified.
@@ -138,16 +139,43 @@ Acceptance:
 7. Review box, progress and refusal states pass the RTL/LTR, keyboard, screen-reader, 390 px, 1440 px, light and dark review.
 8. Lint, typecheck, full tests, regression suite and production build pass.
 
+## Proof of concept results (2026-10-10)
+
+Corpus: synthetic offers printed to PDF by a Chromium engine. Committed under `src/lib/offer-input/__fixtures__/pdf/`.
+
+- **English:** extracted exactly.
+- **Arabic, raw `extractText`: unusable.** pdf.js reports glyph runs in visual (left-to-right) order, with presentation forms and Persian yeh/keheh. «السعر لا يشمل تذاكر الطيران» came out as «ركذات لمشی لا…».
+- **Arabic, with the line reassembly in `src/lib/offer-input/pdf-text.ts`: correct.**
+  - Runs are grouped into rows by position.
+  - Right-to-left rows are read right to left, while Latin and digit runs keep their order.
+  - Neutral brackets are mirrored back.
+  - Zero-width diacritic runs are re-attached to the letter they sit on.
+  - Soft-wrapped rows of one paragraph are joined with a space.
+  - Presentation forms are folded with NFKC, and Persian ی/ک are mapped to ي/ك.
+  - Mixed Arabic and English («فندق Grand Bosphorus Hotel», «(Breakfast included)», «4500 ريال») is preserved.
+- **Pipeline equivalence:** for the Arabic fixture, the analysis of the extracted text yields exactly the same fact values as the source text pasted directly.
+- **Refusals:**
+  - image-only → `no_text`;
+  - 21 pages → `too_many_pages`, refused before any text is read;
+  - over 15,000 characters → `too_long`, never truncated;
+  - truncated file → `failed`;
+  - password error → `encrypted`.
+- **Timing:** 30–380 ms per fixture in Node; 253 ms in a production browser build, including starting the worker.
+- **Bundle:**
+  - `/analyze-offer` page grows from 12.8 kB to 13.4 kB (first load JS from 189 kB to 190 kB);
+  - pdf.js (about 1.6 MB) is a separate chunk loaded only inside the worker after a file is chosen.
+- **Worker note:** pdf.js announces itself on the worker channel (`action: "ready"`), so the app tags its own result message and ignores all others.
+
 ## Activation gates
 
-- [ ] Product Owner approves the browser-side design and the review step.
-- [ ] Dependency chosen, pinned, license and advisories checked; proof of concept results recorded here.
+- [x] Product Owner approves the browser-side design and the review step (2026-10-10).
+- [x] Dependency chosen, pinned, license and advisories checked; proof of concept results recorded here.
 - [ ] Security review checklist passed.
 - [ ] Privacy and Terms sentence approved.
 - [ ] Acceptance criteria verified on a Preview deployment.
 - [ ] Separate, explicit decision to enable `pdfInput` in Production.
 
-## Decisions required
+## Decisions (approved 2026-10-10)
 
 1. Approve extraction in the browser with a mandatory review step (recommended), or request server-side extraction.
 2. Approve the page cap of 20 pages.
