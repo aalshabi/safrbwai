@@ -1,3 +1,4 @@
+import VisitorChat from '@/components/visitor-chat/VisitorChat';
 import type { Metadata, Viewport } from "next";
 import { Tajawal, IBM_Plex_Sans_Arabic } from "next/font/google";
 import "./globals.css";
@@ -87,6 +88,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          {process.env.VISITOR_CHAT_ENABLED === 'true' && <VisitorChat name="مساعد سافر بوعي" welcome="أساعدك تفهم عرض سفرك والأسئلة المهمة قبل الدفع. ما الذي تريد مراجعته؟" handoffHref="/analyze-offer" handoffLabel="افتح أداة مراجعة العرض" color="#0D1B3A" />}
         </Providers>
       </body>
     </html>
