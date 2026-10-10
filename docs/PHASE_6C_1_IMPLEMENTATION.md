@@ -71,7 +71,9 @@ HOTEL_SEARCH_RATE_LIMIT_MAX=3
 HOTEL_SEARCH_RATE_LIMIT_WINDOW_MS=60000
 ```
 
-`VERCEL_PROJECT_ID`, `VERCEL_TEAM_ID`, and the deployment environment are obtained from Vercel's runtime. Only `preview` and `production` identities are accepted, and their exact `sub` values cannot be used interchangeably.
+`VERCEL_PROJECT_ID` and the deployment environment are obtained from Vercel's runtime. Only `preview` and `production` identities are accepted, and their exact `sub` values cannot be used interchangeably.
+
+Correction (2026-10-08, Phase 6C-3): Vercel does not expose `VERCEL_TEAM_ID` as a system environment variable, although this record originally said it did. Without it, configuration fails closed with `PROVIDER_CONFIG` before any provider call. `VERCEL_TEAM_ID` must be set explicitly, to the team identifier, in every environment where the lookup is enabled. See `docs/PHASE_6C_3_PROGRESS.md`.
 
 ## Verification scope
 
