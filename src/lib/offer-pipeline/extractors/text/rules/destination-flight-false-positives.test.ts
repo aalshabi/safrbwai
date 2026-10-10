@@ -95,6 +95,8 @@ describe("4. an airline name is not a flight inclusion", () => {
     "السفر مع طيران ناس، 5 ليالٍ في دبي",
     "رحلات مع طيران أديل",
     "السفر مع الطيران العماني",
+    "السفر مع الطيران القطري",
+    "مع الطيران الداخلي",
   ])("%s → flight inclusion unknown", (text) => {
     expect(flight(text)).toBeUndefined();
     expect(flightRule.apply(text).warnings).toHaveLength(1);
@@ -104,6 +106,9 @@ describe("4. an airline name is not a flight inclusion", () => {
     ["يشمل تذاكر طيران ناس ذهابًا وعودة", true],
     ["شامل الطيران مع طيران ناس", true],
     ["مع الطيران", true],
+    ["باقة مع الطيران الدولي", true],
+    ["مع تذاكر الطيران الاقتصادي", true],
+    ["عرض مع الطيران السياحي والفندق", true],
     ["تذاكر طيران ذهاب وعودة على طيران ناس", true],
     ["السعر لا يشمل تذاكر الطيران", false],
     ["غير شامل الطيران، السفر مع طيران ناس", false],

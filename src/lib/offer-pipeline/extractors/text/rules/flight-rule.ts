@@ -37,10 +37,18 @@ const EN_FLIGHT = "(?<!(?:domestic|internal)\\s)(?:flights?|airfare|air\\s*ticke
 /**
  * After «مع» only a definite flight noun is an inclusion ("مع الطيران",
  * "مع تذاكر الطيران"). An indefinite «طيران X» is a carrier name, and a
- * definite noun followed by an adjective («الطيران العماني») is one too.
+ * definite noun followed by a nisba adjective («الطيران العماني») is one too.
+ *
+ * A few ordinary ticket qualifiers («الدولي», «الاقتصادي», «السياحي»,
+ * «العادي») share that ending and are let through. The list is of qualifiers,
+ * not carriers, on purpose: carrier nationalities are open-ended, and missing
+ * one would wrongly say "included", whereas a missing qualifier only leaves
+ * the inclusion unknown. «الداخلي» stays out: a domestic leg is not the trip's
+ * ticket.
  */
 const WITH_FLIGHT =
-  "(?:الطيران|تذاكر\\s*الطيران|التذاكر\\s*الجوية|الرحلة\\s*الجوية)(?!\\s*ال[\\p{L}]*ي(?![\\p{L}]))";
+  "(?:الطيران|تذاكر\\s*الطيران|التذاكر\\s*الجوية|الرحلة\\s*الجوية)" +
+  "(?!\\s*(?!(?:الدولي|الاقتصادي|السياحي|العادي)(?![\\p{L}]))ال[\\p{L}]*ي(?![\\p{L}]))";
 
 const EXCLUDE = new RegExp(
   `(?:${FLIGHT_WORD})[^.،\\n]{0,20}?(?:غير\\s*مشمول|غير\\s*شامل|غير\\s*مشمولة|not\\s*included|excluded)` +
