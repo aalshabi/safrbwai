@@ -2,7 +2,7 @@
 
 ## Status
 
-- Authorization: Product Owner authorized 6C-3 on 2026-10-08 in three separately approved steps: A (read-only readiness), B (Preview readiness), and C (Production activation).
+- Authorization: Product Owner authorized Steps A (read-only readiness) and B (Preview readiness) on 2026-10-08. Step C (Production activation) is not authorized and requires a separate, explicit decision.
 - Step A: complete.
 - Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Provider-independent review completed on 2026-10-10 (see below). Live Preview verification is deferred until billing is linked.
 - Google Cloud and reseller track: **Deferred — awaiting authoritative response**. It is neither passed nor failed.
