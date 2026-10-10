@@ -4,7 +4,8 @@
 
 - Authorization: Product Owner authorized 6C-3 on 2026-10-08 in three separately approved steps: A (read-only readiness), B (Preview readiness), and C (Production activation).
 - Step A: complete.
-- Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Preview verification is blocked until billing is linked.
+- Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Provider-independent review completed on 2026-10-10 (see below). Live Preview verification is deferred until billing is linked.
+- Google Cloud and reseller track: **Deferred — awaiting authoritative response**. It is neither passed nor failed.
 - Step C: not started. It requires a separate, explicit activation decision.
 - Production: hotel lookup disabled. Verified after the PR #43 deployment: both `/api/hotels/search` and `/api/hotels/name` return `503 HOTEL_SEARCH_DISABLED`, the UI renders disabled, and `noindex, nofollow` is unchanged.
 - Product stage: `prelaunch`.
@@ -68,6 +69,49 @@ No Production variable was added or changed.
 - First synthetic search: `503` with only the safe error. Runtime log `PROVIDER_CONFIG` after about 5 ms, before any provider call. Cause: Vercel does not expose `VERCEL_TEAM_ID`. The 6C-1 record now carries a correction.
 - After `VERCEL_TEAM_ID` was added to Preview and Preview redeployed: `503` with only the safe error. Runtime log `PROVIDER_AUTH` after about 420 ms. Configuration now passes and the request reaches the network. The remaining rejection is expected while Places API (New) is not enabled on the project. The logs do not distinguish a token-exchange denial from a disabled API, so this must be re-checked once the API is enabled.
 - No fabricated or preview results were rendered in any failure.
+
+## Provider-independent review (2026-10-10)
+
+Baseline: `claude/demo-integrity-fixes` at merge commit `029158a9d1b985e32d85ea3366a1942160f57b90`.
+
+### Completed independently of Google Cloud
+
+- Checks on the baseline (about 07:20 Asia/Riyadh): lint clean, typecheck clean, 612/612 tests in 81 files, 41/41 regression tests, and a successful production build.
+- Existing automated coverage of the safe states:
+  - disabled route fails closed before reading input or constructing a provider;
+  - configuration, authentication, timeout, quota, and malformed-response failures map to one safe response;
+  - a real empty state contains no synthetic result;
+  - a missing alternate name is not invented;
+  - Production stays disabled with the server flag alone.
+- Local Preview-mode review (about 07:30 Asia/Riyadh). A local server ran with the Preview server flag and no Google configuration. Results were supplied by an in-browser synthetic fixture, so no provider was contacted:
+  - **Unavailable:** a real local search failed closed with `PROVIDER_CONFIG` after 4 ms, before any network call. The UI showed only the localized unavailable message, and the log contained no query text.
+  - **Loading:** the localized searching state was shown.
+  - **Empty:** the localized empty message was shown, with no results list and no selected card.
+  - **Invalid input:** the browser's `required`/`minLength` validation blocked submission, and no request was sent.
+  - `noindex, nofollow` was present throughout.
+- Attribution layout matrix for the results list and the selected-hotel card. "Pass" means the correct logo variant was the only one visible, rendered at 18×98 px inside a `translate="no"` container with 10/10/5/10 px clear space, and the page had no horizontal scroll:
+
+  | Locale | Width | Light | Dark |
+  | --- | --- | --- | --- |
+  | Arabic (RTL) | 390 px | Pass (gray logo) | Pass (white logo) |
+  | Arabic (RTL) | 1440 px | Pass (gray logo) | Pass (white logo) |
+  | English (LTR) | 390 px | Pass (gray logo) | Pass (white logo) |
+  | English (LTR) | 1440 px | Pass (gray logo) | Pass (white logo) |
+
+  - In every cell the alternate-locale name carried the correct `lang` attribute, and the source link used `noopener noreferrer`.
+  - This verifies layout only. Live Google attribution with real results remains open.
+- Defect found and fixed on branch `fix/hotel-place-type-labels`. The selected-hotel card displayed the raw source place type (for example `hotel`) on the Arabic page. Each allowed lodging type now has an Arabic and English label, and any other value is shown as the source sent it. Tests cover both locales and require a label for every allowed type. After the fix: 615/615 tests, 41/41 regression tests, lint, typecheck, and build all pass.
+
+### Deferred pending the Google Cloud and reseller response
+
+- Billing link, Places API (New) enablement, quotas, budget and alerts. At about 07:00 Asia/Riyadh the console showed the project not linked to a billing account and the API not enabled.
+- Live synthetic Arabic and English searches on a Preview deployment.
+
+### Blocked from live verification
+
+- Provider connectivity: whether the `PROVIDER_AUTH` result is a token-exchange denial or a disabled API.
+- Attribution with live results.
+- Alternate-locale names returned by the provider.
 
 ## Open items
 

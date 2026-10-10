@@ -310,6 +310,13 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
     return identity.statuses.permanentlyClosed;
   };
 
+  // Known source place types get a localized label; any other value is shown as
+  // the source sent it rather than guessed.
+  const placeTypeLabel = (type: string) => {
+    const labels: Readonly<Record<string, string>> = identity.placeTypes;
+    return Object.hasOwn(labels, type) ? labels[type] : type.replaceAll("_", " ");
+  };
+
   return (
     <>
       <PageHeader icon={Building2} title={th.title} subtitle={th.subtitle} />
@@ -385,7 +392,7 @@ export function HotelAnalyzer({ enabled = false }: { enabled?: boolean }) {
                 <dl className="mt-6 grid gap-4 text-sm sm:grid-cols-2">
                   {selected.formattedAddress && <div><dt className="font-semibold">{identity.address}</dt><dd className="mt-1 text-muted-foreground">{selected.formattedAddress}</dd></div>}
                   {selected.latitude !== undefined && selected.longitude !== undefined && <div><dt className="font-semibold">{identity.location}</dt><dd className="mt-1 text-muted-foreground" dir="ltr">{selected.latitude.toFixed(6)}, {selected.longitude.toFixed(6)}</dd></div>}
-                  <div><dt className="font-semibold">{identity.placeType}</dt><dd className="mt-1 text-muted-foreground">{selected.primaryType.replaceAll("_", " ")}</dd></div>
+                  <div><dt className="font-semibold">{identity.placeType}</dt><dd className="mt-1 text-muted-foreground">{placeTypeLabel(selected.primaryType)}</dd></div>
                   {selected.businessStatus && <div><dt className="font-semibold">{identity.businessStatus}</dt><dd className="mt-1 text-muted-foreground">{statusLabel(selected.businessStatus)}</dd></div>}
                 </dl>
                 <div className="mt-6 flex flex-wrap items-center border-t border-border pt-4 text-sm">

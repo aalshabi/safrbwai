@@ -2,6 +2,7 @@ import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vite
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { LanguageProvider } from "@/lib/i18n/provider";
 import { getDictionary } from "@/lib/i18n/dictionaries";
+import { GOOGLE_HOTEL_PRIMARY_TYPES } from "@/lib/hotel-data/constants";
 import { HotelAnalyzer } from "./hotel-analyzer";
 
 const ar = getDictionary("ar").analyzeHotel;
@@ -184,6 +185,39 @@ describe("HotelAnalyzer enabled flow with mocked transport", () => {
       placeId: "place_one",
       locale: "en",
     });
+  });
+
+  it.each([
+    ["ar", 0, "فندق", "hotel"],
+    ["en", 1, "Resort hotel", "resort hotel"],
+  ] as const)(
+    "shows the source place type as a localized label (%s)",
+    async (locale, index, label, rawType) => {
+      const dictionary = locale === "ar" ? ar : en;
+      vi.stubGlobal(
+        "fetch",
+        vi.fn()
+          .mockResolvedValueOnce(searchResponse())
+          .mockResolvedValueOnce(nameResponse(index === 0 ? "place_one" : "place_two", null))
+      );
+      renderAnalyzer(true, locale);
+      await submitSearch(locale);
+      const selectButtons = await screen.findAllByRole("button", { name: dictionary.identity.selectAction });
+      fireEvent.click(selectButtons[index]);
+
+      const placeType = (await screen.findByText(dictionary.identity.placeType)).nextElementSibling;
+      expect(placeType?.textContent).toBe(label);
+      expect(placeType?.textContent).not.toBe(rawType);
+    }
+  );
+
+  it("has an Arabic and English label for every allowed source place type", () => {
+    for (const type of GOOGLE_HOTEL_PRIMARY_TYPES) {
+      expect(ar.identity.placeTypes).toHaveProperty(type);
+      expect(en.identity.placeTypes).toHaveProperty(type);
+    }
+    expect(Object.keys(ar.identity.placeTypes).sort()).toEqual([...GOOGLE_HOTEL_PRIMARY_TYPES].sort());
+    expect(Object.keys(en.identity.placeTypes).sort()).toEqual([...GOOGLE_HOTEL_PRIMARY_TYPES].sort());
   });
 
   it.each(["ar", "en"] as const)(
