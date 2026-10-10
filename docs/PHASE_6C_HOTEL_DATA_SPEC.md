@@ -3,7 +3,7 @@
 ## Status
 
 - Decision status: Provider, first-release cost tier, OIDC design, and bilingual legal copy approved by the Product Owner; consolidated approval recorded on 2026-08-21 (Asia/Riyadh).
-- Implementation status: Phase 6C-1 provider boundary (PR #26) and Phase 6C-2 selection UI (PR #41, merge commit `5518a8a352f4e464847cafb89f277a7ee53e41c7`) are merged and deployed, disabled by default on both the client and the server. Phase 6C-3 activation has not started.
+- Implementation status: Phase 6C-1 provider boundary (PR #26) and Phase 6C-2 selection UI (PR #41, merge commit `5518a8a352f4e464847cafb89f277a7ee53e41c7`) are merged and deployed, disabled by default on both the client and the server. Phase 6C-3 is in progress: Preview readiness (PR #43) is merged, and Production remains disabled.
 - Stable production baseline: `production-2026-08-01-phase-6b`.
 - Baseline commit: `e0922a0aa544108a22833f6c11f162a729a72bc9`.
 - Product stage remains `prelaunch`.
@@ -439,12 +439,14 @@ Phase 6C-1 implementation may begin only after the consolidated review PR passes
 
 Before any real provider request is enabled in Preview or Production:
 
-- [ ] Current pricing and terms are re-checked.
-- [ ] Google Cloud billing owner is identified.
-- [ ] Preview and Production credential model is approved.
-- [ ] Initial quotas, budget, and billing alerts are documented.
-- [ ] Google Maps attribution design is reviewed in Arabic, English, and at 390px.
-- [ ] The capability wording decision is approved.
+- [x] Current pricing and terms are re-checked (2026-10-08).
+- [x] Google Cloud billing owner is identified (Product Owner, 2026-10-08; billing is contracted through an authorized Saudi Maps reseller).
+- [x] Preview and Production credential model is approved (separate service account per environment, 2026-10-08).
+- [x] Initial quotas, budget, and billing alerts are documented (2026-10-08; not yet applied, because billing is not linked).
+- [ ] Google Maps attribution design is reviewed in Arabic, English, and at 390px. The official logo was chosen and implemented; the visual review on Preview is still pending.
+- [x] The capability wording decision is approved (2026-10-08).
+
+Progress and open items: `docs/PHASE_6C_3_PROGRESS.md`.
 
 ## Delivery sequence after approval
 
@@ -479,6 +481,8 @@ Implementation record: `docs/PHASE_6C_2_IMPLEMENTATION.md`.
 - Preview verification with non-sensitive synthetic searches;
 - explicit production activation decision;
 - post-deployment smoke test and rollback check.
+
+Progress record: `docs/PHASE_6C_3_PROGRESS.md`.
 
 Rating and user rating count require a separate cost-approved phase after the Pro identity release; they must not be added within 6C-1, 6C-2, or 6C-3.
 
