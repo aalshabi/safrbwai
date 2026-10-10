@@ -294,4 +294,22 @@ export const ENGLISH_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "en-negated-inclusion",
+      locale: "en",
+      category: "negated_inclusion",
+      description: "A negation before the inclusion word never becomes included for flights or transfers",
+      syntheticInput:
+        "Trip to Dubai for 4 nights, total price SAR 2800. The price does not include flights and does not include airport transfers.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "flight", "transfers"],
+      expectedValues: {
+        totalPrice: { amount: 2800, currency: "SAR" },
+        flight: { included: false },
+        transfers: { included: false },
+      },
+    }
+  ),
 ] as const;

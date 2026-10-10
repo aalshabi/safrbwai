@@ -343,4 +343,22 @@ export const ARABIC_REGRESSION_FIXTURES = [
       },
     }
   ),
+  defineRegressionFixture(
+    {
+      id: "ar-negated-inclusion",
+      locale: "ar",
+      category: "negated_inclusion",
+      description: "النفي قبل كلمة الشمول لا يتحول إلى «مشمول» للطيران أو التنقلات",
+      syntheticInput:
+        "عرض إلى دبي لمدة 4 ليالٍ، السعر الإجمالي 2800 ريال. السعر لا يشمل تذاكر الطيران ولا يشمل التنقلات.",
+    },
+    {
+      mustConfirm: ["totalPrice", "currency", "nights", "destination", "flight", "transfers"],
+      expectedValues: {
+        totalPrice: { amount: 2800, currency: "SAR" },
+        flight: { included: false },
+        transfers: { included: false },
+      },
+    }
+  ),
 ] as const;

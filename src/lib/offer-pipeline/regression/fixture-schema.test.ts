@@ -52,10 +52,10 @@ function sortedKeys(value: object): string[] {
 }
 
 describe("closed Beta regression fixture schema", () => {
-  it("contains exactly 16 Arabic and 16 English synthetic fixtures", () => {
-    expect(fixtures).toHaveLength(32);
-    expect(fixtures.filter((fixture) => fixture.locale === "ar")).toHaveLength(16);
-    expect(fixtures.filter((fixture) => fixture.locale === "en")).toHaveLength(16);
+  it("contains exactly 17 Arabic and 17 English synthetic fixtures", () => {
+    expect(fixtures).toHaveLength(34);
+    expect(fixtures.filter((fixture) => fixture.locale === "ar")).toHaveLength(17);
+    expect(fixtures.filter((fixture) => fixture.locale === "en")).toHaveLength(17);
   });
 
   it("uses unique IDs and covers every required category", () => {
