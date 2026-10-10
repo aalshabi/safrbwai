@@ -34,13 +34,16 @@
     "framer-motion": "^11.15.0",
     "google-auth-library": "^11.0.2",
     "lucide-react": "^0.469.0",
-    "next": "15.5.22",
+    "next": "15.5.27",
     "next-themes": "^0.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7"
+  },
+  "overrides": {
+    "postcss": "$postcss"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.2",
@@ -52,7 +55,7 @@
     "eslint": "^9.18.0",
     "eslint-config-next": "15.5.20",
     "jsdom": "^25.0.1",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.23",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.3",
     "vitest": "^3.2.7"
