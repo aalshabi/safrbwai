@@ -84,6 +84,16 @@ function endsOnAWordBoundary(haystack: string, index: number, length: number): b
 }
 
 /**
+ * Latin script attaches no prefixes, so an English alias must also START on a
+ * word boundary: "male" inside "female" is not Malé.
+ */
+function startsOnAWordBoundary(haystack: string, index: number, alias: string): boolean {
+  if (!/^[a-z]/i.test(alias)) return true;
+  const previous = haystack[index - 1];
+  return previous === undefined || !/[\p{L}\p{N}]/u.test(previous);
+}
+
+/**
  * An airline carries a country adjective in its name — "الخطوط السعودية",
  * "الخطوط التركية", "Qatar Airways". The carrier is not where the traveller is
  * going, so a country match introduced by one of these is discarded.
@@ -101,7 +111,8 @@ function namesACarrier(haystack: string, index: number, length: number): boolean
 type Match = { entry: (typeof DESTINATIONS)[number]; index: number; length: number; marker: number };
 
 const DESTINATION_MARKER = /(?:إلى|الى|الوجهة\s*[:：]|وجهة\s*[:：]|\bto|\bdestination\s*[:：])\s*$/i;
-const ORIGIN_MARKER = /(?:من|\bfrom|مغادرة\s*من|انطلاق\s*من)\s*$/i;
+/** «من» / "from" as a whole word — «يتضمن» merely ends in «من». */
+const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
 
 /**
  * "من الرياض إلى تبليسي" names two cities. The one after "إلى" is where the
@@ -109,7 +120,7 @@ const ORIGIN_MARKER = /(?:من|\bfrom|مغادرة\s*من|انطلاق\s*من)\s
  * never be reported as the destination.
  */
 function markerRank(haystack: string, index: number): number {
-  const before = haystack.slice(Math.max(0, index - 16), index);
+  const before = haystack.slice(Math.max(0, index - 24), index);
   if (DESTINATION_MARKER.test(before)) return 2;
   if (ORIGIN_MARKER.test(before)) return 0;
   return 1;
@@ -137,11 +148,18 @@ function findCanonical(text: string): Match | null {
     for (const alias of entry.aliases) {
       const needle = alias.toLowerCase();
       // Scan every occurrence: the first may sit inside a longer word.
+      const markerOnly = entry.markerOnlyAliases?.includes(alias) ?? false;
       for (let index = haystack.indexOf(needle); index !== -1; index = haystack.indexOf(needle, index + 1)) {
         if (!endsOnAWordBoundary(haystack, index, needle.length)) continue;
+        if (!startsOnAWordBoundary(haystack, index, needle)) continue;
         if (entry.kind === "country" && namesACarrier(haystack, index, needle.length)) continue;
 
-        const hit: Match = { entry, index, length: alias.length, marker: markerRank(haystack, index) };
+        const marker = markerRank(haystack, index);
+        // Where the traveller leaves from is never where they are going.
+        if (marker === 0) continue;
+        if (markerOnly && marker !== 2) continue;
+
+        const hit: Match = { entry, index, length: alias.length, marker };
         if (entry.kind === "country") {
           if (outranks(hit, country)) country = hit;
         } else if (outranks(hit, city)) {
@@ -155,11 +173,6 @@ function findCanonical(text: string): Match | null {
     // A city sitting INSIDE a longer country alias is not a separate mention:
     // "سلطنة عمان" contains "عمان" (Amman), and the whole phrase is the answer.
     if (contains(country, city)) return country;
-    // A city marked as the ORIGIN never beats a country marked as the
-    // destination: "من الرياض إلى ماليزيا" is a trip to Malaysia. Specificity
-    // only decides between mentions of equal standing, so "رحلة إلى جورجيا …
-    // فندق في تبليسي" still answers with the city.
-    if (city.marker === 0 && country.marker > city.marker) return country;
   }
   return city ?? country;
 }

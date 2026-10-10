@@ -28,6 +28,13 @@ export interface DestinationEntry {
   kind?: "country";
   /** Surface forms (ar + en) that unambiguously denote this destination. */
   aliases: string[];
+  /**
+   * Aliases that are also everyday words («المغرب» is a prayer time, "male" a
+   * gender). They count only after an explicit destination marker ("إلى",
+   * "الوجهة:", "to"), so a schedule or a traveller description is never read as
+   * a place.
+   */
+  markerOnlyAliases?: string[];
 }
 
 export const DESTINATIONS: DestinationEntry[] = [
@@ -184,7 +191,7 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Colombo", countryCode: "LK", aliases: ["كولومبو", "سيلان", "سريلانكا", "colombo", "sri lanka"] },
   { canonical: "Kandy", countryCode: "LK", aliases: ["كاندي", "kandy"] },
   { canonical: "Kathmandu", countryCode: "NP", aliases: ["كاتماندو", "kathmandu"] },
-  { canonical: "Malé", countryCode: "MV", aliases: ["المالديف", "مالديف", "جزر المالديف", "ماليه", "maldives", "male"] },
+  { canonical: "Malé", countryCode: "MV", aliases: ["المالديف", "مالديف", "جزر المالديف", "ماليه", "maldives", "malé", "male"], markerOnlyAliases: ["male"] },
   { canonical: "Baku Old City", countryCode: "AZ", aliases: ["مدينة باكو القديمة"] },
 
   // ---- Indian Ocean & Africa ----
@@ -228,7 +235,7 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Jordan", countryCode: "JO", kind: "country", aliases: ["الأردن", "الاردن", "jordan"] },
   { canonical: "Lebanon", countryCode: "LB", kind: "country", aliases: ["لبنان", "lebanon"] },
   { canonical: "Egypt", countryCode: "EG", kind: "country", aliases: ["مصر", "egypt"] },
-  { canonical: "Morocco", countryCode: "MA", kind: "country", aliases: ["المغرب", "morocco"] },
+  { canonical: "Morocco", countryCode: "MA", kind: "country", aliases: ["المغرب", "morocco"], markerOnlyAliases: ["المغرب"] },
   { canonical: "Tunisia", countryCode: "TN", kind: "country", aliases: ["الجمهورية التونسية", "tunisia"] },
   { canonical: "Turkey", countryCode: "TR", kind: "country", aliases: ["تركيا", "turkey", "türkiye", "turkiye"] },
   { canonical: "Georgia", countryCode: "GE", kind: "country", aliases: ["جورجيا", "georgia"] },

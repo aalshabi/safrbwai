@@ -22,6 +22,7 @@ export const REGRESSION_CATEGORIES = [
   "baggage",
   "airport_transfers",
   "negated_inclusion",
+  "no_unsupported_destination_or_flight",
   "travellers",
   "insurance_context",
   "insurance_absent",
