@@ -30,6 +30,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
         p: "تدعم الواجهة العاملة تحليل النص وبحث هوية الفندق. رفع ملفات PDF أو الصور وتحليل الروابط غير مدعوم، ولا تُرسل هذه المصادر إلى API التحليل.",
       },
       {
+        h: "قراءة ملفات PDF (معاينة)",
+        p: "قراءة ملفات PDF في وضع المعاينة وغير مفعّلة في الموقع الرسمي. عند اختيار ملف PDF، يُقرأ نصه على جهازك داخل المتصفح ولا يُرفع الملف إلى خوادمنا؛ يُرسل فقط النص الذي تراجعه وتؤكده للتحليل، مثل النص الملصق.",
+      },
+      {
         h: "بحث هوية الفندق",
         p: "عند استخدام بحث هوية الفندق، يرسل خادم سافر بوعي اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة إلى Google Places API (New) لإرجاع معلومات هوية المكان. لا يُرسل نص عرض السفر إلى Google ضمن هذا البحث، ولا يتصل المتصفح بـGoogle Places مباشرة.",
       },
@@ -85,6 +89,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       {
         h: "Supported sources",
         p: "The working interface supports text analysis and hotel identity search. PDF uploads, image uploads, and link analysis are not currently supported, and those sources are not sent to the analysis API.",
+      },
+      {
+        h: "PDF reading (preview)",
+        p: "PDF reading is in preview and is not enabled on the official site. When you choose a PDF, its text is read on your device inside the browser and the file is not uploaded to our servers; only the text you review and confirm is sent for analysis, like pasted text.",
       },
       {
         h: "Hotel identity search",

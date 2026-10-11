@@ -81,6 +81,10 @@ describe("current pre-launch product integrity", () => {
     expect(privacyEn).toContain("offer text, evidence, results, names");
     expect(privacyAr).toContain("تفضيلات اللغة والمظهر");
     expect(privacyEn).toContain("Language and theme preferences");
+    expect(privacyAr).toContain("يُقرأ نصه على جهازك داخل المتصفح ولا يُرفع الملف إلى خوادمنا");
+    expect(privacyEn).toContain("its text is read on your device inside the browser and the file is not uploaded to our servers");
+    expect(privacyAr).toContain("قراءة ملفات PDF في وضع المعاينة وغير مفعّلة في الموقع الرسمي");
+    expect(privacyEn).toContain("PDF reading is in preview and is not enabled on the official site");
     expect(privacyAr).toContain("تدعم الواجهة العاملة تحليل النص وبحث هوية الفندق");
     expect(privacyEn).toContain("supports text analysis and hotel identity search");
     expect(privacyAr).toContain("اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة");
