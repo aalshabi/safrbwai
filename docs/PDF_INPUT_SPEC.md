@@ -166,13 +166,34 @@ Corpus: synthetic offers printed to PDF by a Chromium engine. Committed under `s
   - pdf.js (about 1.6 MB) is a separate chunk loaded only inside the worker after a file is chosen.
 - **Worker note:** pdf.js announces itself on the worker channel (`action: "ready"`), so the app tags its own result message and ignores all others.
 
+## Preview acceptance results (2026-10-11)
+
+Deployment: the Preview build of this branch at commit `d43d1b0`. The built-in browser has no native file picker, so each file was handed to the PDF field with a `DataTransfer` in the page. That is the same `change` event a user's selection fires.
+
+| File | Result |
+| --- | --- |
+| `mixed-offer.pdf` (repository fixture, SHA-256 checked in the page) | Extracted in logical order: «عرض باقة اسطنبول: 5 ليالٍ في فندق Grand Bosphorus Hotel لشخصين، السعر الإجمالي 4500 ريال، شامل الإفطار (Breakfast included)، غير شامل الطيران.» No presentation forms. The analysis then showed 7 confirmed facts, including flight "No" with the evidence «غير شامل الطيران», and no contradictions. |
+| English text-layer PDF (generated in the page) | Extracted exactly. The analysis showed 8 confirmed facts. |
+| Image-only PDF (generated) | Refused: «لا يحتوي الملف على نص قابل للقراءة…» |
+| Truncated PDF (generated) | Refused: «تعذّرت قراءة الملف…» |
+| 21 pages (generated) | Refused: «الملف أطول من 20 صفحة…» |
+| About 19,000 characters (generated) | Refused: «نص الملف أطول من الحد المسموح…», not truncated. |
+
+- Network:
+  - extraction requested only the app's own pdf.js chunk;
+  - every refusal made no request to `/api/offer/analyze`;
+  - each analysis made exactly one request, the existing text request.
+- The review notice «نص مستخرج من الملف — راجعه وصحّح أي خطأ قبل التحليل. لم يُرسل الملف إلى أي مكان.» is announced as a status, and refusals as alerts.
+- Keyboard: the drop zone is one focusable `role="button"` that opens the picker with Enter or Space. Its inner button is removed from the tab order, so there is no duplicate stop.
+- At 390 px, in light and in dark, the refusal alert stays inside the viewport and the page has no horizontal scroll. The dark theme uses light text on the dark background.
+
 ## Activation gates
 
 - [x] Product Owner approves the browser-side design and the review step (2026-10-10).
 - [x] Dependency chosen, pinned, license and advisories checked; proof of concept results recorded here.
 - [ ] Security review checklist passed.
-- [ ] Privacy and Terms sentence approved.
-- [ ] Acceptance criteria verified on a Preview deployment.
+- [x] Privacy sentence approved (2026-10-11) and added to the Privacy page. The Terms scope line is unchanged, because PDF input stays disabled in Production.
+- [x] Acceptance criteria verified on a Preview deployment (2026-10-11, see below).
 - [ ] Separate, explicit decision to enable `pdfInput` in Production.
 
 ## Decisions (approved 2026-10-10)
