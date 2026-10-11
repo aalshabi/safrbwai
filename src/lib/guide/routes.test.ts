@@ -43,7 +43,7 @@ describe("central guide definitions", () => {
       }
     }
     expect(getCapability("textOfferAnalysis").status).toBe("enabled");
-    expect(getCapability("hotelIdentityLookup").status).toBe("preview");
+    expect(getCapability("hotelIdentityLookup").status).toBe("enabled");
     expect(getCapability("hotelOfferReview").status).toBe("preview");
     expect(getCapability("destinationChecklist").status).toBe("preview");
     expect(getCapability("hotelComparison").status).toBe("preview");
@@ -57,7 +57,9 @@ describe("central guide definitions", () => {
       .flatMap(({ body }) => [body.ar, body.en])
       .join(" ");
     expect(previewText).not.toMatch(/4\.\d|five-star result|live rating|real-time weather result/i);
-    expect(previewText).toContain("preview only");
+    const hotelText = GUIDE_DEFINITIONS["/analyze-hotel"].steps.map(({ body }) => body.en).join(" ");
+    expect(hotelText).toContain("without ratings, prices, or recommendations");
+    expect(hotelText).toContain("It is not a recommendation");
   });
 
   it("uses stable selectors only for declared guide targets", () => {

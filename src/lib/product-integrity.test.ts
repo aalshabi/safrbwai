@@ -81,14 +81,14 @@ describe("current pre-launch product integrity", () => {
     expect(privacyEn).toContain("offer text, evidence, results, names");
     expect(privacyAr).toContain("تفضيلات اللغة والمظهر");
     expect(privacyEn).toContain("Language and theme preferences");
-    expect(privacyAr).toContain("لا يرسل اسم الفندق أو المدينة إلى Google حاليًا");
-    expect(privacyEn).toContain("does not currently send a hotel name or city to Google");
+    expect(privacyAr).toContain("تدعم الواجهة العاملة تحليل النص وبحث هوية الفندق");
+    expect(privacyEn).toContain("supports text analysis and hotel identity search");
     expect(privacyAr).toContain("اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة");
     expect(privacyEn).toContain("hotel name, optional city, and selected interface language");
     expect(privacyAr).toContain("لا يُرسل نص عرض السفر إلى Google");
     expect(privacyEn).toContain("Travel-offer text is not sent to Google");
-    expect(privacyAr).toContain("لن يحفظ الإصدار الأول استعلام بحث الفندق أو استجابة Google الخام");
-    expect(privacyEn).toContain("will not persist the hotel-search query, raw Google response");
+    expect(privacyAr).toContain("لا يحفظ الإصدار الأول استعلام بحث الفندق أو استجابة Google الخام");
+    expect(privacyEn).toContain("does not persist the hotel-search query, raw Google response");
     expect(legalLinks("privacy", "ar")).toContain("https://policies.google.com/privacy");
     expect(legalLinks("privacy", "en")).toContain("https://policies.google.com/privacy");
 
@@ -118,8 +118,12 @@ describe("current pre-launch product integrity", () => {
     expect(termsEn).toContain("Verify with the official source");
     expect(termsAr).toContain("لا تُدخل بيانات شخصية أو معلومات دفع");
     expect(termsEn).toContain("Do not enter personal or payment information");
-    expect(termsAr).toContain("بحث هوية الفندق ما زال معاينة معطلة ولا يرسل بيانات إلى Google");
-    expect(termsEn).toContain("Hotel identity search remains a disabled preview and does not send data to Google");
+    expect(termsAr).toContain("تحليل النص هو المصدر الوحيد المدعوم لتحليل العروض");
+    expect(termsAr).toContain("بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New)");
+    expect(termsAr).toContain("يظهر إسناد Google Maps ورابط المصدر مع البيانات");
+    expect(termsEn).toContain("Text analysis is the only supported source for offer analysis");
+    expect(termsEn).toContain("Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New)");
+    expect(termsEn).toContain("Google Maps attribution and a source link appear with the data");
     expect(termsAr).toContain("التقييم وعدد المراجعات والمراجعات والصور والأسعار والتوفر ليست ضمن الإصدار الأول");
     expect(termsEn).toContain("Ratings, review counts, reviews, photos, prices, and availability are not included");
     expect(termsAr).toContain("لا تمثل تحققًا مستقلًا أو توصية من سافر بوعي");

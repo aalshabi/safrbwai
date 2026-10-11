@@ -40,16 +40,18 @@ describe("product capability registry", () => {
   });
 
   it("marks only working first-release surfaces as enabled", () => {
-    expect(isFeatureEnabled("textOfferAnalysis")).toBe(true);
-    expect(isFeatureEnabled("travelGuides")).toBe(true);
-    for (const key of EXPECTED_KEYS.filter((key) => !["textOfferAnalysis", "travelGuides"].includes(key))) {
+    const enabled = ["textOfferAnalysis", "travelGuides", "hotelIdentityLookup"];
+    for (const key of enabled) {
+      expect(isFeatureEnabled(key as ProductCapabilityKey)).toBe(true);
+    }
+    for (const key of EXPECTED_KEYS.filter((key) => !enabled.includes(key))) {
       expect(isFeatureEnabled(key)).toBe(false);
     }
   });
 
   it("never exposes disabled capabilities as navigable links", () => {
     const navigable = getNavigableCapabilities();
-    expect(navigable.map((capability) => capability.status)).toEqual(["enabled", "enabled"]);
+    expect(navigable.map((capability) => capability.status)).toEqual(["enabled", "enabled", "enabled"]);
     expect(navigable.every((capability) => capability.route !== null)).toBe(true);
     expect(navigable.map(({ key }) => key)).not.toContain("localDashboard");
     expect(navigable.map(({ key }) => key)).not.toContain("accounts");

@@ -37,10 +37,10 @@ describe("first-release feature cards", () => {
     const links = Array.from(container.querySelectorAll("a")).map(
       (link) => link.getAttribute("href") ?? ""
     );
-    expect(links).toEqual(["/analyze-offer", "/guides"]);
+    expect(links).toEqual(["/analyze-offer", "/guides", "/analyze-hotel"]);
     expect(links).not.toContain("/dashboard");
     expect(links).not.toContain("/auth");
-    expect(screen.getAllByText("متاح")).toHaveLength(2);
+    expect(screen.getAllByText("متاح")).toHaveLength(3);
     expect(screen.queryByText("معاينة")).toBeNull();
   });
 

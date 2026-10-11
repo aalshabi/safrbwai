@@ -7,9 +7,9 @@ import {
 import { isFeatureEnabled } from "@/lib/product/capabilities";
 
 export const metadata: Metadata = {
-  title: "بحث هوية الفندق — Hotel identity lookup (preview)",
+  title: "بحث هوية الفندق — Hotel identity lookup",
   description:
-    "واجهة غير مفعّلة للبحث عن هوية الفندق من مصدر رسمي دون تقييمات أو أسعار أو توصيات. Disabled interface for source-backed hotel identity lookup without ratings, prices, or recommendations.",
+    "ابحث عن هوية الفندق من مصدر رسمي دون تقييمات أو أسعار أو توصيات. Source-backed hotel identity lookup without ratings, prices, or recommendations.",
   alternates: { canonical: "/analyze-hotel" },
 };
 

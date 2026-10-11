@@ -17,12 +17,14 @@ const HEADER_LINKS = [
   "/",
   "/analyze-offer",
   "/guides",
+  "/analyze-hotel",
 ];
 
 const FOOTER_LINKS = [
   "/",
   "/analyze-offer",
   "/guides",
+  "/analyze-hotel",
   "/#about",
   "/privacy",
   "/terms",
