@@ -66,16 +66,16 @@ export const PRODUCT_CAPABILITIES = {
   },
   hotelIdentityLookup: {
     key: "hotelIdentityLookup",
-    status: "preview",
+    status: "enabled",
     title: { ar: "بحث هوية الفندق", en: "Hotel identity lookup" },
     route: "/analyze-hotel",
     reason: {
-      ar: "واجهة البحث المبنية على مصدر رسمي جاهزة للمراجعة، لكنها غير مفعّلة ولا ترسل بيانات حاليًا.",
-      en: "The source-backed lookup interface is ready for review, but it is disabled and sends no data.",
+      ar: "ابحث بالاسم والمدينة عن هوية الفندق من Google Maps، دون تقييمات أو أسعار أو توصيات.",
+      en: "Look up a hotel's identity on Google Maps by name and city, without ratings, prices, or recommendations.",
     },
     launchRequirement: {
-      ar: "إكمال مراجعة الإسناد والتكلفة والاعتمادات ثم اعتماد تفعيل مستقل.",
-      en: "Complete attribution, cost, and credential review, then approve activation separately.",
+      ar: "إبقاء الحصص والميزانية والإسناد ضمن الحدود المعتمدة.",
+      en: "Keep quotas, budget, and attribution within the approved limits.",
     },
     requiredForPublicLaunch: false,
   },
