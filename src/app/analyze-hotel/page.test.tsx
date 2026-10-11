@@ -11,22 +11,15 @@ afterEach(() => {
 });
 
 describe("/analyze-hotel activation gate", () => {
-  it("keeps the capability in preview", () => {
-    expect(getCapability("hotelIdentityLookup").status).toBe("preview");
+  it("marks the capability as enabled (Phase 6C-3 activation)", () => {
+    expect(getCapability("hotelIdentityLookup").status).toBe("enabled");
   });
 
-  it("stays disabled in Production with the server flag alone", () => {
+  it("enables the UI in Production only when the server flag is exactly true", () => {
     vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", "true");
     vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("VERCEL_TARGET_ENV", "production");
-    expect(pageEnabled()).toBe(false);
-  });
-
-  it("stays disabled outside Vercel with the server flag alone", () => {
-    vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", "true");
-    vi.stubEnv("VERCEL_ENV", "");
-    vi.stubEnv("VERCEL_TARGET_ENV", "");
-    expect(pageEnabled()).toBe(false);
+    expect(pageEnabled()).toBe(true);
   });
 
   it("enables the UI on a Preview deployment when the server flag is exactly true", () => {
@@ -36,20 +29,23 @@ describe("/analyze-hotel activation gate", () => {
     expect(pageEnabled()).toBe(true);
   });
 
-  it.each(["false", "", "TRUE", "1"])(
-    "stays disabled on Preview when the server flag is %j",
-    (flag) => {
-      vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", flag);
-      vi.stubEnv("VERCEL_ENV", "preview");
-      vi.stubEnv("VERCEL_TARGET_ENV", "preview");
+  it.each(["production", "preview", ""])(
+    "stays disabled in the %j environment without the server flag",
+    (environment) => {
+      vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", "");
+      vi.stubEnv("VERCEL_ENV", environment);
+      vi.stubEnv("VERCEL_TARGET_ENV", environment);
       expect(pageEnabled()).toBe(false);
     }
   );
 
-  it("does not treat a Production target as Preview", () => {
-    vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", "true");
-    vi.stubEnv("VERCEL_ENV", "preview");
-    vi.stubEnv("VERCEL_TARGET_ENV", "production");
-    expect(pageEnabled()).toBe(false);
-  });
+  it.each(["false", "TRUE", "1"])(
+    "stays disabled in Production when the server flag is %j",
+    (flag) => {
+      vi.stubEnv("HOTEL_IDENTITY_LOOKUP_ENABLED", flag);
+      vi.stubEnv("VERCEL_ENV", "production");
+      vi.stubEnv("VERCEL_TARGET_ENV", "production");
+      expect(pageEnabled()).toBe(false);
+    }
+  );
 });
