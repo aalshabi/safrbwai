@@ -27,22 +27,26 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "المصادر المدعومة",
-        p: "تدعم الواجهة العاملة تحليل النص فقط. بحث هوية الفندق ما زال في وضع المعاينة وغير مفعّل، ولا يرسل اسم الفندق أو المدينة إلى Google حاليًا. رفع ملفات PDF أو الصور وتحليل الروابط غير مدعوم، ولا تُرسل هذه المصادر إلى API التحليل.",
+        p: "تدعم الواجهة العاملة تحليل النص وبحث هوية الفندق. رفع ملفات PDF أو الصور وتحليل الروابط غير مدعوم، ولا تُرسل هذه المصادر إلى API التحليل.",
       },
       {
-        h: "بحث هوية الفندق المخطط",
-        p: "إذا فُعّل بحث الفنادق الرسمي بعد المراجعة، سيرسل خادم سافر بوعي اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة إلى Google Places API (New) لإرجاع معلومات هوية المكان. لا يُرسل نص عرض السفر إلى Google ضمن هذا البحث، ولا يتصل المتصفح بـGoogle Places مباشرة.",
+        h: "قراءة ملفات PDF (معاينة)",
+        p: "قراءة ملفات PDF في وضع المعاينة وغير مفعّلة في الموقع الرسمي. عند اختيار ملف PDF، يُقرأ نصه على جهازك داخل المتصفح ولا يُرفع الملف إلى خوادمنا؛ يُرسل فقط النص الذي تراجعه وتؤكده للتحليل، مثل النص الملصق.",
+      },
+      {
+        h: "بحث هوية الفندق",
+        p: "عند استخدام بحث هوية الفندق، يرسل خادم سافر بوعي اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة إلى Google Places API (New) لإرجاع معلومات هوية المكان. لا يُرسل نص عرض السفر إلى Google ضمن هذا البحث، ولا يتصل المتصفح بـGoogle Places مباشرة.",
       },
       {
         h: "معالجة Google والمرجع القانوني",
-        p: "عند تفعيل البحث الرسمي، تعالج Google مدخلات بحث الفندق وبيانات المكان وفق سياسة الخصوصية الخاصة بها. استخدم بحث الفندق فقط ببيانات غير حساسة، ولا تُدخل أسماء أشخاص أو بيانات حجز أو دفع أو هوية.",
+        p: "تعالج Google مدخلات بحث الفندق وبيانات المكان وفق سياسة الخصوصية الخاصة بها. استخدم بحث الفندق فقط ببيانات غير حساسة، ولا تُدخل أسماء أشخاص أو بيانات حجز أو دفع أو هوية.",
         links: [
           { href: "https://policies.google.com/privacy", label: "سياسة خصوصية Google" },
         ],
       },
       {
         h: "تخزين وسجلات بحث الفندق",
-        p: "لن يحفظ الإصدار الأول استعلام بحث الفندق أو استجابة Google الخام أو أسماء الفنادق أو العناوين أو الإحداثيات أو Place ID في قاعدة بيانات. قد تُسجل فقط بيانات تشغيلية عامة مثل Request ID وفئة الحالة والمدة وعدد النتائج واللغة، دون اسم الفندق أو المدينة أو محتوى الاستجابة.",
+        p: "لا يحفظ الإصدار الأول استعلام بحث الفندق أو استجابة Google الخام أو أسماء الفنادق أو العناوين أو الإحداثيات أو Place ID في قاعدة بيانات. قد تُسجل فقط بيانات تشغيلية عامة مثل Request ID وفئة الحالة والمدة وعدد النتائج واللغة، دون اسم الفندق أو المدينة أو محتوى الاستجابة.",
       },
       {
         h: "معالجة نص العرض",
@@ -84,22 +88,26 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Supported sources",
-        p: "The working interface supports text analysis only. Hotel identity search remains a disabled preview and does not currently send a hotel name or city to Google. PDF uploads, image uploads, and link analysis are not currently supported, and those sources are not sent to the analysis API.",
+        p: "The working interface supports text analysis and hotel identity search. PDF uploads, image uploads, and link analysis are not currently supported, and those sources are not sent to the analysis API.",
       },
       {
-        h: "Planned hotel identity search",
-        p: "If official hotel search is enabled after review, the SafrBwai server will send the hotel name, optional city, and selected interface language to Google Places API (New) to return place identity information. Travel-offer text is not sent to Google as part of this search, and the browser does not call Google Places directly.",
+        h: "PDF reading (preview)",
+        p: "PDF reading is in preview and is not enabled on the official site. When you choose a PDF, its text is read on your device inside the browser and the file is not uploaded to our servers; only the text you review and confirm is sent for analysis, like pasted text.",
+      },
+      {
+        h: "Hotel identity search",
+        p: "When you use hotel identity search, the SafrBwai server sends the hotel name, optional city, and selected interface language to Google Places API (New) to return place identity information. Travel-offer text is not sent to Google as part of this search, and the browser does not call Google Places directly.",
       },
       {
         h: "Google processing and legal reference",
-        p: "When official search is enabled, Google processes the hotel-search input and place data under its Privacy Policy. Use hotel search only with non-sensitive information, and do not enter personal names, booking data, payment data, or identity information.",
+        p: "Google processes the hotel-search input and place data under its Privacy Policy. Use hotel search only with non-sensitive information, and do not enter personal names, booking data, payment data, or identity information.",
         links: [
           { href: "https://policies.google.com/privacy", label: "Google Privacy Policy" },
         ],
       },
       {
         h: "Hotel-search storage and logs",
-        p: "The first release will not persist the hotel-search query, raw Google response, hotel names, addresses, coordinates, or Place ID in a database. Only general operational metadata such as the SafrBwai Request ID, status category, latency, result count, and locale may be logged, without the hotel name, city, or response content.",
+        p: "The first release does not persist the hotel-search query, raw Google response, hotel names, addresses, coordinates, or Place ID in a database. Only general operational metadata such as the SafrBwai Request ID, status category, latency, result count, and locale may be logged, without the hotel name, city, or response content.",
       },
       {
         h: "Offer-text processing",
@@ -143,15 +151,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "نطاق الخدمة الحالي",
-        p: "تحليل النص هو المصدر الوحيد المدعوم في إصدار ما قبل الإطلاق. بحث هوية الفندق ما زال معاينة معطلة ولا يرسل بيانات إلى Google. ملفات PDF والصور والروابط وميزات الحسابات غير مفعّلة.",
+        p: "تحليل النص هو المصدر الوحيد المدعوم لتحليل العروض في إصدار ما قبل الإطلاق. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). ملفات PDF والصور والروابط وميزات الحسابات غير مفعّلة.",
       },
       {
-        h: "بيانات الفندق الرسمية المخططة",
-        p: "إذا فُعّل بحث الفنادق بعد الاعتماد، ستعرض سافر بوعي حقول هوية مكان محدودة مصدرها Google Places API (New)، مثل الاسم والعنوان والموقع وحالة النشاط ورابط المصدر. التقييم وعدد المراجعات والمراجعات والصور والأسعار والتوفر ليست ضمن الإصدار الأول.",
+        h: "بيانات الفندق الرسمية",
+        p: "يعرض بحث الفنادق حقول هوية مكان محدودة مصدرها Google Places API (New)، مثل الاسم والعنوان والموقع وحالة النشاط ورابط المصدر. التقييم وعدد المراجعات والمراجعات والصور والأسعار والتوفر ليست ضمن الإصدار الأول.",
       },
       {
         h: "شروط Google والإسناد",
-        p: "تظل بيانات المكان من Google خاضعة لشروط Google Maps Platform وسياسة خصوصية Google. سيظهر إسناد Google Maps ورابط المصدر مع البيانات عند تفعيل الميزة. لا تكشط سافر بوعي صفحات Google Maps ولا تعرض بيانات تجريبية على أنها بيانات حقيقية.",
+        p: "تظل بيانات المكان من Google خاضعة لشروط Google Maps Platform وسياسة خصوصية Google. يظهر إسناد Google Maps ورابط المصدر مع البيانات. لا تكشط سافر بوعي صفحات Google Maps ولا تعرض بيانات تجريبية على أنها بيانات حقيقية.",
         links: [
           { href: "https://cloud.google.com/maps-platform/terms", label: "شروط Google Maps Platform" },
           { href: "https://policies.google.com/privacy", label: "سياسة خصوصية Google" },
@@ -201,15 +209,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Current service scope",
-        p: "Text analysis is the only supported source in the current pre-launch release. Hotel identity search remains a disabled preview and does not send data to Google. PDF files, images, links, and account features are not enabled.",
+        p: "Text analysis is the only supported source for offer analysis in the current pre-launch release. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). PDF files, images, links, and account features are not enabled.",
       },
       {
-        h: "Planned official hotel data",
-        p: "If hotel search is enabled after approval, SafrBwai will display limited place-identity fields sourced from Google Places API (New), such as the name, address, location, business status, and source link. Ratings, review counts, reviews, photos, prices, and availability are not included in the first release.",
+        h: "Official hotel data",
+        p: "Hotel search displays limited place-identity fields sourced from Google Places API (New), such as the name, address, location, business status, and source link. Ratings, review counts, reviews, photos, prices, and availability are not included in the first release.",
       },
       {
         h: "Google terms and attribution",
-        p: "Google-sourced place data remains subject to the Google Maps Platform Terms and Google Privacy Policy. Google Maps attribution and a source link will appear with the data when the feature is enabled. SafrBwai does not scrape Google Maps pages or present preview data as real data.",
+        p: "Google-sourced place data remains subject to the Google Maps Platform Terms and Google Privacy Policy. Google Maps attribution and a source link appear with the data. SafrBwai does not scrape Google Maps pages or present preview data as real data.",
         links: [
           { href: "https://cloud.google.com/maps-platform/terms", label: "Google Maps Platform Terms" },
           { href: "https://policies.google.com/privacy", label: "Google Privacy Policy" },

@@ -2,12 +2,12 @@
 
 ## Status
 
-- Authorization: Product Owner authorized Steps A (read-only readiness) and B (Preview readiness) on 2026-10-08. Step C (Production activation) is not authorized and requires a separate, explicit decision.
+- Authorization: Product Owner authorized Steps A (read-only readiness) and B (Preview readiness) on 2026-10-08, and Step C (Production activation) on 2026-10-11.
 - Step A: complete.
-- Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Provider-independent review completed on 2026-10-10 (see below). Live Preview verification is deferred until billing is linked.
-- Google Cloud and reseller track: **Deferred — awaiting authoritative response**. It is neither passed nor failed.
-- Step C: not started. It requires a separate, explicit activation decision.
-- Production: hotel lookup disabled. Verified after the PR #43 deployment: both `/api/hotels/search` and `/api/hotels/name` return `503 HOTEL_SEARCH_DISABLED`, the UI renders disabled, and `noindex, nofollow` is unchanged.
+- Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Provider-independent review completed on 2026-10-10. **Live Preview verification passed on 2026-10-11** (see "Step B — live Preview verification").
+- Google Cloud and reseller track: **complete** on 2026-10-11. Billing linked through the contracted reseller, Places API (New) enabled, and the decided quotas, budget, and alerts applied.
+- Step C: **complete** on 2026-10-11 (PR #53, merge commit `415258286f2a210068a4e393e54bf4ba0becd834`). See "Step C — Production activation".
+- Production: hotel lookup **enabled** since 2026-10-11. Before activation, the lookup was verified disabled after the PR #43 deployment and again on 2026-10-11 after the Google Cloud setup (`503 HOTEL_SEARCH_DISABLED`). `noindex, nofollow` is unchanged.
 - Product stage: `prelaunch`.
 
 This repository is public. Google Cloud and Vercel identifiers are therefore recorded only by name, never by value.
@@ -70,6 +70,75 @@ No Production variable was added or changed.
 - After `VERCEL_TEAM_ID` was added to Preview and Preview redeployed: `503` with only the safe error. Runtime log `PROVIDER_AUTH` after about 420 ms. Configuration now passes and the request reaches the network. The remaining rejection is expected while Places API (New) is not enabled on the project. The logs do not distinguish a token-exchange denial from a disabled API, so this must be re-checked once the API is enabled.
 - No fabricated or preview results were rendered in any failure.
 
+## Google Cloud setup (2026-10-11)
+
+Verified in the Google Cloud console on the dedicated SafrBwai project:
+
+- Billing: the project is linked to a paid billing account provided by the contracted Saudi Maps reseller.
+- Places API (New): enabled.
+- Quotas, both per day for the whole project:
+  - Text Search (`SearchTextRequest per day`): 100;
+  - Place Details (`GetPlaceRequest per day`): 100.
+- Budget: monthly, specified amount USD 20, scoped to the SafrBwai project only, not the whole billing account. Alerts on actual spend at 50%, 90%, and 100%, emailed to billing admins and to project owners. The budget only sends alerts; no spend cap was set.
+
+## Step B — live Preview verification (2026-10-11)
+
+Deployment: the latest Preview deployment, which includes the PR #43 gate and the Preview variables. No variable was changed and no redeploy was needed, because the variables are read at runtime.
+
+Searches used public hotel names only, with no personal or booking data:
+
+| Search | Locale | `/api/hotels/search` | Result | `/api/hotels/name` | Selected-hotel card |
+| --- | --- | --- | --- | --- | --- |
+| «فندق برج العرب» / «دبي» | Arabic | 200 | 1 match | 200 | Arabic name, English name as the other-language name, address, coordinates, localized place type, business status, source link |
+| "Atlantis The Palm" / "Dubai" | English | 200 | 1 match | 200 | English name, Arabic name as the other-language name, address, coordinates, place type "Resort hotel", business status, source link |
+
+- Provider connectivity is confirmed. The 2026-10-08 `PROVIDER_AUTH` result was caused by the disabled API: with the API enabled, the token exchange, impersonation, and both methods succeed.
+- Runtime logs for Preview over the preceding three hours contain no error, warning, or fatal entry. The `PROVIDER_CONFIG` and `PROVIDER_AUTH` failures do not recur.
+- The source link opens the place's Google Maps record.
+
+Attribution with live results, on the selected-hotel card:
+
+| Locale | Width | Light | Dark |
+| --- | --- | --- | --- |
+| Arabic (RTL) | 390 px | Pass (gray logo) | Pass (white logo) |
+| English (LTR) | 1440 px | Pass (gray logo) | Pass (white logo) |
+
+- "Pass" means only the correct official logo variant was visible, at 98×18 px, inside the viewport, next to the "Source" label and the source link, with no horizontal scroll.
+- The 1440 px cells were also reviewed by screenshot: the logo is legible and unmodified on both backgrounds.
+- The remaining combinations (Arabic at 1440 px, English at 390 px) use the same component and were covered by the 2026-10-10 layout matrix.
+
+## Step C — Production activation (2026-10-11)
+
+Order, chosen so that code, copy, and configuration go live together:
+
+1. Vercel Production variables, which take effect only at the next deployment:
+   - the shared `VERCEL_TEAM_ID`, `GCP_PROJECT_NUMBER`, `GCP_WORKLOAD_IDENTITY_POOL_ID`, `GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID`, and `HOTEL_IDENTITY_LOOKUP_ENABLED=true` now target Production and Preview, without Development;
+   - a separate Production `GCP_SERVICE_ACCOUNT_EMAIL` names the Production service account, so the Preview service account is never used in Production.
+2. PR #53 merged:
+   - `hotelIdentityLookup` became `enabled`;
+   - Privacy and Terms describe the active search in the present tense, with the same substance;
+   - the page metadata and guide describe the working lookup.
+3. The Production deployment of the merge commit reached `READY`.
+
+Post-deployment smoke test on the production domain:
+
+- An Arabic search through `/api/hotels/search` returned `200` with one result. That confirms the Production service account's federation binding.
+- English UI flow, "Atlantis The Palm" / "Dubai":
+  - one result, then the selected-hotel card with the Arabic other-language name, address, coordinates, "Resort hotel", "Operational", and the source link;
+  - the official gray Google Maps logo at 98×18 px, loaded and visible.
+- Navigation and footer list "Hotel identity lookup". `noindex, nofollow` is still present.
+- Production runtime logs over the following 30 minutes contain no error, warning, or fatal entry.
+
+Rollback check, without disrupting Production:
+
+- The previous Production deployment is the instant-rollback candidate. It still serves the disabled page: the analyzer renders with `enabled: false`, and the navigation has no lookup link. Promoting it restores the disabled state immediately.
+- The flag path still works: without `HOTEL_IDENTITY_LOOKUP_ENABLED` exactly `true`, the page stays disabled in every environment, and the API routes fail closed. Tests cover both.
+
+Monitoring:
+
+- The daily quota of 100 per method is shared with Preview. When it is exhausted, the API returns its safe "temporarily unavailable" state, never fabricated results.
+- The budget alerts at 50%, 90%, and 100% of USD 20 are the spend signal.
+
 ## Provider-independent review (2026-10-10)
 
 Baseline: `claude/demo-integrity-fixes` at merge commit `029158a9d1b985e32d85ea3366a1942160f57b90`.
@@ -102,24 +171,24 @@ Baseline: `claude/demo-integrity-fixes` at merge commit `029158a9d1b985e32d85ea3
   - This verifies layout only. Live Google attribution with real results remains open.
 - Defect found and fixed on branch `fix/hotel-place-type-labels`. The selected-hotel card displayed the raw source place type (for example `hotel`) on the Arabic page. Each allowed lodging type now has an Arabic and English label, and any other value is shown as the source sent it. Tests cover both locales and require a label for every allowed type. After the fix: 615/615 tests, 41/41 regression tests, lint, typecheck, and build all pass.
 
-### Deferred pending the Google Cloud and reseller response
+### Deferred pending the Google Cloud and reseller response (resolved 2026-10-11)
 
-- Billing link, Places API (New) enablement, quotas, budget and alerts. At about 07:00 Asia/Riyadh the console showed the project not linked to a billing account and the API not enabled.
-- Live synthetic Arabic and English searches on a Preview deployment.
+- Billing link, Places API (New) enablement, quotas, budget and alerts. At about 07:00 Asia/Riyadh the console showed the project not linked to a billing account and the API not enabled. Resolved: see "Google Cloud setup".
+- Live synthetic Arabic and English searches on a Preview deployment. Resolved: see "Step B — live Preview verification".
 
-### Blocked from live verification
+### Blocked from live verification (resolved 2026-10-11)
 
-- Provider connectivity: whether the `PROVIDER_AUTH` result is a token-exchange denial or a disabled API.
-- Attribution with live results.
-- Alternate-locale names returned by the provider.
+- Provider connectivity: whether the `PROVIDER_AUTH` result is a token-exchange denial or a disabled API. Resolved: it was the disabled API.
+- Attribution with live results. Resolved.
+- Alternate-locale names returned by the provider. Resolved: returned in both directions.
 
 ## Open items
 
-1. Link the SafrBwai project to billing through the contracted reseller. Requested on 2026-10-08; the reseller is following up.
-2. Enable Places API (New) on the project.
-3. Apply the decided quotas, budget, and alerts.
-4. Preview verification: one synthetic Arabic and one synthetic English search, then the attribution visual review in Arabic and English, at 390px and 1440px, in light and dark mode.
-5. Step C, only after a separate decision. Add the Production variables (including `VERCEL_TEAM_ID` and the Production service account), set the server flag, decide whether to enable the `hotelIdentityLookup` capability, then run the post-deployment smoke test and a rollback check.
+1. Done (2026-10-11): billing linked through the contracted reseller.
+2. Done (2026-10-11): Places API (New) enabled.
+3. Done (2026-10-11): quotas, budget, and alerts applied.
+4. Done (2026-10-11): Preview verification and the attribution review with live results.
+5. Done (2026-10-11): Step C. Production variables were added, the capability enabled, the smoke test passed, and the rollback path was checked.
 
 ## Rollback
 

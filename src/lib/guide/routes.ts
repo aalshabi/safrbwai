@@ -101,7 +101,6 @@ const offerSteps: readonly GuideStep[] = [
 function previewSteps(
   route: GuideRoute,
   capability:
-    | "hotelIdentityLookup"
     | "hotelOfferReview"
     | "destinationChecklist"
     | "hotelComparison"
@@ -119,10 +118,15 @@ export const GUIDE_DEFINITIONS: Readonly<Record<GuideRoute, GuideDefinition>> = 
   "/analyze-offer": { route: "/analyze-offer", steps: offerSteps },
   "/analyze-hotel": {
     route: "/analyze-hotel",
-    steps: previewSteps("/analyze-hotel", "hotelIdentityLookup", text(
-      "الواجهة مخصصة للبحث عن هوية الفندق من مصدر رسمي فقط. لا تعرض تقييمات أو أسعارًا أو توصيات، والاتصال بالمصدر غير مفعّل حاليًا.",
-      "This preview only presents a disabled, source-backed hotel identity lookup interface. It shows no ratings, prices, or recommendations, and provider access is currently disabled."
-    )),
+    steps: [
+      step("/analyze-hotel", "hotelIdentityLookup-status", text("ما يفعله البحث", "What the lookup does"), capabilityBody("hotelIdentityLookup"), {
+        capability: "hotelIdentityLookup",
+      }),
+      step("/analyze-hotel", "hotelIdentityLookup-limits", text("حدود النتيجة", "Result limits"), text(
+        "النتيجة هوية المكان فقط: الاسم والعنوان والموقع والنوع وحالة النشاط ورابط المصدر. لا تعني توصية، وتحقق من الفندق مع مصدره الرسمي قبل الحجز.",
+        "The result is place identity only: name, address, location, type, business status, and source link. It is not a recommendation; verify the hotel with its official source before booking."
+      ), { capability: "hotelIdentityLookup" }),
+    ],
   },
   "/analyze-destination": {
     route: "/analyze-destination",

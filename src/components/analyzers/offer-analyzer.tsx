@@ -105,6 +105,7 @@ export function OfferAnalyzer() {
   const [text, setText] = React.useState("");
   const [url, setUrl] = React.useState("");
   const [pdf, setPdf] = React.useState<File | null>(null);
+  const [textFromPdf, setTextFromPdf] = React.useState(false);
   const [image, setImage] = React.useState<File | null>(null);
   const [pending, setPending] = React.useState<TravelOfferInputType | null>(null);
   const [submitted, setSubmitted] = React.useState<TravelOfferInput | null>(null);
@@ -153,6 +154,18 @@ export function OfferAnalyzer() {
     clearMethod(method); // enforce a single active method
     setMethod(next);
     setPending(null);
+    setTextFromPdf(false);
+  }
+
+  /**
+   * A PDF's text was read on the device. It moves to the text field for the
+   * user to review before analysis; the file itself is dropped.
+   */
+  function onPdfExtracted(extracted: string) {
+    setPdf(null);
+    setText(extracted);
+    setMethod("text");
+    setTextFromPdf(true);
   }
 
   function onSelect(next: TravelOfferInputType) {
@@ -287,8 +300,13 @@ export function OfferAnalyzer() {
                   <TravelOfferInputSelector method={method} onSelect={onSelect} />
 
                   <div>
+                    {method === "text" && textFromPdf && (
+                      <p role="status" className="rounded-lg border border-teal/30 bg-teal/5 p-3 text-sm text-foreground">
+                        {t.analyzeOffer.v1.pdf.reviewNotice}
+                      </p>
+                    )}
                     {method === "text" && <TextOfferInput value={text} onChange={setText} error={textError} />}
-                    {method === "pdf" && <FileOfferInput file={pdf} onFile={setPdf} />}
+                    {method === "pdf" && <FileOfferInput file={pdf} onFile={setPdf} onExtracted={onPdfExtracted} />}
                     {method === "image" && <ImageOfferInput file={image} onFile={setImage} />}
                     {method === "url" && <UrlOfferInput value={url} onChange={setUrl} error={urlError} />}
                   </div>

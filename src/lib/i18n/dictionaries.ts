@@ -392,6 +392,15 @@ export const dictionaries = {
           browse: "اختر ملفًا",
           selected: "الملف المحدد",
           remove: "إزالة الملف",
+          reading: "جارٍ قراءة نص الملف على جهازك…",
+          reviewNotice: "نص مستخرج من الملف — راجعه وصحّح أي خطأ قبل التحليل. لم يُرسل الملف إلى أي مكان.",
+          refusals: {
+            too_many_pages: "الملف أطول من 20 صفحة. انسخ جزء العرض فقط والصقه.",
+            encrypted: "الملف محمي بكلمة مرور ولا يمكن قراءته.",
+            no_text: "لا يحتوي الملف على نص قابل للقراءة (قد يكون صورة ممسوحة). الصق نص العرض بدلًا من ذلك.",
+            too_long: "نص الملف أطول من الحد المسموح. انسخ جزء العرض فقط والصقه.",
+            failed: "تعذّرت قراءة الملف. جرّب ملفًا آخر أو الصق نص العرض.",
+          },
         },
         image: {
           label: "صورة العرض",
@@ -1055,6 +1064,15 @@ export const dictionaries = {
           browse: "Choose a file",
           selected: "Selected file",
           remove: "Remove file",
+          reading: "Reading the file's text on your device…",
+          reviewNotice: "Text extracted from the file — review and correct it before analysis. The file was not sent anywhere.",
+          refusals: {
+            too_many_pages: "The file is longer than 20 pages. Copy only the offer part and paste it.",
+            encrypted: "The file is password-protected and cannot be read.",
+            no_text: "The file has no readable text (it may be a scanned image). Paste the offer text instead.",
+            too_long: "The file's text is longer than the allowed limit. Copy only the offer part and paste it.",
+            failed: "The file could not be read. Try another file or paste the offer text.",
+          },
         },
         image: {
           label: "Offer image",

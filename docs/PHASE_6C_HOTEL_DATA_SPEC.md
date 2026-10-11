@@ -442,9 +442,11 @@ Before any real provider request is enabled in Preview or Production:
 - [x] Current pricing and terms are re-checked (2026-10-08).
 - [x] Google Cloud billing owner is identified (Product Owner, 2026-10-08; billing is contracted through an authorized Saudi Maps reseller).
 - [x] Preview and Production credential model is approved (separate service account per environment, 2026-10-08).
-- [x] Initial quotas, budget, and billing alerts are documented (2026-10-08; not yet applied, because billing is not linked).
-- [ ] Google Maps attribution design is reviewed in Arabic, English, and at 390px. The official logo was chosen and implemented; the visual review on Preview is still pending.
+- [x] Initial quotas, budget, and billing alerts are documented (2026-10-08) and applied (2026-10-11).
+- [x] Google Maps attribution design is reviewed in Arabic, English, and at 390px (official logo, reviewed with live results on Preview, 2026-10-11).
 - [x] The capability wording decision is approved (2026-10-08).
+
+Production activation was approved and completed on 2026-10-11 (Step C).
 
 Progress and open items: `docs/PHASE_6C_3_PROGRESS.md`.
 
