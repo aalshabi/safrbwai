@@ -446,6 +446,8 @@ Before any real provider request is enabled in Preview or Production:
 - [x] Google Maps attribution design is reviewed in Arabic, English, and at 390px (official logo, reviewed with live results on Preview, 2026-10-11).
 - [x] The capability wording decision is approved (2026-10-08).
 
+Production activation was approved and completed on 2026-10-11 (Step C).
+
 Progress and open items: `docs/PHASE_6C_3_PROGRESS.md`.
 
 ## Delivery sequence after approval

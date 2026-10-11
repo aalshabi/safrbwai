@@ -2,12 +2,12 @@
 
 ## Status
 
-- Authorization: Product Owner authorized Steps A (read-only readiness) and B (Preview readiness) on 2026-10-08. Step C (Production activation) is not authorized and requires a separate, explicit decision.
+- Authorization: Product Owner authorized Steps A (read-only readiness) and B (Preview readiness) on 2026-10-08, and Step C (Production activation) on 2026-10-11.
 - Step A: complete.
 - Step B: code merged (PR #43, merge commit `c141399ae7dc638bca2d597cb8df600d52c163ac`). Provider-independent review completed on 2026-10-10. **Live Preview verification passed on 2026-10-11** (see "Step B — live Preview verification").
 - Google Cloud and reseller track: **complete** on 2026-10-11. Billing linked through the contracted reseller, Places API (New) enabled, and the decided quotas, budget, and alerts applied.
-- Step C: not started. It requires a separate, explicit activation decision.
-- Production: hotel lookup disabled. Verified after the PR #43 deployment: both `/api/hotels/search` and `/api/hotels/name` return `503 HOTEL_SEARCH_DISABLED`, the UI renders disabled, and `noindex, nofollow` is unchanged. Re-checked on 2026-10-11 after the Google Cloud setup: `/api/hotels/search` on the production domain still returns `503 HOTEL_SEARCH_DISABLED`, and the page renders the disabled state.
+- Step C: **complete** on 2026-10-11 (PR #53, merge commit `415258286f2a210068a4e393e54bf4ba0becd834`). See "Step C — Production activation".
+- Production: hotel lookup **enabled** since 2026-10-11. Before activation, the lookup was verified disabled after the PR #43 deployment and again on 2026-10-11 after the Google Cloud setup (`503 HOTEL_SEARCH_DISABLED`). `noindex, nofollow` is unchanged.
 - Product stage: `prelaunch`.
 
 This repository is public. Google Cloud and Vercel identifiers are therefore recorded only by name, never by value.
@@ -107,6 +107,38 @@ Attribution with live results, on the selected-hotel card:
 - The 1440 px cells were also reviewed by screenshot: the logo is legible and unmodified on both backgrounds.
 - The remaining combinations (Arabic at 1440 px, English at 390 px) use the same component and were covered by the 2026-10-10 layout matrix.
 
+## Step C — Production activation (2026-10-11)
+
+Order, chosen so that code, copy, and configuration go live together:
+
+1. Vercel Production variables, which take effect only at the next deployment:
+   - the shared `VERCEL_TEAM_ID`, `GCP_PROJECT_NUMBER`, `GCP_WORKLOAD_IDENTITY_POOL_ID`, `GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID`, and `HOTEL_IDENTITY_LOOKUP_ENABLED=true` now target Production and Preview, without Development;
+   - a separate Production `GCP_SERVICE_ACCOUNT_EMAIL` names the Production service account, so the Preview service account is never used in Production.
+2. PR #53 merged:
+   - `hotelIdentityLookup` became `enabled`;
+   - Privacy and Terms describe the active search in the present tense, with the same substance;
+   - the page metadata and guide describe the working lookup.
+3. The Production deployment of the merge commit reached `READY`.
+
+Post-deployment smoke test on the production domain:
+
+- An Arabic search through `/api/hotels/search` returned `200` with one result. That confirms the Production service account's federation binding.
+- English UI flow, "Atlantis The Palm" / "Dubai":
+  - one result, then the selected-hotel card with the Arabic other-language name, address, coordinates, "Resort hotel", "Operational", and the source link;
+  - the official gray Google Maps logo at 98×18 px, loaded and visible.
+- Navigation and footer list "Hotel identity lookup". `noindex, nofollow` is still present.
+- Production runtime logs over the following 30 minutes contain no error, warning, or fatal entry.
+
+Rollback check, without disrupting Production:
+
+- The previous Production deployment is the instant-rollback candidate. It still serves the disabled page: the analyzer renders with `enabled: false`, and the navigation has no lookup link. Promoting it restores the disabled state immediately.
+- The flag path still works: without `HOTEL_IDENTITY_LOOKUP_ENABLED` exactly `true`, the page stays disabled in every environment, and the API routes fail closed. Tests cover both.
+
+Monitoring:
+
+- The daily quota of 100 per method is shared with Preview. When it is exhausted, the API returns its safe "temporarily unavailable" state, never fabricated results.
+- The budget alerts at 50%, 90%, and 100% of USD 20 are the spend signal.
+
 ## Provider-independent review (2026-10-10)
 
 Baseline: `claude/demo-integrity-fixes` at merge commit `029158a9d1b985e32d85ea3366a1942160f57b90`.
@@ -156,7 +188,7 @@ Baseline: `claude/demo-integrity-fixes` at merge commit `029158a9d1b985e32d85ea3
 2. Done (2026-10-11): Places API (New) enabled.
 3. Done (2026-10-11): quotas, budget, and alerts applied.
 4. Done (2026-10-11): Preview verification and the attribution review with live results.
-5. Step C, only after a separate decision. Add the Production variables (including `VERCEL_TEAM_ID` and the Production service account), set the server flag, decide whether to enable the `hotelIdentityLookup` capability, then run the post-deployment smoke test and a rollback check.
+5. Done (2026-10-11): Step C. Production variables were added, the capability enabled, the smoke test passed, and the rollback path was checked.
 
 ## Rollback
 
