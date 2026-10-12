@@ -7,7 +7,7 @@ import {
 
 export type ProductStage = "closed_beta" | "prelaunch" | "public";
 
-const CONFIGURED_PRODUCT_STAGE: ProductStage = "prelaunch";
+const CONFIGURED_PRODUCT_STAGE: ProductStage = "public";
 
 export function resolveProductStage(
   requestedStage: ProductStage,

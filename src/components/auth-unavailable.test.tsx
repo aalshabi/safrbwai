@@ -29,7 +29,7 @@ describe("disabled account page", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "الحسابات غير متاحة في إصدار ما قبل الإطلاق الحالي.",
+        name: "الحسابات غير متاحة في الإصدار الحالي.",
       })
     ).toBeTruthy();
     expect(screen.getByText(/تسجيل الدخول وإنشاء الحسابات غير مفعّلين/)).toBeTruthy();
@@ -49,7 +49,7 @@ describe("disabled account page", () => {
 
     expect(
       await screen.findByRole("heading", {
-        name: "Accounts are not available in the current pre-launch release.",
+        name: "Accounts are not available in the current release.",
       })
     ).toBeTruthy();
     expect(screen.getByText(/Sign-in and account creation are not currently enabled/)).toBeTruthy();

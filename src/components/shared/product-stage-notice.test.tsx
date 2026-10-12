@@ -21,16 +21,12 @@ afterEach(() => {
 });
 
 describe("ProductStageNotice", () => {
-  it("shows the Arabic pre-launch notice, text-only scope, safety warning, and policy links", () => {
+  it("shows the Arabic public-release label, text-only scope, safety warning, and policy links", () => {
     renderNotice();
 
-    expect(screen.getByRole("heading", { name: "إصدار ما قبل الإطلاق" })).toBeTruthy();
-    expect(screen.getByText("ما قبل الإطلاق")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "إصدار ما قبل الإطلاق — تحقق دائمًا من المصدر الرسمي قبل أي التزام مالي."
-      )
-    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "الإصدار الأول" })).toBeTruthy();
+    expect(screen.getByText("إصدار عام")).toBeTruthy();
+    expect(screen.queryByText(/ما قبل الإطلاق/)).toBeNull();
     expect(
       screen.getByText("تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد.")
     ).toBeTruthy();
@@ -47,17 +43,13 @@ describe("ProductStageNotice", () => {
     );
   });
 
-  it("shows the English pre-launch notice and safety warning", async () => {
+  it("shows the English public-release label and safety warning", async () => {
     window.localStorage.setItem("safer-bewae-locale", "en");
     renderNotice();
 
-    expect(await screen.findByRole("heading", { name: "Pre-launch release" })).toBeTruthy();
-    expect(screen.getByText("Pre-launch")).toBeTruthy();
-    expect(
-      screen.getByText(
-        "Pre-launch release — always verify with the official source before making a financial commitment."
-      )
-    ).toBeTruthy();
+    expect(await screen.findByRole("heading", { name: "First release" })).toBeTruthy();
+    expect(screen.getByText("Public release")).toBeTruthy();
+    expect(screen.queryByText(/Pre-launch/)).toBeNull();
     expect(
       screen.getByText(
         "Text analysis is currently available. PDF files, images, and links are not supported yet."

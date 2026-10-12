@@ -68,11 +68,11 @@ describe("SafrBwai Guide", () => {
   it("opens, advances, moves back, and restarts from the first step", async () => {
     renderGuide();
     fireEvent.click(await screen.findByRole("button", { name: "افتح مساعد سافر بوعي" }));
-    expect(screen.getByRole("heading", { name: "إصدار ما قبل الإطلاق" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "النتائج إرشادية" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "التالي" }));
     expect(screen.getByRole("heading", { name: "الأداة المتاحة الآن" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "السابق" }));
-    expect(screen.getByRole("heading", { name: "إصدار ما قبل الإطلاق" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "النتائج إرشادية" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "إعادة الجولة" }));
     expect(screen.getByText("الخطوة ١ من ٥")).toBeTruthy();
   });

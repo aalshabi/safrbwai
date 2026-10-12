@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
-import { DEMO_ROBOTS } from "@/lib/seo";
+import { SITE_ROBOTS } from "@/lib/seo";
 
 const display = Tajawal({
   subsets: ["arabic", "latin"],
@@ -58,7 +58,7 @@ export const metadata: Metadata = {
     description:
       "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
   },
-  robots: DEMO_ROBOTS,
+  robots: SITE_ROBOTS,
   alternates: {
     canonical: "/",
     languages: {

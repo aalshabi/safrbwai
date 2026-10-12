@@ -4,30 +4,32 @@
 
 SafrBwai helps you review the information stated in travel offers and make a clearer decision before booking.
 
-## نطاق ما قبل الإطلاق
+## النطاق الحالي
 
 - تحليل عروض السفر النصية فقط.
 - تحليل حتمي قائم على قواعد.
 - لا يستخدم AI أو LLM.
 - يدعم العربية والإنجليزية.
 - ملفات PDF والصور والروابط غير مدعومة.
+- بحث هوية الفندق بالاسم والمدينة من Google Places، دون تقييمات أو أسعار أو توصيات.
 - لا توجد حسابات مستخدمين مفعّلة في التدفق الحالي.
 - لا تُحفظ نصوص العروض أو نتائج التحليل في قاعدة بيانات.
 - Feedback معطّل. توجد واجهة قياس محايدة للمزوّد بأحداث وخصائص محددة، والإرسال الخارجي معطّل.
-- تتوفر ثلاثة أدلة مراجعة موثقة مع تاريخ مراجعة ظاهر، وتبقى الفهرسة العامة معطّلة.
+- تتوفر ثلاثة أدلة مراجعة موثقة مع تاريخ مراجعة ظاهر. الصفحات العامة متاحة لمحركات البحث.
 - النتائج استشارية ولا تضمن صحة العرض أو البائع.
 
-## Pre-launch scope
+## Current scope
 
 - Text analysis only.
 - Deterministic rule-based analysis.
 - No AI or LLM.
 - Arabic and English are supported.
 - PDF files, images, and links are not supported.
+- Hotel identity lookup by name and city from Google Places, without ratings, prices, or recommendations.
 - User accounts are not enabled in the current flow.
 - Offer text and analysis results are not stored in a database.
 - Feedback is disabled. A provider-neutral allowlisted event interface exists, with external transmission disabled.
-- Three sourced offer-review guides include visible review dates; public indexing remains disabled.
+- Three sourced offer-review guides include visible review dates. Public pages are open to search engines.
 - Results are advisory and are not a guarantee of the offer or seller.
 
 ## طريقة العمل
@@ -65,6 +67,6 @@ npm run build
 
 ## الحالة
 
-هذا إصدار ما قبل الإطلاق. ملفات الخصوصية والشروط مسودات أولية تحتاج مراجعة قانونية قبل أي إطلاق تجاري.
+إصدار عام. الخصوصية والشروط معتمدة من مالك المنتج، ولا تمثل مراجعة قانونية مستقلة. سجل الإطلاق: `docs/PUBLIC_LAUNCH.md`.
 
 © 2026 سافر بوعي · SafrBwai — Abdullah Travel Lab

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { getDictionary } from "@/lib/i18n/dictionaries";
-import { DEMO_ROBOTS } from "@/lib/seo";
+import { SITE_ROBOTS } from "@/lib/seo";
 
 const ar = getDictionary("ar");
 const en = getDictionary("en");
@@ -120,9 +120,9 @@ describe("home page integrity", () => {
     expect(homeText).not.toContain("دقة");
   });
 
-  // (8) metadata prevents archiving
-  it("keeps the demo out of search indexes", () => {
-    expect(DEMO_ROBOTS.index).toBe(false);
-    expect(DEMO_ROBOTS.follow).toBe(false);
+  // (8) public pages are indexable after the launch gate passed
+  it("opens public pages to search indexes", () => {
+    expect(SITE_ROBOTS.index).toBe(true);
+    expect(SITE_ROBOTS.follow).toBe(true);
   });
 });

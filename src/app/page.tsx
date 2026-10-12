@@ -6,7 +6,7 @@ import { Pillars } from "@/components/home/pillars";
 import { CTA } from "@/components/home/cta";
 import { ProductStageNotice } from "@/components/shared/product-stage-notice";
 
-// Neutral structured data for the pre-launch travel-offer review tool.
+// Neutral structured data for the travel-offer review tool.
 const HOME_JSON_LD = {
   "@context": "https://schema.org",
   "@type": "WebSite",

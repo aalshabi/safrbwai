@@ -1,12 +1,17 @@
+import { isFeatureEnabled } from "@/lib/product/capabilities";
+
 /**
- * SEO constants for the pre-launch phase.
+ * SEO constants.
  *
- * The whole site remains out of search indexes until the public launch gate
- * has passed. Stage 6A intentionally does not alter these controls.
+ * Search engines may index the site only while the `publicIndexing`
+ * capability is enabled, which the public launch gate requires. Private pages
+ * (/admin, /auth, /dashboard) keep their own `noindex` metadata.
  */
-export const DEMO_ROBOTS = {
-  index: false,
-  follow: false,
+const INDEXABLE = isFeatureEnabled("publicIndexing");
+
+export const SITE_ROBOTS = {
+  index: INDEXABLE,
+  follow: INDEXABLE,
 } as const;
 
 export const SITE_TITLE_AR = "قبل لا تدفع… افهم قرار سفرك.";

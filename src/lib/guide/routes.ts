@@ -30,9 +30,9 @@ function previewSummary(locale: Locale): string {
 }
 
 const homeSteps: readonly GuideStep[] = [
-  step("/", "home-stage", text("إصدار ما قبل الإطلاق", "Pre-launch release"), text(
-    "هذه النسخة في مرحلة ما قبل الإطلاق، والنتائج إرشادية ويجب التحقق منها من المصدر الرسمي.",
-    "This release is in pre-launch. Results are advisory and should be verified with the official source."
+  step("/", "home-stage", text("النتائج إرشادية", "Results are advisory"), text(
+    "النتائج إرشادية وتستند إلى النص الذي تدخله، ويجب التحقق منها من المصدر الرسمي قبل الحجز.",
+    "Results are advisory and based on the text you provide. Verify them with the official source before booking."
   )),
   step("/", "home-enabled", text("الأداة المتاحة الآن", "Available now"), capabilityBody("textOfferAnalysis"), {
     capability: "textOfferAnalysis",

@@ -18,18 +18,14 @@ describe("product dictionary", () => {
     expect(getDictionary("en").brand.name).toBe("SafrBwai");
   });
 
-  it("uses the approved CTA and pre-launch unavailable-account copy", () => {
+  it("uses the approved CTA and unavailable-account copy", () => {
     const ar = getDictionary("ar");
     const en = getDictionary("en");
 
     expect(ar.cta.button).toBe("حلّل عرض سفر");
     expect(en.cta.button).toBe("Analyze a travel offer");
-    expect(ar.auth.unavailableTitle).toBe(
-      "الحسابات غير متاحة في إصدار ما قبل الإطلاق الحالي."
-    );
-    expect(en.auth.unavailableTitle).toBe(
-      "Accounts are not available in the current pre-launch release."
-    );
+    expect(ar.auth.unavailableTitle).toBe("الحسابات غير متاحة في الإصدار الحالي.");
+    expect(en.auth.unavailableTitle).toBe("Accounts are not available in the current release.");
     expect(ar.auth.unavailableAction).toBe("حلّل عرض سفر");
     expect(en.auth.unavailableAction).toBe("Analyze a travel offer");
   });
@@ -120,15 +116,15 @@ describe("product dictionary", () => {
     }
   });
 
-  it("exposes the pre-launch scope and safety copy in both languages", () => {
+  it("exposes the release scope and safety copy in both languages", () => {
     const ar = getDictionary("ar").analyzeOffer.v2.releaseScope;
     const en = getDictionary("en").analyzeOffer.v2.releaseScope;
 
-    expect(ar.title).toBe("إصدار ما قبل الإطلاق");
+    expect(ar.title).toBe("الإصدار الأول");
     expect(ar.supportedSources).toBe(
       "تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد."
     );
-    expect(en.title).toBe("Pre-launch release");
+    expect(en.title).toBe("First release");
     expect(en.supportedSources).toBe(
       "Text analysis is currently available. PDF files, images, and links are not supported yet."
     );

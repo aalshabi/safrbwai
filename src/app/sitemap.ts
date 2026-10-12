@@ -9,6 +9,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
     "/analyze-offer",
+    "/analyze-hotel",
     "/guides",
     ...getReviewedGuides().map((guide) => `/guides/${guide.slug}`),
     "/privacy",
