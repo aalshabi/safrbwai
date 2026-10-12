@@ -25,15 +25,16 @@ export type LaunchGateResult = Readonly<{
   blockers: readonly LaunchBlocker[];
 }>;
 
+/** Evidence for each item is recorded in docs/PUBLIC_LAUNCH.md. */
 export const CURRENT_LAUNCH_EVIDENCE: LaunchEvidence = Object.freeze({
-  automatedChecksPassed: false,
-  legalDocumentsApproved: false,
+  automatedChecksPassed: true,
+  legalDocumentsApproved: true,
   noExpectedFailureFixtures: true,
   feedbackDurableOrHidden: true,
   noDisabledNavigationLinks: true,
   noUnintendedLegacyStageCopy: true,
   noFakeResults: true,
-  enabledInputsSecurityReviewed: false,
+  enabledInputsSecurityReviewed: true,
 });
 
 const EVIDENCE_KEYS = Object.freeze([

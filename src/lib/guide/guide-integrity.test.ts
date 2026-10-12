@@ -5,7 +5,7 @@ import { LEGAL_CONTENT } from "@/components/legal-page";
 import { isPublicBetaFeedbackEnabled, isServerBetaFeedbackEnabled } from "@/lib/feedback/config";
 import { KNOWN_REGRESSION_GAPS } from "@/lib/offer-pipeline/regression/load-fixtures";
 import { getProductStage } from "@/lib/product/stage";
-import { DEMO_ROBOTS } from "@/lib/seo";
+import { SITE_ROBOTS } from "@/lib/seo";
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), "utf8");
 const guideSources = [
@@ -83,11 +83,11 @@ describe("guide privacy, accessibility, and launch integrity", () => {
     }
   });
 
-  it("preserves pre-launch, disabled feedback, noindex, and zero known regression gaps", () => {
-    expect(getProductStage()).toBe("prelaunch");
+  it("preserves the public stage, disabled feedback, indexing, and zero known regression gaps", () => {
+    expect(getProductStage()).toBe("public");
     expect(isPublicBetaFeedbackEnabled("false")).toBe(false);
     expect(isServerBetaFeedbackEnabled("false")).toBe(false);
-    expect(DEMO_ROBOTS).toEqual({ index: false, follow: false });
+    expect(SITE_ROBOTS).toEqual({ index: true, follow: true });
     expect(KNOWN_REGRESSION_GAPS).toEqual({});
   });
 });

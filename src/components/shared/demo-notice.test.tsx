@@ -6,13 +6,14 @@ import { DemoNotice, DemoUnavailable } from "./demo-notice";
 afterEach(cleanup);
 
 describe("DemoNotice", () => {
-  it("renders accurate pre-launch preview text", () => {
+  it("renders accurate preview text", () => {
     render(
       <LanguageProvider>
         <DemoNotice />
       </LanguageProvider>
     );
-    expect(screen.getByText(/معاينة قبل الإطلاق/)).toBeTruthy();
+    expect(screen.getByText(/^معاينة — لا توجد نتيجة فعلية/)).toBeTruthy();
+    expect(screen.queryByText(/قبل الإطلاق/)).toBeNull();
   });
 
   it("DemoUnavailable renders the neutral current-unavailability text", () => {

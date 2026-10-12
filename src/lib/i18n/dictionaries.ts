@@ -64,7 +64,7 @@ export const dictionaries = {
     },
     demo: {
       badge:
-        "معاينة قبل الإطلاق — لا توجد نتيجة فعلية أو بيانات خارجية لهذه الأداة بعد.",
+        "معاينة — لا توجد نتيجة فعلية أو بيانات خارجية لهذه الأداة بعد.",
       unavailable: "غير متاح حاليًا — يتطلب تنفيذًا وبيانات فعلية قبل التفعيل.",
       offerTitle: "استخراج المحتوى غير مفعّل بعد",
       offerBody:
@@ -74,7 +74,7 @@ export const dictionaries = {
       futureNote: "لن نعرض أي أرقام أو أسماء أو توصيات قبل توفّر بيانات ومصادر فعلية.",
     },
     hero: {
-      badge: "إصدار ما قبل الإطلاق",
+      badge: "الإصدار الأول",
       title: "قبل لا تدفع… افهم قرار سفرك.",
       subtitle:
         "سافر بوعي أداة تساعدك على مراجعة المعلومات الواردة في عروض السفر واتخاذ قرار أوضح قبل الحجز.",
@@ -92,7 +92,7 @@ export const dictionaries = {
     },
     features: {
       title: "حالة الأدوات",
-      subtitle: "نوضّح ما هو متاح الآن وما يبقى للمعاينة قبل الإطلاق.",
+      subtitle: "نوضّح ما هو متاح الآن وما يبقى للمعاينة.",
       hotel: {
         title: "مراجعة الفنادق",
         desc: "أداة لمراجعة إشارات الفندق قبل الحجز — قيد التطوير.",
@@ -456,7 +456,7 @@ export const dictionaries = {
         comingSoon: "قريبًا — هذا المصدر غير مفعّل بعد. المتاح الآن هو تحليل النص فقط.",
         unsupportedInputLabel: "قريبًا",
         releaseScope: {
-          title: "إصدار ما قبل الإطلاق",
+          title: "الإصدار الأول",
           supportedSources:
             "تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد.",
           safetyNotice:
@@ -651,7 +651,7 @@ export const dictionaries = {
       openAnalyzer: "افتح تحليل عرض السفر",
     },
     auth: {
-      unavailableTitle: "الحسابات غير متاحة في إصدار ما قبل الإطلاق الحالي.",
+      unavailableTitle: "الحسابات غير متاحة في الإصدار الحالي.",
       unavailableBody:
         "تسجيل الدخول وإنشاء الحسابات غير مفعّلين حاليًا. يمكنك تحليل عرض سفر نصي دون حساب.",
       unavailableAction: "حلّل عرض سفر",
@@ -735,7 +735,7 @@ export const dictionaries = {
     },
     demo: {
       badge:
-        "Pre-launch preview — this tool has no real result or external data yet.",
+        "Preview — this tool has no real result or external data yet.",
       unavailable: "Not currently available — implementation and real data are required before enabling.",
       offerTitle: "Content extraction is not enabled yet",
       offerBody:
@@ -745,7 +745,7 @@ export const dictionaries = {
       futureNote: "We won't show any numbers, names or recommendations before real data and sources are available.",
     },
     hero: {
-      badge: "Pre-launch release",
+      badge: "First release",
       title: "Understand your travel decision before you pay.",
       subtitle:
         "SafrBwai helps you review the information stated in travel offers and make a clearer decision before booking.",
@@ -763,7 +763,7 @@ export const dictionaries = {
     },
     features: {
       title: "Tool status",
-      subtitle: "A clear view of what is available now and what remains a pre-launch preview.",
+      subtitle: "A clear view of what is available now and what remains a preview.",
       hotel: {
         title: "Hotel review",
         desc: "A tool to review a hotel's signals before booking — under development.",
@@ -1127,7 +1127,7 @@ export const dictionaries = {
         comingSoon: "Coming soon — this source is not enabled yet. Only text analysis is available now.",
         unsupportedInputLabel: "Coming soon",
         releaseScope: {
-          title: "Pre-launch release",
+          title: "First release",
           supportedSources:
             "Text analysis is currently available. PDF files, images, and links are not supported yet.",
           safetyNotice:
@@ -1322,7 +1322,7 @@ export const dictionaries = {
       openAnalyzer: "Open travel offer analysis",
     },
     auth: {
-      unavailableTitle: "Accounts are not available in the current pre-launch release.",
+      unavailableTitle: "Accounts are not available in the current release.",
       unavailableBody:
         "Sign-in and account creation are not currently enabled. You can analyze a text travel offer without an account.",
       unavailableAction: "Analyze a travel offer",

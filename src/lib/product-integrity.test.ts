@@ -6,7 +6,7 @@ import { LEGAL_APPROVAL_NOTICE, LEGAL_CONTENT } from "@/components/legal-page";
 import { isPublicBetaFeedbackEnabled, isServerBetaFeedbackEnabled } from "@/lib/feedback/config";
 import { KNOWN_REGRESSION_GAPS } from "@/lib/offer-pipeline/regression/load-fixtures";
 import { SAFRBWAI_URL } from "@/lib/result-actions/format-questions";
-import { DEMO_ROBOTS, SITE_DESCRIPTION } from "@/lib/seo";
+import { SITE_DESCRIPTION, SITE_ROBOTS } from "@/lib/seo";
 
 function readSource(path: string): string {
   return readFileSync(join(process.cwd(), path), "utf8");
@@ -26,7 +26,7 @@ const privacyEn = legalText("privacy", "en");
 const termsAr = legalText("terms", "ar");
 const termsEn = legalText("terms", "en");
 
-describe("current pre-launch product integrity", () => {
+describe("current public product integrity", () => {
   it("states the scoped Product Owner approval without claiming independent legal review", () => {
     expect(LEGAL_APPROVAL_NOTICE.ar).toContain("معتمدة من مالك المنتج");
     expect(LEGAL_APPROVAL_NOTICE.ar).toContain("لا تمثل مراجعة قانونية مستقلة");
@@ -34,7 +34,7 @@ describe("current pre-launch product integrity", () => {
     expect(LEGAL_APPROVAL_NOTICE.en).toContain("not independent legal review");
   });
 
-  it("describes a text-only pre-launch release without claiming AI, scoring, or inactive tools", () => {
+  it("describes the text-analysis release without claiming AI, scoring, or inactive tools", () => {
     expect(readme).toContain(
       "سافر بوعي أداة تساعدك على مراجعة المعلومات الواردة في عروض السفر واتخاذ قرار أوضح قبل الحجز."
     );
@@ -45,7 +45,8 @@ describe("current pre-launch product integrity", () => {
     expect(readme).toContain("Deterministic rule-based analysis.");
     expect(readme).toContain("No AI or LLM.");
     expect(readme).toContain("PDF files, images, and links are not supported.");
-    expect(readme).toContain("Pre-launch scope");
+    expect(readme).toContain("Current scope");
+    expect(readme).not.toContain("Pre-launch");
     expect(readme).toContain("Results are advisory");
 
     for (const unsupportedClaim of [
@@ -62,7 +63,7 @@ describe("current pre-launch product integrity", () => {
     }
   });
 
-  it("keeps the privacy draft aligned with the current Arabic and English pre-launch flow", () => {
+  it("keeps the privacy policy aligned with the current Arabic and English flow", () => {
     expect(privacyAr).toContain("لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة");
     expect(privacyEn).toContain("Sign-in and user accounts are not enabled");
     expect(privacyAr).toContain("رفع ملفات PDF أو الصور وتحليل الروابط غير مدعوم");
@@ -174,9 +175,9 @@ describe("current pre-launch product integrity", () => {
     expect(metadataSources.toLowerCase()).not.toContain("review hotels, destinations");
   });
 
-  it("preserves the site URL, noindex controls, disabled feedback, and zero known gaps", () => {
+  it("preserves the site URL, public indexing, disabled feedback, and zero known gaps", () => {
     expect(SAFRBWAI_URL).toBe("https://www.safrbwai.com");
-    expect(DEMO_ROBOTS).toEqual({ index: false, follow: false });
+    expect(SITE_ROBOTS).toEqual({ index: true, follow: true });
     expect(isPublicBetaFeedbackEnabled("false")).toBe(false);
     expect(isServerBetaFeedbackEnabled("false")).toBe(false);
     expect(KNOWN_REGRESSION_GAPS).toEqual({});

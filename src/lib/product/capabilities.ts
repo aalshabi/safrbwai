@@ -130,7 +130,7 @@ export const PRODUCT_CAPABILITIES = {
     title: { ar: "مكتبة معرفة السفر", en: "Travel knowledge library" },
     route: "/knowledge",
     reason: {
-      ar: "محتوى محلي أولي متاح للمعاينة ويحتاج مراجعة تحريرية قبل الإطلاق.",
+      ar: "محتوى محلي أولي متاح للمعاينة ويحتاج مراجعة تحريرية قبل اعتماده.",
       en: "Initial local content is available for preview and needs editorial review before launch.",
     },
     launchRequirement: {
@@ -231,16 +231,16 @@ export const PRODUCT_CAPABILITIES = {
   },
   publicIndexing: {
     key: "publicIndexing",
-    status: "disabled",
+    status: "enabled",
     title: { ar: "الفهرسة العامة", en: "Public indexing" },
     route: null,
     reason: {
-      ar: "الفهرسة معطلة خلال ما قبل الإطلاق.",
-      en: "Indexing is disabled during pre-launch.",
+      ar: "صفحات الموقع العامة متاحة لمحركات البحث.",
+      en: "Public pages are open to search engines.",
     },
     launchRequirement: {
-      ar: "لا تُفعّل إلا بعد اجتياز بوابة الإطلاق كاملة.",
-      en: "Enable only after the complete launch gate passes.",
+      ar: "إبقاء الصفحات الخاصة والواجهات البرمجية خارج الفهرسة.",
+      en: "Keep private pages and APIs out of the index.",
     },
     requiredForPublicLaunch: true,
   },

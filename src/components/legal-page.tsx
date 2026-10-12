@@ -9,8 +9,8 @@ type LegalLink = { href: string; label: string };
 type Section = { h: string; p: string; links?: readonly LegalLink[] };
 
 export const LEGAL_APPROVAL_NOTICE = {
-  ar: "معتمدة من مالك المنتج لنطاق ما قبل الإطلاق. لا تمثل مراجعة قانونية مستقلة أو تصريحًا بالإطلاق التجاري.",
-  en: "Approved by the Product Owner for the pre-launch scope. This is not independent legal review or authorization for commercial launch.",
+  ar: "معتمدة من مالك المنتج. لا تمثل مراجعة قانونية مستقلة.",
+  en: "Approved by the Product Owner. This is not independent legal review.",
 };
 
 const TITLES: Record<Doc, { ar: string; en: string }> = {
@@ -22,8 +22,8 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
   privacy: {
     ar: [
       {
-        h: "نطاق ما قبل الإطلاق",
-        p: "سافر بوعي أداة لمراجعة عروض السفر النصية في إصدار ما قبل الإطلاق. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
+        h: "نطاق الخدمة",
+        p: "سافر بوعي أداة لمراجعة عروض السفر النصية. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
       },
       {
         h: "المصادر المدعومة",
@@ -83,8 +83,8 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
     ],
     en: [
       {
-        h: "Current pre-launch scope",
-        p: "SafrBwai is a pre-launch tool for reviewing text travel offers. Sign-in and user accounts are not enabled in the current flow.",
+        h: "Service scope",
+        p: "SafrBwai is a tool for reviewing text travel offers. Sign-in and user accounts are not enabled in the current flow.",
       },
       {
         h: "Supported sources",
@@ -151,7 +151,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "نطاق الخدمة الحالي",
-        p: "تحليل النص هو المصدر الوحيد المدعوم لتحليل العروض في إصدار ما قبل الإطلاق. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). ملفات PDF والصور والروابط وميزات الحسابات غير مفعّلة.",
+        p: "تحليل النص هو المصدر الوحيد المدعوم لتحليل العروض في الإصدار الحالي. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). ملفات PDF والصور والروابط وميزات الحسابات غير مفعّلة.",
       },
       {
         h: "بيانات الفندق الرسمية",
@@ -209,7 +209,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Current service scope",
-        p: "Text analysis is the only supported source for offer analysis in the current pre-launch release. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). PDF files, images, links, and account features are not enabled.",
+        p: "Text analysis is the only supported source for offer analysis in the current release. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). PDF files, images, links, and account features are not enabled.",
       },
       {
         h: "Official hotel data",

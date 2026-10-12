@@ -3,7 +3,7 @@ import { LegalPage } from "@/components/legal-page";
 
 export const metadata: Metadata = {
   title: "سياسة الخصوصية — Privacy Policy",
-  description: "سياسة خصوصية سافر بوعي لنطاق ما قبل الإطلاق وبحث هوية الفندق المخطط. SafrBwai pre-launch privacy disclosures.",
+  description: "سياسة خصوصية سافر بوعي وبحث هوية الفندق. SafrBwai privacy policy.",
   alternates: { canonical: "/privacy" },
 };
 

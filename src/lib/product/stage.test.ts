@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PRODUCT_CAPABILITIES, type ProductCapability } from "./capabilities";
-import { type LaunchEvidence } from "./launch-gate";
+import { CURRENT_LAUNCH_EVIDENCE, type LaunchEvidence } from "./launch-gate";
 import {
   getProductStage,
   isFeatureEnabled,
@@ -9,15 +9,17 @@ import {
 } from "./stage";
 
 describe("product stage", () => {
-  it("defaults to prelaunch", () => {
-    expect(getProductStage()).toBe("prelaunch");
-    expect(isPublicLaunch()).toBe(false);
+  it("is configured as public now that the launch gate passes", () => {
+    expect(getProductStage()).toBe("public");
+    expect(isPublicLaunch()).toBe(true);
   });
 
   it("resolves non-public stages without weakening the public gate", () => {
     expect(resolveProductStage("closed_beta")).toBe("closed_beta");
     expect(resolveProductStage("prelaunch")).toBe("prelaunch");
-    expect(() => resolveProductStage("public")).toThrow(/Public launch blocked/);
+    expect(() =>
+      resolveProductStage("public", { ...CURRENT_LAUNCH_EVIDENCE, legalDocumentsApproved: false })
+    ).toThrow(/Public launch blocked/);
   });
 
   it("exposes feature status through the central helper", () => {

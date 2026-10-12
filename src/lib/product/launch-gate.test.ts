@@ -29,9 +29,21 @@ const COMPLETE_CAPABILITIES = Object.values(PRODUCT_CAPABILITIES).reduce(
   {} as Record<keyof typeof PRODUCT_CAPABILITIES, ProductCapability>
 );
 
+const INCOMPLETE_CAPABILITIES = {
+  ...PRODUCT_CAPABILITIES,
+  publicIndexing: { ...PRODUCT_CAPABILITIES.publicIndexing, status: "disabled" },
+} satisfies Record<keyof typeof PRODUCT_CAPABILITIES, ProductCapability>;
+
 describe("public launch gate", () => {
-  it("blocks the current prelaunch state and reports concrete blockers", () => {
-    const result = evaluateLaunchGate();
+  it("passes for the current public release", () => {
+    expect(evaluateLaunchGate()).toEqual({ ready: true, blockers: [] });
+  });
+
+  it("reports each concrete blocker when evidence or a capability is missing", () => {
+    const result = evaluateLaunchGate(
+      { ...COMPLETE_EVIDENCE, automatedChecksPassed: false, legalDocumentsApproved: false },
+      INCOMPLETE_CAPABILITIES
+    );
     expect(result.ready).toBe(false);
     expect(result.blockers).toContainEqual({
       code: "capability_not_enabled",
@@ -39,7 +51,6 @@ describe("public launch gate", () => {
     });
     expect(result.blockers).toContainEqual({ code: "automatedChecksPassed" });
     expect(result.blockers).toContainEqual({ code: "legalDocumentsApproved" });
-    expect(result.blockers).toContainEqual({ code: "enabledInputsSecurityReviewed" });
   });
 
   it("keeps the expected-failure gate synchronized with the regression registry", () => {
@@ -50,14 +61,17 @@ describe("public launch gate", () => {
   });
 
   it("cannot be bypassed by evidence while an essential capability is incomplete", () => {
-    expect(() => assertPublicLaunchAllowed(COMPLETE_EVIDENCE)).toThrow(
+    expect(() => assertPublicLaunchAllowed(COMPLETE_EVIDENCE, INCOMPLETE_CAPABILITIES)).toThrow(
       /capability_not_enabled/
     );
   });
 
   it("cannot be bypassed by capabilities while release evidence is incomplete", () => {
     expect(() =>
-      assertPublicLaunchAllowed(CURRENT_LAUNCH_EVIDENCE, COMPLETE_CAPABILITIES)
+      assertPublicLaunchAllowed(
+        { ...CURRENT_LAUNCH_EVIDENCE, automatedChecksPassed: false },
+        COMPLETE_CAPABILITIES
+      )
     ).toThrow(/automatedChecksPassed/);
   });
 
