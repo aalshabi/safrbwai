@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { SITE_ROBOTS } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site-url";
 
 const display = Tajawal({
   subsets: ["arabic", "latin"],
@@ -20,7 +21,6 @@ const body = IBM_Plex_Sans_Arabic({
   display: "swap",
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

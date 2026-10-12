@@ -1,11 +1,10 @@
 import type { MetadataRoute } from "next";
 import { getReviewedGuides } from "@/lib/guides";
-import { isFeatureEnabled } from "@/lib/product/capabilities";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { isIndexable } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site-url";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  if (!isFeatureEnabled("publicIndexing")) return [];
+  if (!isIndexable()) return [];
   const routes = [
     "",
     "/analyze-offer",

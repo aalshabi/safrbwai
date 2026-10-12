@@ -23,14 +23,16 @@ The legal pages remain approved by the Product Owner. They are not an independen
   - preview badges, the account-unavailable message, and page descriptions;
   - the guide's first step;
   - Privacy, Terms, and the README.
-- Private pages keep their own `noindex` metadata. Preview tools (destination checklist, hotel comparison, knowledge library) are not in the sitemap and keep their preview labels.
+- Private pages keep `noindex, nofollow`. Preview tools (destination checklist, hotel comparison, knowledge library) get `noindex, follow`, stay out of the sitemap, and keep their preview labels.
+- Vercel Preview deployments are never indexable. On them, `robots.txt` disallows everything and the sitemap is empty.
+- The site origin for canonical links, the sitemap, and `robots.txt` comes from `NEXT_PUBLIC_SITE_URL`, falling back to `https://www.safrbwai.com`, never to localhost.
 
 ## Launch gate evidence
 
 | Gate item | Evidence |
 | --- | --- |
 | Required capabilities enabled | `textOfferAnalysis`, `travelGuides`, and `publicIndexing` are `enabled`. |
-| `automatedChecksPassed` | On the launch branch: lint clean, typecheck clean, 723/723 tests in 86 files (including the regression suite), and a successful production build. CI repeats the same checks on the PR. |
+| `automatedChecksPassed` | On the launch branch after the review fixes: lint clean, typecheck clean, 726/726 tests in 86 files (including the regression suite), and a successful production build. CI repeats the same checks on the PR. |
 | `legalDocumentsApproved` | Product Owner approval on 2026-10-12, as described above. |
 | `noExpectedFailureFixtures` | `KNOWN_REGRESSION_GAPS` is empty, and a test enforces it. |
 | `feedbackDurableOrHidden` | Feedback stays disabled: `/api/feedback` returns `503 FEEDBACK_DISABLED`. |
@@ -93,6 +95,17 @@ Cost controls for the hotel lookup:
 
 When the quota is exhausted, visitors see the safe "temporarily unavailable" message.
 
+## Independent pre-merge review
+
+A separate reviewer agent examined PR #54 before merge. Its verdict was "merge after fixes". Fixed in the PR:
+
+- The site URL fell back to `http://localhost:3000`. It now falls back to the production domain.
+- Preview tools inherited `index, follow`. They now send `noindex, follow`.
+- Preview deployments emitted allow-all robots. They are now never indexable.
+- The rollback/Preview path of `robots()` and `sitemap()` was untested. It is now tested.
+
+The reviewer checked every Privacy and Terms statement against the code and found none false. The legal follow-ups it noted are listed below.
+
 ## Rollback
 
 - Fastest: in Vercel, use Instant Rollback to promote the previous Production deployment, which still runs the `prelaunch` stage with `noindex`.
@@ -104,3 +117,12 @@ When the quota is exhausted, visitors see the safe "temporarily unavailable" mes
 - Before accounts are enabled, restrict the `next` redirect in `/auth/callback` to same-origin paths. It is not reachable today because accounts are not configured.
 - Watch the hotel lookup quota after launch, and raise it only with a matching budget decision.
 - Migrate to Tailwind 4 to clear the remaining build-time audit findings.
+- Legal completeness for a public product, with Product Owner approval of any new copy:
+  - controller identity and contact;
+  - user rights under the Saudi Personal Data Protection Law (PDPL);
+  - processing of IP addresses for rate limiting, the Vercel Firewall, and hosting logs.
+- Small copy follow-ups:
+  - the Terms "analyzes only the text provided by the user" sentence does not mention the hotel lookup;
+  - «عند تجربة الخدمة» / "when trying the service" still sounds like a trial;
+  - the README "Text analysis only." bullet now sits next to the hotel lookup bullet.
+- `/dashboard` is reachable (with `noindex`) and still shows placeholder savings tiles for a disabled feature. It predates the launch.

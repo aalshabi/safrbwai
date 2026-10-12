@@ -1,15 +1,14 @@
 import type { MetadataRoute } from "next";
-import { isFeatureEnabled } from "@/lib/product/capabilities";
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+import { isIndexable } from "@/lib/seo";
+import { SITE_URL } from "@/lib/site-url";
 
 /**
- * Crawling follows the `publicIndexing` capability, in sync with the site-wide
- * robots metadata in src/lib/seo.ts. Before the public launch every path is
- * disallowed; after it, private pages and APIs stay disallowed.
+ * Crawling follows `isIndexable()`, in sync with the site-wide robots metadata
+ * in src/lib/seo.ts. Before the public launch, and on Preview deployments,
+ * every path is disallowed; otherwise private pages and APIs stay disallowed.
  */
 export default function robots(): MetadataRoute.Robots {
-  if (!isFeatureEnabled("publicIndexing")) {
+  if (!isIndexable()) {
     return { rules: { userAgent: "*", disallow: "/" } };
   }
   return {
