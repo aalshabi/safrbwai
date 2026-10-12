@@ -99,7 +99,18 @@ export interface OfferAnalysis {
  * (≤ 1 each), so no false contradictions are produced.
  */
 export interface OfferObservations {
-  prices?: { amount: number; currency: string; basis: OfferPriceBasis; evidence: string }[];
+  prices?: {
+    amount: number;
+    currency: string;
+    basis: OfferPriceBasis;
+    evidence: string;
+    /**
+     * The party a total is explicitly stated for ("للشخصين", "for two people").
+     * size is null when the phrase names a mixed group without one exact count
+     * ("for 2 adults and 2 children").
+     */
+    party?: { size: number | null; evidence: string };
+  }[];
   currencies?: { code: string; evidence: string }[];
   nights?: { value: number; evidence: string }[];
   boards?: { value: string; evidence: string }[];

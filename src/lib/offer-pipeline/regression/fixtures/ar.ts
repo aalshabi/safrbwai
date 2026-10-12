@@ -258,6 +258,50 @@ export const ARABIC_REGRESSION_FIXTURES = [
   ),
   defineRegressionFixture(
     {
+      id: "ar-party-total-mismatch",
+      locale: "ar",
+      category: "price_total_mismatch",
+      description: "«السعر الإجمالي للشخصين» إجمالي صريح لا يطابق سعر الشخص × 2 فيظهر التعارض",
+      syntheticInput:
+        "عرض موريشيوس: 6 ليالٍ في فندق 5 نجوم على البحر، إفطار وعشاء، استقبال وتوديع من المطار. السعر 9800 ريال للشخص في غرفة مزدوجة. السعر الإجمالي للشخصين 18500 ريال. الطيران غير مشمول.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers", "nights", "destination"],
+      mustNotMarkMissing: ["totalPrice"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 18500, currency: "SAR" },
+        perPersonPrice: { amount: 9800, currency: "SAR" },
+        travellers: { adults: 2 },
+        nights: 6,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "ar-party-total-consistent",
+      locale: "ar",
+      category: "price_basis_consistent",
+      description: "«السعر الإجمالي للشخصين» يطابق سعر الشخص × 2 فيُثبت الإجمالي دون تعارض",
+      syntheticInput:
+        "عرض موريشيوس: 6 ليالٍ في فندق 5 نجوم على البحر، إفطار وعشاء، استقبال وتوديع من المطار. السعر 9800 ريال للشخص في غرفة مزدوجة. السعر الإجمالي للشخصين 19600 ريال. الطيران غير مشمول.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers", "nights", "destination"],
+      mustNotMarkMissing: ["totalPrice"],
+      mustDetectContradictions: [],
+      mustNotAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 19600, currency: "SAR" },
+        perPersonPrice: { amount: 9800, currency: "SAR" },
+        travellers: { adults: 2 },
+        nights: 6,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
       id: "ar-decision-integrity-details",
       locale: "ar",
       category: "decision_integrity_details",

@@ -209,6 +209,51 @@ export const ENGLISH_REGRESSION_FIXTURES = [
   ),
   defineRegressionFixture(
     {
+      id: "en-party-total-mismatch",
+      locale: "en",
+      category: "price_total_mismatch",
+      description: "A total stated \"for two people\" that differs from the per-person price × 2 is a contradiction, without inventing a traveller fact",
+      syntheticInput:
+        "Mauritius offer: 6 nights in a 5-star beachfront hotel, half board, airport transfers included. Price SAR 9,800 per person in a double room. Total price for two people SAR 18,500. Flights not included.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "nights", "destination"],
+      mustNotConfirm: ["travellers"],
+      mustMarkMissing: ["travellers"],
+      mustNotMarkMissing: ["totalPrice"],
+      mustDetectContradictions: ["price_total_mismatch"],
+      mustAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 18500, currency: "SAR" },
+        perPersonPrice: { amount: 9800, currency: "SAR" },
+        nights: 6,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
+      id: "en-party-total-consistent",
+      locale: "en",
+      category: "price_basis_consistent",
+      description: "A total stated \"for 2 adults\" that equals the per-person price × 2 is confirmed without a contradiction",
+      syntheticInput:
+        "Mauritius offer: 6 nights in a 5-star beachfront hotel, half board, airport transfers included. Price SAR 9,800 per person in a double room. Total for 2 adults: SAR 19,600. Flights not included.",
+    },
+    {
+      mustConfirm: ["totalPrice", "perPersonPrice", "currency", "travellers", "nights", "destination"],
+      mustNotMarkMissing: ["totalPrice"],
+      mustDetectContradictions: [],
+      mustNotAsk: ["totalPrice"],
+      expectedValues: {
+        totalPrice: { amount: 19600, currency: "SAR" },
+        perPersonPrice: { amount: 9800, currency: "SAR" },
+        travellers: { adults: 2 },
+        nights: 6,
+      },
+    }
+  ),
+  defineRegressionFixture(
+    {
       id: "en-decision-integrity-details",
       locale: "en",
       category: "decision_integrity_details",

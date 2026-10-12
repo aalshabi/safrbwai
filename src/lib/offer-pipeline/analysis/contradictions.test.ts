@@ -82,6 +82,40 @@ describe("detectContradictions", () => {
     expect(noTotal).toEqual([]);
   });
 
+  it("uses the party a total is stated for, but never against a different traveller count", () => {
+    const prices = (amount: number): OfferObservations => ({
+      prices: [
+        {
+          amount,
+          currency: "SAR",
+          basis: "total",
+          evidence: `${amount} ريال`,
+          party: { size: 2, evidence: "للشخصين" },
+        },
+        { amount: 9800, currency: "SAR", basis: "per_person", evidence: "9800 ريال للشخص" },
+      ],
+    });
+
+    const partyOnly = detectContradictions({}, prices(18500));
+    expect(partyOnly).toEqual([
+      expect.objectContaining({
+        code: "price_total_mismatch",
+        severity: "critical",
+        evidence: ["18500 ريال", "9800 ريال للشخص", "للشخصين"],
+      }),
+    ]);
+
+    const sameCount = detectContradictions({ travelers: fact({ adults: 2 }, "شخصين") }, prices(18500));
+    expect(sameCount.map((item) => item.code)).toEqual(["price_total_mismatch"]);
+    expect(sameCount[0].evidence[2]).toBe("شخصين");
+
+    expect(detectContradictions({}, prices(19600))).toEqual([]);
+    // A total for two inside a group of four may cover only part of the group.
+    expect(
+      detectContradictions({ travelers: fact({ adults: 4 }, "4 بالغين") }, prices(18500))
+    ).toEqual([]);
+  });
+
   it("flags conflicting currency from facts alone (price vs currency)", () => {
     const facts: ExtractedOfferFacts = {
       price: fact({ amount: 3200, currency: "SAR" }, "3200 SAR"),
