@@ -160,3 +160,131 @@ describe("priceRule — what must NOT be treated as a competing total", () => {
     expect(amounts("الفندق 3,000 ريال والطيران 2,000 ريال.")).toEqual([3000]);
   });
 });
+
+describe("party-qualified totals", () => {
+  const observations = (text: string) =>
+    extractPriceObservations(text).map(({ amount, basis, evidence, party }) => ({
+      amount,
+      basis,
+      evidence,
+      party,
+    }));
+
+  it("reads a total label followed by its party as the trip total", () => {
+    expect(observations("السعر الإجمالي للشخصين 18500 ريال.")).toEqual([
+      { amount: 18500, basis: "total", evidence: "18500 ريال", party: { size: 2, evidence: "للشخصين" } },
+    ]);
+    expect(observations("الإجمالي لـ 3 أشخاص: 7,500 ريال.")).toEqual([
+      { amount: 7500, basis: "total", evidence: "7,500 ريال", party: { size: 3, evidence: "لـ 3 أشخاص" } },
+    ]);
+    expect(observations("Total price for two people SAR 18,500.")).toEqual([
+      { amount: 18500, basis: "total", evidence: "SAR 18,500", party: { size: 2, evidence: "for two people" } },
+    ]);
+    expect(observations("Total for 2 adults: SAR 19,600.")).toEqual([
+      { amount: 19600, basis: "total", evidence: "SAR 19,600", party: { size: 2, evidence: "for 2 adults" } },
+    ]);
+  });
+
+  it("reads a bare price stated for a party as that party's total", () => {
+    expect(observations("السعر للشخصين 18500 ريال.")).toEqual([
+      { amount: 18500, basis: "total", evidence: "18500 ريال", party: { size: 2, evidence: "للشخصين" } },
+    ]);
+    expect(observations("Price for both travellers SAR 18,500.")).toEqual([
+      {
+        amount: 18500,
+        basis: "total",
+        evidence: "SAR 18,500",
+        party: { size: 2, evidence: "for both travellers" },
+      },
+    ]);
+    expect(observations("الإجمالي لشخصين اثنين 18500 ريال.")[0]?.party).toEqual({
+      size: 2,
+      evidence: "لشخصين اثنين",
+    });
+  });
+
+  it("reads a party suffix on a labelled price as a total, never a per-person rate", () => {
+    expect(observations("والإجمالي 3,800 ريال للشخصين.")).toEqual([
+      { amount: 3800, basis: "total", evidence: "3,800 ريال للشخصين", party: { size: 2, evidence: "للشخصين" } },
+    ]);
+    expect(observations("السعر 3,800 ريال للشخصين.")).toEqual([
+      { amount: 3800, basis: "total", evidence: "3,800 ريال للشخصين", party: { size: 2, evidence: "للشخصين" } },
+    ]);
+    expect(observations("السعر 1,900 ريال للشخص.")).toEqual([
+      { amount: 1900, basis: "per_person", evidence: "1,900 ريال للشخص", party: undefined },
+    ]);
+  });
+
+  it("does not promote a component price or an unlabelled amount to the trip total", () => {
+    expect(observations("Hotel total for two SAR 3,000.")[0]?.basis).not.toBe("total");
+    expect(observations("Hotel price for two people SAR 3,000.")[0]?.basis).not.toBe("total");
+    expect(observations("سعر الفندق للشخصين 3,000 ريال.")[0]?.basis).not.toBe("total");
+    expect(observations("الفندق 3,000 ريال للشخصين.")[0]?.basis).not.toBe("total");
+  });
+
+  it("needs a person noun and a clause end before trusting a party", () => {
+    for (const text of [
+      "Total SAR 4,000 for two weeks.",
+      "Total SAR 4,000 for two nights.",
+      "Total SAR 4,000 for both flights.",
+      "Total SAR 6,000 for two rooms.",
+      "Total for both: SAR 13,000.",
+      "price for both: SAR 5,000.",
+    ]) {
+      expect(observations(text)[0]?.party, text).toBeUndefined();
+    }
+    // A party followed by other words is not the whole group.
+    expect(observations("الإجمالي 3,000 ريال للشخصين في غرفة مزدوجة.")).toEqual([
+      { amount: 3000, basis: "total", evidence: "3,000 ريال", party: undefined },
+    ]);
+  });
+
+  it("keeps a party's nightly or per-room rate out of the totals", () => {
+    for (const text of [
+      "السعر 1,200 ريال للشخصين في الليلة.",
+      "الإجمالي 1,200 ريال للشخصين لليلة.",
+      "الإجمالي 5000 ريال لـ 2 أشخاص لكل ليلة.",
+      "Price SAR 1,200 for two people per night.",
+      "Price for two people SAR 1,200/night.",
+      "السعر للشخصين 1,200 ريال/ليلة.",
+      "السعر 1,900 ريال للشخصين/الليلة.",
+    ]) {
+      expect(observations(text).map((price) => price.basis), text).toEqual(["per_night"]);
+    }
+    expect(
+      observations("السعر 2,500 ريال للشخص. السعر 1,800 ريال للشخصين للغرفة.").map(
+        (price) => price.basis
+      )
+    ).toEqual(["per_person"]);
+    expect(observations("Price SAR 1,800 for two people per room.")[0]?.basis).not.toBe("total");
+  });
+
+  it("records a mixed group as a party without an exact size", () => {
+    expect(observations("Total SAR 30,000 for 2 adults and 2 children.")).toEqual([
+      {
+        amount: 30000,
+        basis: "total",
+        evidence: "SAR 30,000 for 2 adults",
+        party: { size: null, evidence: "for 2 adults" },
+      },
+    ]);
+    expect(observations("الإجمالي 15000 ريال للشخصين مع طفل.")[0]?.party).toEqual({
+      size: null,
+      evidence: "للشخصين",
+    });
+    expect(observations("Total SAR 2,500 for two people, and a child.")[0]?.party).toEqual({
+      size: null,
+      evidence: "for two people",
+    });
+  });
+
+  it("does not read a party written with harakat as a per-person rate", () => {
+    expect(observations("الإجمالي 3,800 ريال للشخصَين.")[0]?.basis).toBe("total");
+  });
+
+  it("leaves an ambiguous plural party unqualified", () => {
+    // «للمسافرين» may be plural, so it carries no exact head count.
+    expect(observations("السعر الإجمالي للمسافرين 18500 ريال.")[0]?.party).toBeUndefined();
+    expect(observations("Total for 6 nights SAR 5,000.")[0]?.party).toBeUndefined();
+  });
+});

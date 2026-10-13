@@ -71,32 +71,70 @@ export function detectContradictions(
   // total exists) can contradict each other. Unit rates are separate facts.
   const totalPrices = obs.prices.filter((price) => price.basis === "total");
   const unspecifiedPrices = obs.prices.filter((price) => price.basis === "unspecified");
-  const rivalTotals =
-    totalPrices.length > 0 ? [...totalPrices, ...unspecifiedPrices] : unspecifiedPrices;
-  if (distinct(rivalTotals.map((price) => price.amount)).length > 1) {
+  // Totals each stated for a different exact party ("for 2 people … for 3
+  // people") are price tiers, not rivals: only same-party totals compete.
+  const partySizes = totalPrices.map((price) => price.party?.size);
+  const tiered =
+    partySizes.every((size) => typeof size === "number") && distinct(partySizes).length > 1;
+  const rivalGroups = tiered
+    ? distinct(partySizes).map((size) => totalPrices.filter((price) => price.party?.size === size))
+    : [totalPrices.length > 0 ? [...totalPrices, ...unspecifiedPrices] : unspecifiedPrices];
+  const conflictingGroups = rivalGroups.filter(
+    (group) => distinct(group.map((price) => price.amount)).length > 1
+  );
+  if (
+    tiered &&
+    unspecifiedPrices.some(
+      (price) => !totalPrices.some((total) => total.amount === price.amount)
+    )
+  ) {
+    conflictingGroups.push([...totalPrices, ...unspecifiedPrices]);
+  }
+  if (conflictingGroups.length > 0) {
     out.push({
       code: "multiple_prices",
       message: { ar: "توجد أكثر من قيمة سعر نهائي مختلفة.", en: "More than one different final price is stated." },
-      evidence: rivalTotals.map((price) => price.evidence),
+      evidence: conflictingGroups.flat().map((price) => price.evidence),
       severity: "critical",
     });
   }
 
   // A mismatch is provable only when the offer states one total, one
-  // per-person price in the same currency, and an exact traveller count.
-  // Per-night prices never participate and no missing total is synthesized.
+  // per-person price in the same currency, and an exact head count: the
+  // traveller count, or the party the total itself is stated for ("للشخصين").
+  // When both exist and disagree, the total may cover only part of the group,
+  // so nothing is compared. A mixed party without one exact count ("for 2
+  // adults and 2 children") is compared only against a traveller count that
+  // includes the children. Per-night prices never participate and no missing
+  // total is synthesized.
   const uniqueTotals = uniquePrices(totalPrices);
   const uniquePerPerson = uniquePrices(
     obs.prices.filter((price) => price.basis === "per_person")
   );
   const travellerCount =
     (facts.travelers?.value.adults ?? 0) + (facts.travelers?.value.children ?? 0);
+  const party = uniqueTotals.length === 1 ? uniqueTotals[0].party : undefined;
+  const headCount = !party
+    ? travellerCount
+    : party.size === null
+      ? facts.travelers?.value.children !== undefined
+        ? travellerCount
+        : 0
+      : travellerCount > 0
+        ? party.size === travellerCount
+          ? travellerCount
+          : 0
+        : party.size;
+  const headCountEvidence =
+    travellerCount > 0
+      ? (facts.travelers?.evidence ?? String(travellerCount))
+      : (party?.evidence ?? String(headCount));
   if (
     uniqueTotals.length === 1 &&
     uniquePerPerson.length === 1 &&
-    travellerCount > 0 &&
+    headCount > 0 &&
     uniqueTotals[0].currency === uniquePerPerson[0].currency &&
-    Math.abs(uniqueTotals[0].amount - uniquePerPerson[0].amount * travellerCount) > 0.01
+    Math.abs(uniqueTotals[0].amount - uniquePerPerson[0].amount * headCount) > 0.01
   ) {
     out.push({
       code: "price_total_mismatch",
@@ -104,11 +142,7 @@ export function detectContradictions(
         ar: "السعر الإجمالي لا يطابق سعر الشخص مضروبًا في عدد المسافرين.",
         en: "The stated total does not match the per-person price multiplied by the traveller count.",
       },
-      evidence: [
-        uniqueTotals[0].evidence,
-        uniquePerPerson[0].evidence,
-        facts.travelers?.evidence ?? String(travellerCount),
-      ],
+      evidence: [uniqueTotals[0].evidence, uniquePerPerson[0].evidence, headCountEvidence],
       severity: "critical",
     });
   }
