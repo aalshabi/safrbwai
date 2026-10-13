@@ -272,6 +272,10 @@ describe("party-qualified totals", () => {
       size: null,
       evidence: "للشخصين",
     });
+    expect(observations("Total SAR 2,500 for two people, and a child.")[0]?.party).toEqual({
+      size: null,
+      evidence: "for two people",
+    });
   });
 
   it("does not read a party written with harakat as a per-person rate", () => {

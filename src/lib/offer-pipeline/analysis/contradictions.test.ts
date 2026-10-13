@@ -116,6 +116,20 @@ describe("detectContradictions", () => {
     ).toEqual([]);
   });
 
+  it("keeps an unrelated unqualified price in tier conflict checks", () => {
+    const contradictions = detectContradictions({}, {
+      prices: [
+        { amount: 2000, currency: "SAR", basis: "total", evidence: "SAR 2,000", party: { size: 2, evidence: "for 2 people" } },
+        { amount: 3000, currency: "SAR", basis: "total", evidence: "SAR 3,000", party: { size: 3, evidence: "for 3 people" } },
+        { amount: 9999, currency: "SAR", basis: "unspecified", evidence: "SAR 9,999" },
+      ],
+    });
+
+    expect(contradictions).toEqual([
+      expect.objectContaining({ code: "multiple_prices", severity: "critical" }),
+    ]);
+  });
+
   it("flags conflicting currency from facts alone (price vs currency)", () => {
     const facts: ExtractedOfferFacts = {
       price: fact({ amount: 3200, currency: "SAR" }, "3200 SAR"),

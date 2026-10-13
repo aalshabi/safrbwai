@@ -82,6 +82,14 @@ export function detectContradictions(
   const conflictingGroups = rivalGroups.filter(
     (group) => distinct(group.map((price) => price.amount)).length > 1
   );
+  if (
+    tiered &&
+    unspecifiedPrices.some(
+      (price) => !totalPrices.some((total) => total.amount === price.amount)
+    )
+  ) {
+    conflictingGroups.push([...totalPrices, ...unspecifiedPrices]);
+  }
   if (conflictingGroups.length > 0) {
     out.push({
       code: "multiple_prices",

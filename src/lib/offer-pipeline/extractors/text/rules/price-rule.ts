@@ -55,7 +55,8 @@ const PARTY_QUALIFIER = new RegExp(`^\\s*(?:${PARTY_ALT})`, "i");
 /** After a party suffix the clause ends, so the party is the whole group. */
 const PARTY_CLAUSE_END = /^\s*(?:$|[،,؛;.!?\n)])/;
 /** After a party suffix more people follow ("للشخصين مع طفل", "2 adults and 2 children"). */
-const PARTY_EXTENSION = /^\s*(?:و|مع(?![ء-ي])|(?:and|with|plus)\b|[+&])/i;
+const PARTY_EXTENSION =
+  /^\s*(?:[،,؛;]\s*)?(?:و|مع(?![ء-ي])|(?:and|with|plus)\b|[+&])/i;
 const PARTY_WORD_SIZE: Record<string, number> = {
   one: 1,
   two: 2,
@@ -194,17 +195,22 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
   const partyRaw = perPersonSuffix ? null : PARTY_QUALIFIER.exec(suffix);
   const afterParty = partyRaw ? suffix.slice(partyRaw[0].length) : suffix;
   const perNightSuffix = PER_NIGHT_QUALIFIER.exec(afterParty);
+  const labelParty = PARTY_AT_LABEL_END.exec(prefix);
   const partyUnitRate =
-    partyRaw !== null && !perNightSuffix && OTHER_PER_UNIT_QUALIFIER.test(afterParty);
+    (partyRaw !== null || labelParty !== null) &&
+    !perNightSuffix &&
+    OTHER_PER_UNIT_QUALIFIER.test(afterParty);
   const totalLabel =
     (TOTAL_PRICE_LABEL.test(prefix) && !COMPONENT_TOTAL_LABEL.test(prefix)) ||
     (PARTY_PRICE_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix));
   // A party suffix makes a labelled price that party's total only when the
   // clause ends there or more people follow; on an unlabelled (possibly
   // itemized) amount, or before other words, it proves nothing.
-  const partyExact = partyRaw !== null && PARTY_CLAUSE_END.test(afterParty);
+  const partyExtended = partyRaw !== null && PARTY_EXTENSION.test(afterParty);
+  const partyExact =
+    partyRaw !== null && !partyExtended && PARTY_CLAUSE_END.test(afterParty);
   const partySuffix =
-    (partyExact || (partyRaw !== null && PARTY_EXTENSION.test(afterParty))) &&
+    (partyExact || partyExtended) &&
     (totalLabel || hasPriceWordContext(normalizedText, match.index))
       ? partyRaw
       : null;
@@ -224,7 +230,6 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     (perNightSuffix ? (partyRaw?.[0].length ?? 0) + perNightSuffix[0].length : undefined) ??
     (basis === "total" ? partySuffix?.[0].length : undefined) ??
     0;
-  const labelParty = PARTY_AT_LABEL_END.exec(prefix);
   const party =
     basis !== "total"
       ? undefined
