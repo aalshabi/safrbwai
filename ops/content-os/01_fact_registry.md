@@ -125,9 +125,9 @@
 
 | # | المعلومة | المصدر | تاريخها | الحالة | أثرها على القرار |
 |---|---|---|---|---|---|
-| G1 | الموقع في مرحلة `prelaunch` و`noindex`، والميزة الوحيدة المفعلة `/analyze-offer`: تحليل نص العرض بقواعد ثابتة بلا ذكاء اصطناعي | `R/src/lib/product/capabilities.ts` · `stage.ts` · `README.md` | 2026-07-31 | مؤكدة | **الرابط الوحيد الآمن من X:** `https://www.safrbwai.com/analyze-offer`، مع تنبيه «استشاري، ولا تُدخل بيانات شخصية أو دفع» |
-| G2 | صفحات `/analyze-hotel` و`/compare-hotels` و`/knowledge` معاينة فقط، وبحث الفنادق معطل (503) | `capabilities.ts` · `PHASE_6C_*` | 2026-08-21 | مؤكدة | لا يُروَّج لها |
-| G3 | بوابة الإطلاق: `legalDocumentsApproved=false` | `R/src/lib/product/launch-gate.ts` | HEAD | مؤكدة | لا يُعلن «إطلاق رسمي» |
+| G1 | **تحدّث:** الموقع في مرحلة `public` والفهرسة مفعّلة (PR #54، «open SafrBwai to the public»). المفعّل: `/analyze-offer` و`/guides` و`/analyze-hotel` (بحث هوية الفندق) | `R/src/lib/product/stage.ts` · `capabilities.ts` · `seo.ts` على `claude/demo-integrity-fixes` | فُحص 2026-10-14 بتوقيت الرياض | مؤكدة (كود فرع الإنتاج) | يجوز الربط من X إلى الصفحات الثلاث المفعّلة، مع تنبيه «استشاري، ولا تُدخل بيانات شخصية أو دفع». **لم يُفحص الموقع الحي نفسه** |
+| G2 | `/analyze-destination` و`/compare-hotels` و`/knowledge` ما زالت معاينة بلا نتائج فعلية | `capabilities.ts` على فرع الإنتاج | 2026-10-14 | مؤكدة | لا يُروَّج لها |
+| G3 | بوابة الإطلاق كلها `true`، ومنها `legalDocumentsApproved` و`enabledInputsSecurityReviewed` | `R/src/lib/product/launch-gate.ts` على فرع الإنتاج | 2026-10-14 | مؤكدة (قيم الكود، لا مراجعة قانونية خارجية) | يجوز وصف الموقع بأنه متاح للعموم. وصفه بـ«معتمد قانونياً» ممنوع |
 | G4 | حد الطلبات: 10 طلبات لكل IP كل 60 ثانية | `R/docs/CLOSED_BETA_RUNBOOK.md` | 2026-07-30 | مؤكدة | تغريدة منتشرة قد تنتج أخطاء 429 |
 | G5 | إفصاح Sky حُذف من شروط الموقع («قد نوجّهك إلى Sky Global Holidays كجهة تنفيذ منفصلة») | commit `a5b0c7f` ثم حُذف في `112b41b` | 2026-07-16 ثم 07-31 | تاريخية | **الموقع الآن بلا أي إفصاح عن Sky** |
 | G6 | لا Analytics ولا واتساب ولا CRM في الموقع | `R/README.md` · `REVIEW_FIXES.md` · الكود | 2026-07-31 | مؤكدة | الإحالة من X إلى الموقع غير قابلة للقياس حالياً |
