@@ -52,10 +52,17 @@ describe("2. an English alias must be a whole word", () => {
     "Trip to Male for 5 nights",
     "Destination: Male",
     "5 nights in Malé, total USD 3000",
-    "Maldives water villa, 4 nights",
+    "Malé, Maldives — 4 nights",
   ])("%s → Malé", (text) => {
     expect(dest(text)).toMatchObject({ canonicalValue: "Malé", countryCode: "MV" });
   });
+
+  it.each(["Maldives water villa, 4 nights", "باقة المالديف 4 ليالٍ"])(
+    "%s → Maldives (the country), never the capital it did not name",
+    (text) => {
+      expect(dest(text)).toMatchObject({ canonicalValue: "Maldives", countryCode: "MV" });
+    }
+  );
 
   it("the evidence is the alias as written", () => {
     expect(destEvidence("Trip to Male for 5 nights")).toBe("Male");

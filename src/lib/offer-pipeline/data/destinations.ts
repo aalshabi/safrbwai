@@ -191,7 +191,7 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Colombo", countryCode: "LK", aliases: ["كولومبو", "سيلان", "سريلانكا", "colombo", "sri lanka"] },
   { canonical: "Kandy", countryCode: "LK", aliases: ["كاندي", "kandy"] },
   { canonical: "Kathmandu", countryCode: "NP", aliases: ["كاتماندو", "kathmandu"] },
-  { canonical: "Malé", countryCode: "MV", aliases: ["المالديف", "مالديف", "جزر المالديف", "ماليه", "maldives", "malé", "male"], markerOnlyAliases: ["male"] },
+  { canonical: "Malé", countryCode: "MV", aliases: ["ماليه", "malé", "male"], markerOnlyAliases: ["male"] },
   { canonical: "Baku Old City", countryCode: "AZ", aliases: ["مدينة باكو القديمة"] },
 
   // ---- Indian Ocean & Africa ----
@@ -248,6 +248,9 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Thailand", countryCode: "TH", kind: "country", aliases: ["تايلاند", "تايلند", "تايلندا", "thailand"] },
   { canonical: "Indonesia", countryCode: "ID", kind: "country", aliases: ["إندونيسيا", "اندونيسيا", "indonesia"] },
   { canonical: "India", countryCode: "IN", kind: "country", aliases: ["الهند", "india"] },
+  // An offer that names only «المالديف» stays on resort islands, not in the
+  // capital: reading it as Malé would state a city the offer never named.
+  { canonical: "Maldives", countryCode: "MV", kind: "country", aliases: ["المالديف", "مالديف", "جزر المالديف", "maldives"] },
   { canonical: "Nepal", countryCode: "NP", kind: "country", aliases: ["نيبال", "nepal"] },
   { canonical: "Sri Lanka", countryCode: "LK", kind: "country", aliases: ["سري لانكا"] },
   { canonical: "Japan", countryCode: "JP", kind: "country", aliases: ["اليابان", "japan"] },
