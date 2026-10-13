@@ -62,6 +62,10 @@ const EXCLUDE = new RegExp(
 const INCLUDE = new RegExp(
   // "شامل الطيران"، "يشمل تذاكر الطيران"
   `(?:شامل|شاملة|يشمل|تشمل)\\s*(?:${FLIGHT_WORD})` +
+    // "شامل الإفطار وتذاكر الطيران" — the ticket as a later item of the same
+    // inclusion list. Only the definite noun counts here, as after «مع», and a
+    // comma ends the list so a later clause cannot borrow the inclusion verb.
+    `|(?:شامل|شاملة|يشمل|تشمل)\\s[^.،,\\n]{1,30}?\\sو\\s*${WITH_FLIGHT}` +
     // "مع الطيران" — but «مع طيران ناس» / «مع الطيران العماني» name the carrier
     // the traveller flies with; they do not say the ticket is in the price.
     `|مع\\s*${WITH_FLIGHT}` +

@@ -54,7 +54,7 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "NEOM", countryCode: "SA", aliases: ["نيوم", "neom"] },
   { canonical: "Doha", countryCode: "QA", aliases: ["الدوحة", "doha"] },
   { canonical: "Kuwait City", countryCode: "KW", aliases: ["الكويت", "kuwait", "kuwait city"] },
-  { canonical: "Manama", countryCode: "BH", aliases: ["المنامة", "البحرين", "manama", "bahrain"] },
+  { canonical: "Manama", countryCode: "BH", aliases: ["المنامة", "manama"] },
   { canonical: "Muscat", countryCode: "OM", aliases: ["مسقط", "muscat"] },
   { canonical: "Salalah", countryCode: "OM", aliases: ["صلالة", "salalah"] },
 
@@ -188,10 +188,10 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Kerala", countryCode: "IN", aliases: ["كيرالا", "kerala"] },
   { canonical: "Goa", countryCode: "IN", aliases: ["غوا", "جوا", "goa"] },
   { canonical: "Kashmir", countryCode: "IN", aliases: ["كشمير", "kashmir"] },
-  { canonical: "Colombo", countryCode: "LK", aliases: ["كولومبو", "سيلان", "سريلانكا", "colombo", "sri lanka"] },
+  { canonical: "Colombo", countryCode: "LK", aliases: ["كولومبو", "colombo"] },
   { canonical: "Kandy", countryCode: "LK", aliases: ["كاندي", "kandy"] },
   { canonical: "Kathmandu", countryCode: "NP", aliases: ["كاتماندو", "kathmandu"] },
-  { canonical: "Malé", countryCode: "MV", aliases: ["المالديف", "مالديف", "جزر المالديف", "ماليه", "maldives", "malé", "male"], markerOnlyAliases: ["male"] },
+  { canonical: "Malé", countryCode: "MV", aliases: ["ماليه", "malé", "male"], markerOnlyAliases: ["male"] },
   { canonical: "Baku Old City", countryCode: "AZ", aliases: ["مدينة باكو القديمة"] },
 
   // ---- Indian Ocean & Africa ----
@@ -248,6 +248,12 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Thailand", countryCode: "TH", kind: "country", aliases: ["تايلاند", "تايلند", "تايلندا", "thailand"] },
   { canonical: "Indonesia", countryCode: "ID", kind: "country", aliases: ["إندونيسيا", "اندونيسيا", "indonesia"] },
   { canonical: "India", countryCode: "IN", kind: "country", aliases: ["الهند", "india"] },
+  // A country named alone is reported as the country, never as its capital:
+  // a Maldives offer stays on resort islands, not in Malé, and reading it as
+  // a city would state a place the offer never named.
+  { canonical: "Maldives", countryCode: "MV", kind: "country", aliases: ["المالديف", "مالديف", "جزر المالديف", "maldives"] },
+  { canonical: "Bahrain", countryCode: "BH", kind: "country", aliases: ["البحرين", "bahrain"] },
+  { canonical: "Sri Lanka", countryCode: "LK", kind: "country", aliases: ["سريلانكا", "سيلان", "sri lanka"] },
   { canonical: "Nepal", countryCode: "NP", kind: "country", aliases: ["نيبال", "nepal"] },
   { canonical: "Sri Lanka", countryCode: "LK", kind: "country", aliases: ["سري لانكا"] },
   { canonical: "Japan", countryCode: "JP", kind: "country", aliases: ["اليابان", "japan"] },

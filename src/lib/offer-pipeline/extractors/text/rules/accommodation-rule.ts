@@ -12,7 +12,7 @@ import type { ExtractionRule, RuleResult } from "../rule";
 import { exact, toWesternDigits } from "../utils";
 
 const CATEGORY =
-  /(?:فندق|منتجع|نزل)\s*(?:فئة\s*)?[1-7]\s*نجوم|[1-7]\s*نجوم|شق(?:ة|ق)\s*فندقية|منتجع|resort|[1-7][-\s]?star\s*(?:hotel|resort)?|aparthotel|serviced\s*apartment/i;
+  /(?:فندق|منتجع|نزل)\s*(?:فئة\s*)?[1-7]\s*نجوم|[1-7]\s*نجوم|شق(?:ة|ق)\s*فندقية|منتجع|resort|[1-7][-\s]?star\s*(?:hotel|resort)?|aparthotel|serviced\s*apartment|فيلا\s*(?:مائية|فوق\s*الماء|على\s*الماء|شاطئية)|(?:water|overwater|over-water|beach)\s*(?:villa|bungalow)/i;
 
 const BARE_MENTION = /فندق|إقامة|hotel|accommodation|stay/i;
 
