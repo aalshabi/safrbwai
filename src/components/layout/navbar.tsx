@@ -27,7 +27,14 @@ export function Navbar() {
 
   React.useEffect(() => setOpen(false), [pathname]);
 
-  const links = getNavigableCapabilities();
+  const links = [
+    ...getNavigableCapabilities(),
+    {
+      key: "travelInsights",
+      route: "/insights",
+      title: { ar: "مرصد السفر", en: "Travel monitor" },
+    },
+  ];
 
   return (
     <header
@@ -43,7 +50,7 @@ export function Navbar() {
 
         <ul className="hidden items-center gap-1 lg:flex">
           {links.map((link) => {
-            const active = pathname === link.route;
+            const active = pathname === link.route || pathname.startsWith(`${link.route}/`);
             return (
               <li key={link.key}>
                 <Link
@@ -94,7 +101,7 @@ export function Navbar() {
                 href={link.route}
                 className={cn(
                   "flex items-center justify-between gap-3 rounded-lg px-4 py-3 text-base font-semibold transition-colors",
-                  pathname === link.route
+                  pathname === link.route || pathname.startsWith(`${link.route}/`)
                     ? "bg-teal/10 text-teal"
                     : "text-foreground hover:bg-muted"
                 )}

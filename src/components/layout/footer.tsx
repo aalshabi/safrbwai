@@ -22,6 +22,7 @@ export function Footer() {
       title: t.footer.company,
       links: [
         { href: "/#about", label: t.footer.about },
+        { href: "/insights", label: locale === "ar" ? "مرصد السفر" : "Travel monitor" },
       ],
     },
     {

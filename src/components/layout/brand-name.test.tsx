@@ -18,6 +18,7 @@ const HEADER_LINKS = [
   "/analyze-offer",
   "/guides",
   "/analyze-hotel",
+  "/insights",
 ];
 
 const FOOTER_LINKS = [
@@ -26,6 +27,7 @@ const FOOTER_LINKS = [
   "/guides",
   "/analyze-hotel",
   "/#about",
+  "/insights",
   "/privacy",
   "/terms",
 ];
