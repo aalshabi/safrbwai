@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { getReviewedGuides } from "@/lib/guides";
 import { isIndexable } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site-url";
+import { getPublishedInsights } from "@/lib/travel-insights";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   if (!isIndexable()) return [];
@@ -11,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/analyze-hotel",
     "/guides",
     ...getReviewedGuides().map((guide) => `/guides/${guide.slug}`),
+    "/insights",
+    ...getPublishedInsights().map((insight) => `/insights/${insight.slug}`),
     "/privacy",
     "/terms",
   ];

@@ -26,6 +26,8 @@ describe("public indexing", () => {
     expect(urls.every(({ protocol }) => protocol === "https:")).toBe(true);
     expect(paths).toContain("/analyze-offer");
     expect(paths).toContain("/analyze-hotel");
+    expect(paths).toContain("/insights");
+    expect(paths).toContain("/insights/verify-hotel-booking-site");
     expect(paths).toContain("/privacy");
     expect(paths).toContain("/terms");
     for (const hidden of ["/admin", "/auth", "/dashboard", "/compare-hotels", "/analyze-destination", "/knowledge"]) {
