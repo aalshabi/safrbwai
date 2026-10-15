@@ -130,7 +130,7 @@ export const dictionaries = {
     },
     pillars: {
       title: "مبادئ مراجعة العرض",
-      subtitle: "سافر بوعي منتج مستقل لمراجعة عروض السفر. هذه هي المبادئ التي تعرضها نتيجة التحليل النصي الحالية.",
+      subtitle: "هذه هي المبادئ التي تعرضها نتيجة التحليل النصي الحالية، وتُطبَّق بالقواعد نفسها على كل عرض أيًّا كان البائع.",
       items: [
         { title: "حقائق مؤكدة", desc: "معلومات صريحة مستخرجة من النص نفسه." },
         { title: "معلومات ناقصة", desc: "نقاط مهمة لم يذكرها العرض بوضوح." },
@@ -138,6 +138,18 @@ export const dictionaries = {
         { title: "أسئلة مقترحة", desc: "حتى خمسة أسئلة عملية قبل الحجز." },
         { title: "تحقق رسمي", desc: "تذكير بالرجوع إلى المصدر الرسمي قبل أي التزام مالي." },
       ],
+    },
+    about: {
+      title: "من يقف وراء سافر بوعي",
+      owner: "سافر بوعي يملكه ويحرره عبدالله الشعبي، مالك وكالة سكاي العالمية للسفر.",
+      neutrality:
+        "أداة تحليل العروض تعمل بقواعد ثابتة على نص العرض، ولا ترشّح أي وكالة أو بائع، بما في ذلك سكاي العالمية.",
+      follow: "تابع سافر بوعي على:",
+      socialLabel: "حسابات سافر بوعي",
+      x: "X",
+      xLabel: "سافر بوعي على X (يفتح في نافذة جديدة)",
+      tiktok: "تيك توك",
+      tiktokLabel: "سافر بوعي على تيك توك (يفتح في نافذة جديدة)",
     },
     cta: {
       title: "راجع عرض سفرك النصي",
@@ -801,7 +813,7 @@ export const dictionaries = {
     },
     pillars: {
       title: "Offer-review principles",
-      subtitle: "SafrBwai is an independent travel-offer review product. These principles define the current text-analysis result.",
+      subtitle: "These principles define the current text-analysis result, and the same rules apply to every offer whoever the seller is.",
       items: [
         { title: "Confirmed facts", desc: "Explicit information extracted from the text itself." },
         { title: "Missing information", desc: "Important points the offer does not clearly state." },
@@ -809,6 +821,18 @@ export const dictionaries = {
         { title: "Suggested questions", desc: "Up to five practical questions before booking." },
         { title: "Official verification", desc: "A reminder to check the official source before any financial commitment." },
       ],
+    },
+    about: {
+      title: "Who is behind SafrBwai",
+      owner: "SafrBwai is owned and edited by Abdullah Alshabi, owner of the travel agency Sky Global Holidays.",
+      neutrality:
+        "The offer analyzer runs fixed rules on the offer text, and does not recommend any agency or seller, Sky Global Holidays included.",
+      follow: "Follow SafrBwai on:",
+      socialLabel: "SafrBwai accounts",
+      x: "X",
+      xLabel: "SafrBwai on X (opens in a new tab)",
+      tiktok: "TikTok",
+      tiktokLabel: "SafrBwai on TikTok (opens in a new tab)",
     },
     cta: {
       title: "Review your text travel offer",

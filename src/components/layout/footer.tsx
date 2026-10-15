@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/provider";
 import { Logo } from "@/components/shared/logo";
 import { getNavigableCapabilities } from "@/lib/product/capabilities";
+import { SOCIAL_PROFILES } from "@/lib/social-highlights";
 
 export function Footer() {
   const { locale, t } = useLanguage();
@@ -40,6 +41,30 @@ export function Footer() {
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">{t.footer.tagline}</p>
+          <ul className="flex gap-4 text-sm" aria-label={t.about.socialLabel}>
+            <li>
+              <a
+                href={SOCIAL_PROFILES.x}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t.about.xLabel}
+                className="text-muted-foreground transition-colors hover:text-teal"
+              >
+                {t.about.x}
+              </a>
+            </li>
+            <li>
+              <a
+                href={SOCIAL_PROFILES.tiktok}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={t.about.tiktokLabel}
+                className="text-muted-foreground transition-colors hover:text-teal"
+              >
+                {t.about.tiktok}
+              </a>
+            </li>
+          </ul>
         </div>
         {columns.map((col) => (
           <div key={col.title} className="space-y-3">

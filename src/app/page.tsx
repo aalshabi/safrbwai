@@ -4,6 +4,7 @@ import { Features } from "@/components/home/features";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { Pillars } from "@/components/home/pillars";
 import { CTA } from "@/components/home/cta";
+import { About } from "@/components/home/about";
 import { ProductStageNotice } from "@/components/shared/product-stage-notice";
 import { LatestInsights } from "@/components/home/latest-insights";
 import { SocialHighlights } from "@/components/home/social-highlights";
@@ -38,6 +39,7 @@ export default function HomePage() {
       <Features />
       <HowItWorks />
       <Pillars />
+      <About />
       <CTA />
     </>
   );

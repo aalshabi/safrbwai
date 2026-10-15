@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { InsightArticle } from "@/components/insights/insight-article";
 import { getInsight, getPublishedInsights } from "@/lib/travel-insights";
 import { SITE_URL } from "@/lib/site-url";
+import { SHARE_IMAGE_ALT, SHARE_IMAGE_SIZE } from "@/lib/brand/share-image-meta";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -24,6 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: insight.publishedAt,
       modifiedTime: insight.reviewedAt,
       url: `${SITE_URL}/insights/${insight.slug}`,
+      // A page's own openGraph replaces the root one whole, so the site share
+      // card has to be named again or the article is shared without an image.
+      images: [{ url: "/opengraph-image", type: "image/png", ...SHARE_IMAGE_SIZE, alt: SHARE_IMAGE_ALT }],
     },
   };
 }

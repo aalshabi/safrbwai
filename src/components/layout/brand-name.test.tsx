@@ -23,6 +23,8 @@ const HEADER_LINKS = [
 
 const FOOTER_LINKS = [
   "/",
+  "https://x.com/SafrBwai",
+  "https://www.tiktok.com/@safrbwai",
   "/analyze-offer",
   "/guides",
   "/analyze-hotel",
@@ -94,6 +96,17 @@ describe("visible brand name", () => {
     expect(headerHrefs).not.toContain("/dashboard");
     expect(headerHrefs).not.toContain("/admin");
     expect(hrefs(footer!)).toEqual(FOOTER_LINKS);
+  });
+
+  it("opens the footer's social accounts in a new tab without handing over the opener", () => {
+    const { container } = renderLayout();
+    const footer = container.querySelector("footer")!;
+
+    for (const href of ["https://x.com/SafrBwai", "https://www.tiktok.com/@safrbwai"]) {
+      const link = footer.querySelector(`a[href="${href}"]`);
+      expect(link?.getAttribute("target")).toBe("_blank");
+      expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
+    }
   });
 
   it("keeps the canonical SafrBwai website URL unchanged", () => {
