@@ -166,7 +166,6 @@ export const dictionaries = {
       privacy: "الخصوصية",
       terms: "الشروط",
       rights: "جميع الحقوق محفوظة",
-      builtBy: "من إعداد مختبر عبدالله للسفر",
     },
     analyzeHotel: {
       title: "بحث هوية الفندق",
@@ -850,7 +849,6 @@ export const dictionaries = {
       privacy: "Privacy",
       terms: "Terms",
       rights: "All rights reserved",
-      builtBy: "Built by Abdullah Travel Lab",
     },
     analyzeHotel: {
       title: "Hotel identity lookup",

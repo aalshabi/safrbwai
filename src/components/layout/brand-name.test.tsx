@@ -1,6 +1,9 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, within } from "@testing-library/react";
 import { LanguageProvider } from "@/lib/i18n/provider";
+import { dictionaries } from "@/lib/i18n/dictionaries";
 import { SAFRBWAI_URL } from "@/lib/result-actions/format-questions";
 import { Navbar } from "./navbar";
 import { Footer } from "./footer";
@@ -12,6 +15,7 @@ vi.mock("next/navigation", () => ({
 const ARABIC_BRAND_NAME = "سافر بوعي";
 const ENGLISH_BRAND_NAME = "SafrBwai";
 const UNAPPROVED_ENGLISH_NAME = ["Safer", "Bewae"].join(" ");
+const RETIRED_NAMES = /Travel Lab|مختبر عبدالله/;
 
 const HEADER_LINKS = [
   "/",
@@ -107,6 +111,20 @@ describe("visible brand name", () => {
       expect(link?.getAttribute("target")).toBe("_blank");
       expect(link?.getAttribute("rel")).toBe("noopener noreferrer");
     }
+  });
+
+  it("never shows the retired «Abdullah Travel Lab» name", async () => {
+    for (const locale of ["ar", "en"]) {
+      window.localStorage.setItem("safer-bewae-locale", locale);
+      const { container, unmount } = renderLayout();
+      if (locale === "en") await within(container).findAllByRole("link", { name: ENGLISH_BRAND_NAME });
+      expect(container.textContent).not.toMatch(RETIRED_NAMES);
+      unmount();
+    }
+    // The root layout loads Google fonts at import, so its metadata is checked as source.
+    const layout = readFileSync(join(process.cwd(), "src/app/layout.tsx"), "utf8");
+    expect(layout).not.toMatch(RETIRED_NAMES);
+    expect(JSON.stringify(dictionaries)).not.toMatch(RETIRED_NAMES);
   });
 
   it("keeps the canonical SafrBwai website URL unchanged", () => {

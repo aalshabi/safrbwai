@@ -89,7 +89,6 @@ export function Footer() {
           <p>
             © {year} {t.brand.name} · {t.footer.rights}
           </p>
-          <p>{t.footer.builtBy}</p>
         </div>
       </div>
     </footer>

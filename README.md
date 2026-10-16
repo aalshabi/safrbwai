@@ -69,4 +69,4 @@ npm run build
 
 إصدار عام. الخصوصية والشروط معتمدة من مالك المنتج، ولا تمثل مراجعة قانونية مستقلة. سجل الإطلاق: `docs/PUBLIC_LAUNCH.md`.
 
-© 2026 سافر بوعي · SafrBwai — Abdullah Travel Lab
+© 2026 سافر بوعي · SafrBwai

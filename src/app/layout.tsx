@@ -40,8 +40,8 @@ export const metadata: Metadata = {
     "text travel offer",
     "rule-based analysis",
   ],
-  authors: [{ name: "Abdullah Travel Lab" }],
-  creator: "Abdullah Travel Lab",
+  authors: [{ name: "سافر بوعي" }],
+  creator: "سافر بوعي",
   openGraph: {
     type: "website",
     locale: "ar_SA",
