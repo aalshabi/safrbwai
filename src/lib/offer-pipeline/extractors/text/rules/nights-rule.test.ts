@@ -65,7 +65,7 @@ describe("nightsRule", () => {
   });
 
   it("reads a total restated around its stays as one stay", () => {
-    const r = nightsRule.apply("7 nights in Mauritius\nStay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
+    const r = nightsRule.apply("Mauritius, 7 nights\nStay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
 
@@ -91,6 +91,11 @@ describe("nightsRule", () => {
 
   it("keeps a stay as long as the total among the parts", () => {
     const r = nightsRule.apply("Total: 7 nights\nStay 1: 7 nights\nStay 2: 4 nights\nStay 3: 3 nights");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("keeps a city stay as long as the total among the parts", () => {
+    const r = nightsRule.apply("Total: 7 nights\n7 nights in Dubai\n4 nights in Abu Dhabi\n3 nights in Al Ain");
     expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
   });
 });
