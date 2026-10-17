@@ -420,4 +420,8 @@ describe("qualified English totals", () => {
     expect(r.facts.totalPrice?.value.amount).toBe(6000);
     expect(r.observations?.prices?.map((p) => p.amount)).toEqual([6000]);
   });
+
+  it("never promotes a qualified per-unit amount to the trip total", () => {
+    expect(priceRule.apply("Estimated total: SAR 6,000 per adult").facts.totalPrice).toBeUndefined();
+  });
 });

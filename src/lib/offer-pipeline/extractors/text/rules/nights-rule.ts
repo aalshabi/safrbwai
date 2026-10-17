@@ -42,8 +42,8 @@ function labelBefore(text: string, index: number, previousEnd: number): string {
  */
 const GENERIC_STAY_WORDS =
   /(?:^|\s)(?:الإقامة|إقامة|اقامة|مدة|لمدة|stay|accommodation|the|for|of)(?=\s|$)/giu;
-/** Where a stay is spent, right after its count ("4 nights in Dubai", «في دبي»). */
-const PLACE_AFTER = /^\s*(?:في|ب|in|at)\s+([^\d,،؛;\n|.]+)/iu;
+/** Where a stay is spent, right after its count ("4 nights in Dubai", «في دبي», «بدبي»). */
+const PLACE_AFTER = /^\s*(?:(?:في|in|at)\s+|ب\s*)([^\d,،؛;\n|.]+)/iu;
 
 /**
  * Which stay a count names — "hotel a" for "Hotel A: 4 nights" and "Hotel A

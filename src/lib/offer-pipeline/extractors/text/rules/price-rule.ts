@@ -246,7 +246,8 @@ function classifyMatch(
   const component =
     KNOWN_COMPONENT_TOTAL_LABEL.test(prefix) ||
     ARABIC_COMPONENT_TOTAL_LABEL.test(prefix) ||
-    (qualified && !qualifiedIsTotal);
+    // A per-adult/child/room amount is a rate, never the trip's total.
+    (qualified && (!qualifiedIsTotal || OTHER_PER_UNIT_QUALIFIER.test(suffix)));
   const totalLabel =
     (TOTAL_PRICE_LABEL.test(prefix) && !component) ||
     (PARTY_PRICE_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix));

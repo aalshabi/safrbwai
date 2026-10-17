@@ -169,4 +169,8 @@ describe("nightsRule", () => {
     expect(nightsRule.apply("Hotel Marina: 4 nights\nMarina Resort: 4 nights").facts.nights).toBeUndefined();
     expect(nightsRule.apply("فندق النخيل: 4 ليالٍ\nالفندق النخيل: 4 ليالٍ").facts.nights?.value).toBe(4);
   });
+
+  it("reads a place attached to «ب» as the stay's name", () => {
+    expect(nightsRule.apply("4 ليالٍ بدبي\n4 ليالٍ بدبي").facts.nights?.value).toBe(4);
+  });
 });
