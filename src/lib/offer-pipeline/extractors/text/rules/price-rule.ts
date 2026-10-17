@@ -37,8 +37,10 @@ const PARTY_ALT =
   `|لـ?\\s*\\d{1,2}\\s*(?:أشخاص|اشخاص|شخص|أفراد|افراد|فرد|بالغين|مسافرين)${ARABIC_WORD_END}` +
   `|\\bfor\\s+(?:both|one|two|three|four|five|six|\\d{1,2})\\s+(?:${PARTY_NOUN_EN})\\b`;
 const LABEL_END = "\\s*(?:هو|is)?\\s*[:：\\-–—]?\\s*$";
+/** What a whole-trip total is named for ("إجمالي مبلغ الرحلة", "إجمالي الباقة"). */
+const TRIP_WORD = "(?:ال)?(?:رحلة|باقة|عرض|برنامج)";
 const TOTAL_PRICE_LABEL = new RegExp(
-  `(?:السعر\\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)(?:\\s+السعر)?|\\b(?:final|total)\\s+(?:price|cost)\\b|\\bgrand\\s+total\\b|\\btotal\\b)(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
+  `(?:السعر\\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)\\s+(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}|(?:المبلغ|الإجمالي)\\s+(?:الإجمالي|النهائي|الكلي|العام)|التكلفة\\s+(?:الإجمالية|النهائية)|(?:و?ال)?(?:إجمالي|مجموع)(?:\\s+السعر)?|\\b(?:final|total)\\s+(?:price|cost)\\b|\\bgrand\\s+total\\b|\\btotal\\b)(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
   "i"
 );
 /**
@@ -92,10 +94,19 @@ const COMPONENT_PRICE_LABEL = new RegExp(
 );
 /** A component subtotal (for example, "Hotel total") is not the trip total. */
 const COMPONENT_TOTAL_ALT =
-  "hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+  "accommodations?|stays?|resorts?|lodging|activit(?:y|ies)|hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
 const COMPONENT_TOTAL_LABEL = new RegExp(
   `\\b(?:${COMPONENT_TOTAL_ALT})(?:['’]s)?[\\s\\-–]+total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
   "i"
+);
+/**
+ * An Arabic subtotal of one part of the trip — «إجمالي الإقامة»، «إجمالي
+ * المواصلات والشرائح». Arabic names the part after «إجمالي», so the clause
+ * starts with the subtotal word; anything but a trip word makes it a part.
+ */
+const ARABIC_COMPONENT_TOTAL_LABEL = new RegExp(
+  `(?:^|[^\\p{L}])(?:و?ال)?(?:إجمالي|مجموع)\\s+(?!(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}(?![\\p{L}]))(?!السعر)(?!(?:ال)?(?:كلي|نهائي|عام|إجمالي)(?![\\p{L}]))(?!(?:${PARTY_ALT}))(?:ال)?\\p{L}+[^:：\\n]*?[:：\\-–—]?\\s*$`,
+  "u"
 );
 /**
  * A per-unit suffix right after the amount ("4200 ريال للشخص"). Such a figure
@@ -119,6 +130,11 @@ interface PriceMatch extends PriceObservation {
   length: number;
   /** A party's per-room or per-child rate ("للشخصين للغرفة"): never a total. */
   partyUnitRate?: boolean;
+  /**
+   * A subtotal of one part of the trip ("إجمالي الإقامة", "Hotel total"),
+   * whatever its basis: a per-person subtotal is still not the package price.
+   */
+  component?: boolean;
 }
 
 type RawPriceMatch = Omit<PriceMatch, "basis">;
@@ -200,8 +216,10 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     (partyRaw !== null || labelParty !== null) &&
     !perNightSuffix &&
     OTHER_PER_UNIT_QUALIFIER.test(afterParty);
+  const component =
+    COMPONENT_TOTAL_LABEL.test(prefix) || ARABIC_COMPONENT_TOTAL_LABEL.test(prefix);
   const totalLabel =
-    (TOTAL_PRICE_LABEL.test(prefix) && !COMPONENT_TOTAL_LABEL.test(prefix)) ||
+    (TOTAL_PRICE_LABEL.test(prefix) && !component) ||
     (PARTY_PRICE_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix));
   // A party suffix makes a labelled price that party's total only when the
   // clause ends there or more people follow; on an unlabelled (possibly
@@ -249,6 +267,7 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     evidence: originalText.slice(match.index, suffixStart + suffixLength).trim(),
     ...(party ? { party } : {}),
     ...(partyUnitRate ? { partyUnitRate } : {}),
+    ...(component ? { component } : {}),
   };
 }
 
@@ -268,7 +287,75 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
  * final one whenever the offer states it.
  */
 export function extractPriceObservations(text: string): PriceObservation[] {
-  const normalizedText = toWesternDigits(text);
+  return extractPrices(text).observations;
+}
+
+/**
+ * Chat-style emphasis («*14,400 ريال*») is not part of a label. It is blanked
+ * with spaces so match indexes still point into the original text.
+ */
+function normalizeForPrices(text: string): string {
+  return toWesternDigits(text).replace(/[*_~]/g, " ");
+}
+
+/**
+ * The trip's itemized subtotals ("إجمالي الإقامة 14,400 ريال"), kept apart from
+ * the offer's price so they never rival it. Only the summary block that ends
+ * at the trip total counts — the subtotal lines right above it, with nothing
+ * but blank lines between them — since subtotals elsewhere in the offer do not
+ * show that the breakdown is complete. A label repeated in that block may be a
+ * restatement or a second charge, so the breakdown is then unclear and none
+ * is returned.
+ */
+function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
+  // A total may be stated more than once; the summary block (two or more
+  // usable subtotals) sits above one of them, so each is tried in turn.
+  for (const total of matches.filter((match) => match.basis === "total")) {
+    const block = summaryBlock(normalizedText, matches, total);
+    // A per-person or per-night subtotal cannot be added to a trip total.
+    if (block.some((part) => part.basis !== "unspecified")) continue;
+    const components = uniqueComponents(normalizedText, block);
+    if (components.length >= 2) return components;
+  }
+  return [];
+}
+
+function summaryBlock(normalizedText: string, matches: PriceMatch[], total: PriceMatch): PriceMatch[] {
+  const lineStart = (index: number) => normalizedText.lastIndexOf("\n", index - 1) + 1;
+  const block: PriceMatch[] = [];
+  let cursor = lineStart(total.index);
+  while (cursor > 0) {
+    const start = lineStart(cursor - 1);
+    const line = normalizedText.slice(start, cursor - 1);
+    cursor = start;
+    if (line.trim() === "") continue;
+    const parts = matches.filter((match) => match.component && match.index >= start && match.index < start + line.length);
+    if (parts.length === 0) break;
+    block.unshift(...parts);
+  }
+  return block;
+}
+
+function uniqueComponents(normalizedText: string, block: PriceMatch[]): PriceComponent[] {
+  const byLabel = new Map<string, PriceMatch>();
+  for (const match of block) {
+    const label = clausePrefix(normalizedText, match.index)
+      .replace(/[^\p{L}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+    // Two lines with one label may be a restatement or two separate charges
+    // ("Hotel total" for two hotels); the breakdown is then unclear.
+    if (byLabel.has(label)) return [];
+    byLabel.set(label, match);
+  }
+  return [...byLabel.values()].map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
+}
+
+type PriceComponent = NonNullable<OfferObservations["priceComponents"]>[number];
+
+function extractPrices(text: string): { observations: PriceObservation[]; components: PriceComponent[] } {
+  const normalizedText = normalizeForPrices(text);
   const allMatches = [
     ...collectMatches(normalizedText, text, AMOUNT_THEN_CURRENCY, 1, 2),
     ...collectMatches(normalizedText, text, CURRENCY_THEN_AMOUNT, 2, 1),
@@ -277,7 +364,7 @@ export function extractPriceObservations(text: string): PriceObservation[] {
     .map((match) => classifyMatch(normalizedText, text, match));
 
   const contextual = allMatches.filter((match) => {
-    if (match.partyUnitRate) return false;
+    if (match.partyUnitRate || match.component) return false;
     if (match.basis !== "unspecified") return true;
     if (!hasPriceWordContext(normalizedText, match.index)) return false;
     return !OTHER_PER_UNIT_QUALIFIER.test(
@@ -317,13 +404,13 @@ export function extractPriceObservations(text: string): PriceObservation[] {
     seen.add(key);
     observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}) });
   }
-  return observations;
+  return { observations, components: extractComponents(normalizedText, allMatches) };
 }
 
 export const priceRule: ExtractionRule = {
   key: "price",
   apply(text: string): RuleResult {
-    const prices = extractPriceObservations(text);
+    const { observations: prices, components } = extractPrices(text);
     const first =
       prices.find((price) => price.basis === "total") ??
       prices.find((price) => price.basis === "unspecified") ??
@@ -360,6 +447,7 @@ export const priceRule: ExtractionRule = {
           code: price.currency,
           evidence: price.evidence,
         })),
+        ...(components.length > 0 ? { priceComponents: components } : {}),
       },
     };
   },

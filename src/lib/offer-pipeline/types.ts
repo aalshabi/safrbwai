@@ -141,6 +141,8 @@ export interface ExtractedOfferFacts {
   taxes?: Fact<{ included: boolean }>;
   /** The cancellation/refund terms exactly as stated (never paraphrased). */
   cancellationPolicy?: Fact<string>;
+  /** The travel date range exactly as stated ("من 8 إلى 15 نوفمبر 2026"). */
+  travelDates?: Fact<string>;
   /** Accommodation CATEGORY as stated (e.g. "فندق ٥ نجوم") — never a guessed name. */
   accommodation?: Fact<string>;
   /** Room type exactly as stated (e.g. "غرفة ديلوكس", "deluxe room"). */

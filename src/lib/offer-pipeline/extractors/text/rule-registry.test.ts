@@ -20,6 +20,7 @@ describe("RuleRegistry", () => {
       "flight",
       "taxes",
       "cancellationPolicy",
+      "travelDates",
       "accommodation",
       "roomType",
       "flightDetails",

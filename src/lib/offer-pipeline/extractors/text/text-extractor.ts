@@ -27,6 +27,7 @@ export function extractFactsFromText(
   const prices: NonNullable<OfferObservations["prices"]> = [];
   const currencies: NonNullable<OfferObservations["currencies"]> = [];
   const nights: NonNullable<OfferObservations["nights"]> = [];
+  const priceComponents: NonNullable<OfferObservations["priceComponents"]> = [];
 
   for (const rule of registry.list()) {
     const result = rule.apply(text);
@@ -35,6 +36,7 @@ export function extractFactsFromText(
     prices.push(...(result.observations?.prices ?? []));
     currencies.push(...(result.observations?.currencies ?? []));
     nights.push(...(result.observations?.nights ?? []));
+    priceComponents.push(...(result.observations?.priceComponents ?? []));
   }
 
   const observations =
@@ -43,6 +45,7 @@ export function extractFactsFromText(
           ...(prices.length > 0 ? { prices } : {}),
           ...(currencies.length > 0 ? { currencies } : {}),
           ...(nights.length > 0 ? { nights } : {}),
+          ...(priceComponents.length > 0 ? { priceComponents } : {}),
         }
       : undefined;
   return { facts, warnings, observations };

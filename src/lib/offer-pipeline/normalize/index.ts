@@ -95,6 +95,10 @@ export function normalizeFacts(facts: ExtractedOfferFacts): ExtractedOfferFacts 
     const v = facts.cancellationPolicy.value.trim();
     if (v) out.cancellationPolicy = withValue(facts.cancellationPolicy, v);
   }
+  if (facts.travelDates) {
+    const v = facts.travelDates.value.trim();
+    if (v) out.travelDates = withValue(facts.travelDates, v);
+  }
   if (facts.accommodation) {
     const v = facts.accommodation.value.trim();
     if (v) out.accommodation = withValue(facts.accommodation, v);

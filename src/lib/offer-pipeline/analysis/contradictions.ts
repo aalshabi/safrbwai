@@ -12,7 +12,9 @@ import type { ExtractedOfferFacts } from "@/lib/offer-pipeline/types";
 import type { Contradiction, OfferObservations } from "./types";
 
 /** Derive per-field observation lists from a single facts object (≤ 1 each). */
-function deriveObservations(facts: ExtractedOfferFacts): Required<OfferObservations> {
+function deriveObservations(
+  facts: ExtractedOfferFacts
+): Required<Omit<OfferObservations, "priceComponents">> {
   const explicitPrices = [
     facts.totalPrice && { ...facts.totalPrice, basis: "total" as const },
     facts.perPersonPrice && { ...facts.perPersonPrice, basis: "per_person" as const },
@@ -145,6 +147,31 @@ export function detectContradictions(
       evidence: [uniqueTotals[0].evidence, uniquePerPerson[0].evidence, headCountEvidence],
       severity: "critical",
     });
+  }
+
+  // The stated trip total should equal the itemized subtotals listed right
+  // above it ("إجمالي الإقامة" + "إجمالي المواصلات"). Compared only with one
+  // total and at least two subtotals, all in the total's currency.
+  const components = obs.priceComponents ?? [];
+  if (
+    uniqueTotals.length === 1 &&
+    components.length >= 2 &&
+    components.every((part) => part.currency === uniqueTotals[0].currency)
+  ) {
+    const total = uniqueTotals[0];
+    const sum = components.reduce((acc, part) => acc + part.amount, 0);
+    if (Math.abs(sum - total.amount) > 0.01) {
+      const amount = (value: number) => `${value.toLocaleString("en-US")} ${total.currency}`;
+      out.push({
+        code: "price_components_mismatch",
+        message: {
+          ar: `مجموع بنود السعر ${amount(sum)} لا يساوي الإجمالي المذكور ${amount(total.amount)}؛ تأكد هل يشمل الإجمالي بنودًا أخرى.`,
+          en: `The itemized prices add up to ${amount(sum)}, not the stated total of ${amount(total.amount)}; check whether the total covers other items.`,
+        },
+        evidence: [...components.map((part) => part.evidence), total.evidence],
+        severity: "warning",
+      });
+    }
   }
 
   // conflicting currency for the price

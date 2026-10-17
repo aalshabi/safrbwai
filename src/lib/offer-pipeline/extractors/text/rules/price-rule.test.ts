@@ -288,3 +288,90 @@ describe("party-qualified totals", () => {
     expect(observations("Total for 6 nights SAR 5,000.")[0]?.party).toBeUndefined();
   });
 });
+
+describe("Arabic trip totals and subtotals", () => {
+  it.each([
+    ["إجمالي مبلغ الرحلة: 16,400 ريال", 16400],
+    ["إجمالي الباقة 9,000 ريال", 9000],
+    ["المبلغ الإجمالي: 7,250 ريال", 7250],
+    ["الإجمالي الكلي: 5,000 ريال", 5000],
+    ["الإجمالي النهائي: 5,000 ريال", 5000],
+    ["*إجمالي الرحلة لشخصين: 5,000 ريال*", 5000],
+  ])("reads %s as the trip total", (text, amount) => {
+    expect(priceRule.apply(text).facts.totalPrice?.value.amount).toBe(amount);
+  });
+
+  it("keeps itemized subtotals apart from the trip total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 14,400 ريال\nإجمالي الطيران: 3,000 ريال\nإجمالي مبلغ الرحلة: 17,400 ريال"
+    );
+    expect(r.facts.totalPrice?.value.amount).toBe(17400);
+    expect(r.facts.statedPrice).toBeUndefined();
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([14400, 3000]);
+  });
+
+  it("does not read a subtotal as the trip total", () => {
+    expect(priceRule.apply("إجمالي الإقامة: 14,400 ريال").facts.totalPrice).toBeUndefined();
+  });
+
+  it("uses only the summary block right above the total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nجولة بحرية مشمولة\n\nالملخص:\nإجمالي الإقامة: 5,000 ريال\n\nإجمالي المواصلات: 1,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+  });
+
+  it("returns no breakdown when a label repeats inside the summary block", () => {
+    const r = priceRule.apply(
+      "Hotel total: SAR 5,000\nHotel total: SAR 5,000\nTransfers total: SAR 1,000\nTrip total: SAR 11,000"
+    );
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
+
+  it("finds the summary block under a total repeated later in the offer", () => {
+    const r = priceRule.apply(
+      "إجمالي مبلغ الرحلة: 6,000 ريال\nتفاصيل الباقة\n\nإجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,500 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1500]);
+  });
+
+  it("keeps a per-person subtotal out of the package prices and the sum check", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 2,000 ريال للشخص\nإجمالي المواصلات: 1,000 ريال\nإجمالي مبلغ الرحلة: 5,000 ريال"
+    );
+    expect(r.facts.perPersonPrice).toBeUndefined();
+    expect(r.facts.totalPrice?.value.amount).toBe(5000);
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
+
+  it("looks past an incomplete block above an earlier total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال\nتفاصيل\n\nإجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,500 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1500]);
+  });
+
+  it.each(["Accommodation total", "Resort total", "Stay total"])(
+    "reads «%s» as a subtotal, not the trip total",
+    (label) => {
+      const r = priceRule.apply(`${label}: SAR 5,000\nTransfers total: SAR 1,000\nTrip total: SAR 6,000`);
+      expect(r.facts.totalPrice?.value.amount).toBe(6000);
+      expect(r.observations?.prices?.map((p) => p.amount)).toEqual([6000]);
+      expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+    }
+  );
+
+  it("returns no breakdown when the subtotals are not next to the total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"
+    );
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
+
+  it("returns no breakdown when one subtotal is stated with two amounts", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nإجمالي الإقامة: 5,500 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
+});

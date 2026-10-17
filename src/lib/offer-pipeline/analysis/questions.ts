@@ -97,8 +97,15 @@ export function buildSuggestedQuestions(
     question: { ar: "هل يتطلب الترانزيت تغيير المطار؟", en: "Does the transit require an airport change?" },
   });
 
-  // 5) Baggage allowance.
-  candidates.push({ key: "baggage", priority: "high", when: missing.has("baggage"), question: registryQuestion("baggage") });
+  // 5) Baggage allowance — only an airline sets it, so only when the offer
+  // includes or mentions flights and does not exclude them; a hotel-and-tours
+  // package has none to ask about.
+  candidates.push({
+    key: "baggage",
+    priority: "high",
+    when: missing.has("baggage") && context.hasFlight && !context.flightExcluded,
+    question: registryQuestion("baggage"),
+  });
 
   // (D) MEDIUM — useful, but only after the five above.
 
@@ -132,7 +139,7 @@ export function buildSuggestedQuestions(
   candidates.push({
     key: "flightTimes",
     priority: "medium",
-    when: context.hasFlight && !context.flightTimesKnown,
+    when: context.hasFlight && !context.flightExcluded && !context.flightTimesKnown,
     question: { ar: "ما مواعيد الرحلات وعدد التوقفات؟", en: "What are the flight times and number of stops?" },
   });
   candidates.push({
@@ -144,7 +151,7 @@ export function buildSuggestedQuestions(
   candidates.push({
     key: "stopCount",
     priority: "medium",
-    when: context.hasFlight && !context.stopCountKnown,
+    when: context.hasFlight && !context.flightExcluded && !context.stopCountKnown,
     question: { ar: "كم عدد التوقفات في مسار الرحلة؟", en: "How many stops are in the flight itinerary?" },
   });
 

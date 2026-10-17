@@ -59,6 +59,7 @@ export function buildConfirmedFacts(
   }
   add("currency", facts.currency);
   add("nights", facts.nights);
+  add("travelDates", facts.travelDates);
   add("destination", facts.destination);
   add("travellers", facts.travelers);
   add("accommodation", facts.accommodation);

@@ -15,6 +15,8 @@ import type { ExtractedOfferFacts } from "@/lib/offer-pipeline/types";
 export interface QuestionContext {
   /** A flight/air ticket is part of the offer (fact or explicit mention). */
   hasFlight: boolean;
+  /** The offer states flights are NOT included ("الطيران غير مشمول"). */
+  flightExcluded: boolean;
   /** A stay/accommodation is part of the offer (fact or explicit mention). */
   hasAccommodation: boolean;
   /** Ground transport / transfers are confirmed as an extracted fact. */
@@ -87,6 +89,7 @@ export function deriveQuestionContext(facts: ExtractedOfferFacts, text?: string)
 
   return {
     hasFlight: flightFact || has(KEYWORDS.flight),
+    flightExcluded: facts.flight?.value.included === false,
     hasAccommodation: facts.board !== undefined || has(KEYWORDS.accommodation),
     transferConfirmed,
     transportMentionedInText,

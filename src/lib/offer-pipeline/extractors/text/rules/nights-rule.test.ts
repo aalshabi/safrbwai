@@ -35,4 +35,77 @@ describe("nightsRule", () => {
       expect(nightsRule.apply(text).facts.nights).toBeUndefined();
     }
   });
+
+  it("reads per-hotel nights that add up to the total as one stay, not rival counts", () => {
+    const text = "7 ليالٍ – 8 أيام\nالإقامة الأولى | 4 ليالٍ\nالإقامة الثانية | 3 ليالٍ";
+    const r = nightsRule.apply(text);
+    expect(r.facts.nights?.value).toBe(7);
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
+
+  it("still keeps counts that do not add up as separate values", () => {
+    const r = nightsRule.apply("4 ليالٍ في الفندق الأول و3 ليالٍ في الثاني، المجموع 8 ليالٍ");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 8]);
+  });
+
+  it("keeps counts that add up but are not marked as stays (alternative options)", () => {
+    const r = nightsRule.apply("الباقة الذهبية 7 ليالٍ\nالباقة الفضية 4 ليالٍ\nالباقة البرونزية 3 ليالٍ");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("reads a city split («4 ليالٍ في دبي و3 ليالٍ في أبوظبي») as one stay", () => {
+    const r = nightsRule.apply("رحلة 7 ليالٍ: 4 ليالٍ في دبي و3 ليالٍ في أبوظبي");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
+
+  it("reads stays listed before their total as one stay", () => {
+    const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
+    expect(r.facts.nights?.value).toBe(7);
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("reads a total restated around its stays as one stay", () => {
+    const r = nightsRule.apply("Mauritius, 7 nights\nStay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("never takes one of several stays as the total", () => {
+    const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nStay 3: 1 night");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
+  });
+
+  it("keeps stays that do not add up to the stated total", () => {
+    const r = nightsRule.apply("Total: 7 nights\nStay 1: 4 nights\nStay 2: 4 nights\nStay 3: 3 nights");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("never takes a city stay as the total without total context", () => {
+    const r = nightsRule.apply("4 nights in Dubai, 3 nights in Abu Dhabi, 1 night in Al Ain");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
+  });
+
+  it("adds two stays of the same length", () => {
+    const r = nightsRule.apply("Total: 6 nights\nStay 1: 3 nights\nStay 2: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 6, evidence: "6 nights" }]);
+  });
+
+  it("keeps a stay as long as the total among the parts", () => {
+    const r = nightsRule.apply("Total: 7 nights\nStay 1: 7 nights\nStay 2: 4 nights\nStay 3: 3 nights");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("keeps a city stay as long as the total among the parts", () => {
+    const r = nightsRule.apply("Total: 7 nights\n7 nights in Dubai\n4 nights in Abu Dhabi\n3 nights in Al Ain");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("reads each count in its own clause when they share a line", () => {
+    const r = nightsRule.apply("Total: 7 nights; Stay 1: 4 nights; Stay 2: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("reads each count's own label across pipes", () => {
+    const r = nightsRule.apply("Total: 7 nights | Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

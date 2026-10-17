@@ -12,11 +12,38 @@ const NIGHTS = /(\d{1,3})[\s-]*(?:ليال(?:ٍ|ي)?|ليلة|nights?)/gi;
 
 type NightObservation = NonNullable<OfferObservations["nights"]>[number];
 
+/**
+ * What marks a count as one stay of a split trip: its label names a stay
+ * («الإقامة الأولى | 4 ليالٍ», "Hotel 2: 3 nights") or the count is followed by
+ * where it is spent («4 ليالٍ في دبي», "3 nights in Rome").
+ */
+const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|\bstay\b|\bhotel\b|\bresort\b)/iu;
+/** A label that states the trip's overall length ("المدة: 7 ليالٍ", "Total: 7 nights"). */
+const TOTAL_LINE = /(?:إجمالي|الإجمالي|مجموع|المجموع|المدة|مدة|\btotal\b|\bduration\b|\boverall\b)/iu;
+const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
+
+/**
+ * The label in front of a count: the text since the previous count or the
+ * start of its clause (a line, or part of one after «؛»/";"), whichever is
+ * later. Labels precede what they name, so "Total: 7 nights | Hotel A: 4
+ * nights" gives "Total: " to the 7 and " | Hotel A: " to the 4, while
+ * «الإقامة الأولى | 4 ليالٍ» keeps its label across the pipe.
+ */
+function labelBefore(text: string, index: number, previousEnd: number): string {
+  let start = index;
+  while (start > previousEnd && !/[\n;؛]/.test(text[start - 1])) start--;
+  return text.slice(start, index);
+}
+
 export function extractNightObservations(text: string): NightObservation[] {
   const normalizedText = toWesternDigits(text);
-  const seen = new Set<number>();
-  const observations: NightObservation[] = [];
+  const occurrences: (NightObservation & {
+    isStay: boolean;
+    onStayLine: boolean;
+    onTotalLine: boolean;
+  })[] = [];
 
+  let previousEnd = 0;
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
 
@@ -26,16 +53,57 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (preceding === "-" || preceding === "−") continue;
 
     const value = Number(match[1]);
-    if (!Number.isInteger(value) || value <= 0 || seen.has(value)) continue;
+    if (!Number.isInteger(value) || value <= 0) continue;
 
-    seen.add(value);
-    observations.push({
+    const end = match.index + match[0].length;
+    const label = labelBefore(normalizedText, match.index, previousEnd);
+    previousEnd = end;
+    const onStayLine = STAY_LINE.test(label);
+    occurrences.push({
       value,
-      evidence: text.slice(match.index, match.index + match[0].length),
+      evidence: text.slice(match.index, end),
+      onStayLine,
+      onTotalLine: TOTAL_LINE.test(label),
+      isStay: onStayLine || STAY_AFTER.test(normalizedText.slice(end)),
     });
   }
 
-  return observations;
+  // A stay split across hotels ("7 ليالٍ" … "الإقامة الأولى | 4 ليالٍ" …
+  // "الإقامة الثانية | 3 ليالٍ", or the parts first and "Total: 7 nights"
+  // last) states its parts beside the total. They are its parts, not rival
+  // values, only when the total is positively a total — the offer's first
+  // count and not itself a stay, or a count on a total/duration line — and
+  // every other count is a stay, together adding up to it exactly. The sum
+  // alone proves nothing, so stays that happen to add up stay separate.
+  const toObservation = ({ value, evidence }: NightObservation) => ({ value, evidence });
+  const first = occurrences[0];
+  const total = occurrences.find((candidate) => {
+    const isTotal = occurrences.some(
+      (n) =>
+        n.value === candidate.value &&
+        ((n === first && !n.isStay) || (n.onTotalLine && !n.onStayLine))
+    );
+    // The total may be restated ("7 ليالٍ" … "Total: 7 nights"); an equal
+    // count that is not a stay is that restatement, while one marked as a
+    // stay ("Stay 1: 7 nights", "7 nights in Dubai") is a part.
+    const parts = occurrences.filter((n) => n.value !== candidate.value || n.isStay);
+    return (
+      isTotal &&
+      parts.length >= 2 &&
+      parts.every((n) => n.isStay) &&
+      parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
+    );
+  });
+  if (total) return [toObservation(total)];
+
+  const seen = new Set<number>();
+  return occurrences
+    .filter((n) => {
+      if (seen.has(n.value)) return false;
+      seen.add(n.value);
+      return true;
+    })
+    .map(toObservation);
 }
 
 export const nightsRule: ExtractionRule = {
