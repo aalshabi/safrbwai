@@ -74,9 +74,10 @@ export function extractNightObservations(text: string): NightObservation[] {
         n.value === candidate.value &&
         ((n === first && !n.isStay) || (n.onTotalLine && !n.onStayLine))
     );
-    // The total may be restated ("7 ليالٍ" … "Total: 7 nights"): every count
-    // equal to it is the same total, never one of its parts.
-    const parts = occurrences.filter((n) => n.value !== candidate.value);
+    // The total may be restated ("7 nights in …" … "Total: 7 nights"); an
+    // equal count off any stay line is that restatement, while one on a stay
+    // line ("Stay 1: 7 nights") is a stay of the same length, so a part.
+    const parts = occurrences.filter((n) => n.value !== candidate.value || n.onStayLine);
     return (
       isTotal &&
       parts.length >= 2 &&

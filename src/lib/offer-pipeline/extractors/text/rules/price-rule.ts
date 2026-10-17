@@ -308,13 +308,14 @@ function normalizeForPrices(text: string): string {
  * the breakdown unclear, so none is returned and nothing is summed.
  */
 function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
-  // A total may be stated more than once; the summary block sits above one of them.
+  // A total may be stated more than once; the summary block (two or more
+  // usable subtotals) sits above one of them, so each is tried in turn.
   for (const total of matches.filter((match) => match.basis === "total")) {
     const block = summaryBlock(normalizedText, matches, total);
-    if (block.length === 0) continue;
     // A per-person or per-night subtotal cannot be added to a trip total.
-    if (block.some((part) => part.basis !== "unspecified")) return [];
-    return uniqueComponents(normalizedText, block);
+    if (block.some((part) => part.basis !== "unspecified")) continue;
+    const components = uniqueComponents(normalizedText, block);
+    if (components.length >= 2) return components;
   }
   return [];
 }

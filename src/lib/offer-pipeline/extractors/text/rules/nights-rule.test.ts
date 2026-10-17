@@ -88,4 +88,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("Total: 6 nights\nStay 1: 3 nights\nStay 2: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 6, evidence: "6 nights" }]);
   });
+
+  it("keeps a stay as long as the total among the parts", () => {
+    const r = nightsRule.apply("Total: 7 nights\nStay 1: 7 nights\nStay 2: 4 nights\nStay 3: 3 nights");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
 });

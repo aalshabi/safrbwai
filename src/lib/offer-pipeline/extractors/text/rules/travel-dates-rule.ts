@@ -32,6 +32,8 @@ const RANGE = new RegExp(
     `${MONTH}\\s+${DAY}(?:,?\\s+${YEAR})?${TO}(?:${MONTH}\\s+)?${DAY}(?:,?\\s+${YEAR})?`,
     // "من 8/11/2026 إلى 15/11/2026"
     `(?:(?:من|from)\\s+)?${NUMERIC_DATE}${TO}${NUMERIC_DATE}`,
+    // "8–15/11/2026": the second endpoint carries the month and year
+    `(?:(?:من|from)\\s+)?${DAY}${TO}${NUMERIC_DATE}`,
   ].join("|"),
   "giu"
 );
