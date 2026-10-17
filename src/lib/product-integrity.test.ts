@@ -121,6 +121,14 @@ describe("current public product integrity", () => {
     }
   });
 
+  it("names every supported source, links included, in the privacy service scope", () => {
+    const [arScope] = LEGAL_CONTENT.privacy.ar;
+    const [enScope] = LEGAL_CONTENT.privacy.en;
+    expect(arScope.h).toBe("نطاق الخدمة");
+    expect(arScope.p).toContain("PDF أو صورة، أو من الصفحة العامة لرابط العرض");
+    expect(enScope.p).toContain("or taken from the public page of the offer's link");
+  });
+
   it("keeps the terms advisory and removes booking, payment, and external referral claims", () => {
     expect(termsAr).toContain("تحلل النص الذي يقدمه المستخدم فقط");
     expect(termsEn).toContain("analyzes only the text provided by the user");
