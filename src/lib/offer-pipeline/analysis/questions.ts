@@ -139,7 +139,7 @@ export function buildSuggestedQuestions(
   candidates.push({
     key: "flightTimes",
     priority: "medium",
-    when: context.hasFlight && !context.flightTimesKnown,
+    when: context.hasFlight && !context.flightExcluded && !context.flightTimesKnown,
     question: { ar: "ما مواعيد الرحلات وعدد التوقفات؟", en: "What are the flight times and number of stops?" },
   });
   candidates.push({
@@ -151,7 +151,7 @@ export function buildSuggestedQuestions(
   candidates.push({
     key: "stopCount",
     priority: "medium",
-    when: context.hasFlight && !context.stopCountKnown,
+    when: context.hasFlight && !context.flightExcluded && !context.stopCountKnown,
     question: { ar: "كم عدد التوقفات في مسار الرحلة؟", en: "How many stops are in the flight itinerary?" },
   });
 

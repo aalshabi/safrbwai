@@ -84,9 +84,10 @@ describe("two-resort package without flights", () => {
     expect(analysis.suggestedQuestions.map((q) => q.key)).not.toContain("baggage");
   });
 
-  it("does not ask about baggage when flights are explicitly excluded", async () => {
+  it("asks no flight questions when flights are explicitly excluded", async () => {
     const { analysis } = await analyze(`${OFFER}\nالطيران غير مشمول.`);
-    expect(analysis.suggestedQuestions.map((q) => q.key)).not.toContain("baggage");
+    const keys = analysis.suggestedQuestions.map((q) => q.key);
+    for (const key of ["baggage", "flightTimes", "stopCount"]) expect(keys).not.toContain(key);
   });
 
   it("still asks about baggage when flights are part of the offer", async () => {
