@@ -351,6 +351,16 @@ describe("Arabic trip totals and subtotals", () => {
     expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1500]);
   });
 
+  it.each(["Accommodation total", "Resort total", "Stay total"])(
+    "reads «%s» as a subtotal, not the trip total",
+    (label) => {
+      const r = priceRule.apply(`${label}: SAR 5,000\nTransfers total: SAR 1,000\nTrip total: SAR 6,000`);
+      expect(r.facts.totalPrice?.value.amount).toBe(6000);
+      expect(r.observations?.prices?.map((p) => p.amount)).toEqual([6000]);
+      expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+    }
+  );
+
   it("returns no breakdown when the subtotals are not next to the total", () => {
     const r = priceRule.apply(
       "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"

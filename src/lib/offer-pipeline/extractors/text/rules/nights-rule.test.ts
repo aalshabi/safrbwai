@@ -98,4 +98,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("Total: 7 nights\n7 nights in Dubai\n4 nights in Abu Dhabi\n3 nights in Al Ain");
     expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
   });
+
+  it("reads each count in its own clause when they share a line", () => {
+    const r = nightsRule.apply("Total: 7 nights; Stay 1: 4 nights; Stay 2: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

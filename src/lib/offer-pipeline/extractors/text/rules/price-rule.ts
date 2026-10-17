@@ -94,7 +94,7 @@ const COMPONENT_PRICE_LABEL = new RegExp(
 );
 /** A component subtotal (for example, "Hotel total") is not the trip total. */
 const COMPONENT_TOTAL_ALT =
-  "hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+  "accommodations?|stays?|resorts?|lodging|activit(?:y|ies)|hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
 const COMPONENT_TOTAL_LABEL = new RegExp(
   `\\b(?:${COMPONENT_TOTAL_ALT})(?:['’]s)?[\\s\\-–]+total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
   "i"

@@ -22,10 +22,18 @@ const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع
 const TOTAL_LINE = /(?:إجمالي|الإجمالي|مجموع|المجموع|المدة|مدة|\btotal\b|\bduration\b|\boverall\b)/iu;
 const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
 
-function lineAround(text: string, index: number): string {
-  const start = text.lastIndexOf("\n", index) + 1;
-  const end = text.indexOf("\n", index);
-  return text.slice(start, end < 0 ? undefined : end);
+/**
+ * The clause holding `index`: a line, or one part of a line split by «؛»/";"
+ * ("Total: 7 nights; Stay 1: 4 nights"), so each count is read in its own
+ * context rather than by every label on its line.
+ */
+function clauseAround(text: string, index: number): string {
+  const boundary = /[\n;؛]/;
+  let start = index;
+  while (start > 0 && !boundary.test(text[start - 1])) start--;
+  let end = index;
+  while (end < text.length && !boundary.test(text[end])) end++;
+  return text.slice(start, end);
 }
 
 export function extractNightObservations(text: string): NightObservation[] {
@@ -48,7 +56,7 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
-    const line = lineAround(normalizedText, match.index);
+    const line = clauseAround(normalizedText, match.index);
     const onStayLine = STAY_LINE.test(line);
     occurrences.push({
       value,
