@@ -92,11 +92,21 @@ const COMPONENT_PRICE_LABEL = new RegExp(
   `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost)(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
   "i"
 );
-/** A component subtotal (for example, "Hotel total") is not the trip total. */
-const COMPONENT_TOTAL_ALT =
-  "accommodations?|stays?|resorts?|lodging|activit(?:y|ies)|hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?";
+/**
+ * Words that, right before "total", still name the whole trip: a trip word
+ * ("Trip total", "Grand total"), its length or party ("7 nights total",
+ * "2 adults total"), a price word, or a function word ("the total", "in total").
+ */
+const WHOLE_TRIP_TOTAL_WORD =
+  `trip|package|grand|overall|final|offer|holiday|vacation|booking|order|price|cost|amount|sum` +
+  `|nights?|days?|weeks?|${PARTY_NOUN_EN}|the|your|our|this|its|a|an|in|is`;
+/**
+ * A component subtotal ("Hotel total", "SIM cards total", "Car rental total")
+ * is not the trip total. Like «إجمالي الإقامة» in Arabic, any word before
+ * "total" but a whole-trip word makes it a part, so it needs no list of parts.
+ */
 const COMPONENT_TOTAL_LABEL = new RegExp(
-  `\\b(?:${COMPONENT_TOTAL_ALT})(?:['’]s)?[\\s\\-–]+total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
+  `\\b(?!(?:${WHOLE_TRIP_TOTAL_WORD})\\b)[a-z]+(?:['’]s|['’])?(?:\\s+|\\s*[\\-–]\\s*)total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
   "i"
 );
 /**

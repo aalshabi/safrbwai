@@ -71,7 +71,8 @@ describe("nightsRule", () => {
 
   it("never takes one of several stays as the total", () => {
     const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nStay 3: 1 night");
-    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
+    expect(r.facts.nights).toBeUndefined();
+    expect(r.observations).toBeUndefined();
   });
 
   it("keeps stays that do not add up to the stated total", () => {
@@ -81,7 +82,42 @@ describe("nightsRule", () => {
 
   it("never takes a city stay as the total without total context", () => {
     const r = nightsRule.apply("4 nights in Dubai, 3 nights in Abu Dhabi, 1 night in Al Ain");
-    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
+    expect(r.facts.nights).toBeUndefined();
+    expect(r.observations).toBeUndefined();
+  });
+
+  it("never merges separate stays of the same length into one", () => {
+    for (const text of [
+      "Hotel A: 4 nights\nHotel B: 4 nights",
+      "الإقامة الأولى | 4 ليالٍ\nالإقامة الثانية | 4 ليالٍ",
+      "4 ليالٍ في دبي و4 ليالٍ في أبوظبي",
+    ]) {
+      const r = nightsRule.apply(text);
+      expect(r.facts.nights).toBeUndefined();
+      expect(r.observations).toBeUndefined();
+    }
+  });
+
+  it("confirms the stated total over equal stays that add up to it", () => {
+    const r = nightsRule.apply("Total: 8 nights\nHotel A: 4 nights\nHotel B: 4 nights");
+    expect(r.facts.nights?.value).toBe(8);
+    expect(r.observations?.nights).toEqual([{ value: 8, evidence: "8 nights" }]);
+  });
+
+  it("keeps equal stays beside a total they do not add up to", () => {
+    const r = nightsRule.apply("Mauritius, 7 nights\nHotel A: 4 nights\nHotel B: 4 nights");
+    expect(r.facts.nights?.value).toBe(7);
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4]);
+  });
+
+  it("takes the count that is not a stay as the length when stays come first", () => {
+    const r = nightsRule.apply("4 nights in Dubai, 3 nights in Abu Dhabi. A trip of 8 nights.");
+    expect(r.facts.nights?.value).toBe(8);
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 8]);
+  });
+
+  it("still confirms a single stay as the length", () => {
+    expect(nightsRule.apply("Hotel A: 4 nights").facts.nights?.value).toBe(4);
   });
 
   it("adds two stays of the same length", () => {
