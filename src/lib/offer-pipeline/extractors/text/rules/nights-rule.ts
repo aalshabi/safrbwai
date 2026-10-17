@@ -28,7 +28,7 @@ function lineAround(text: string, index: number): string {
 
 export function extractNightObservations(text: string): NightObservation[] {
   const normalizedText = toWesternDigits(text);
-  const occurrences: (NightObservation & { isStay: boolean; index: number })[] = [];
+  const occurrences: (NightObservation & { isStay: boolean; onStayLine: boolean; index: number })[] = [];
 
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
@@ -42,13 +42,13 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
+    const onStayLine = STAY_LINE.test(lineAround(normalizedText, match.index));
     occurrences.push({
       value,
       evidence: text.slice(match.index, end),
       index: match.index,
-      isStay:
-        STAY_LINE.test(lineAround(normalizedText, match.index)) ||
-        STAY_AFTER.test(normalizedText.slice(end)),
+      onStayLine,
+      isStay: onStayLine || STAY_AFTER.test(normalizedText.slice(end)),
     });
   }
 
@@ -63,7 +63,11 @@ export function extractNightObservations(text: string): NightObservation[] {
     // The total may be restated ("7 nights in …" … "Total: 7 nights"): every
     // count equal to it is the same total, never one of its parts.
     const parts = occurrences.filter((n) => n.value !== candidate.value);
+    // The total must be stated off any stay line at least once, so stays that
+    // happen to add up ("Stay 1: 4 / Stay 2: 3 / Stay 3: 1") never become one.
+    const statedAsTotal = occurrences.some((n) => n.value === candidate.value && !n.onStayLine);
     return (
+      statedAsTotal &&
       parts.length >= 2 &&
       parts.every((n) => n.isStay) &&
       parts.reduce((sum, n) => sum + n.value, 0) === candidate.value

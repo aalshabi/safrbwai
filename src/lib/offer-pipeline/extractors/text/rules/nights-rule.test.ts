@@ -68,4 +68,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("7 nights in Mauritius\nStay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("never takes one of several stays as the total", () => {
+    const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nStay 3: 1 night");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
+  });
 });
