@@ -35,4 +35,16 @@ describe("nightsRule", () => {
       expect(nightsRule.apply(text).facts.nights).toBeUndefined();
     }
   });
+
+  it("reads per-hotel nights that add up to the total as one stay, not rival counts", () => {
+    const text = "7 ليالٍ – 8 أيام\nالإقامة الأولى | 4 ليالٍ\nالإقامة الثانية | 3 ليالٍ";
+    const r = nightsRule.apply(text);
+    expect(r.facts.nights?.value).toBe(7);
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
+
+  it("still keeps counts that do not add up as separate values", () => {
+    const r = nightsRule.apply("4 ليالٍ في الفندق الأول و3 ليالٍ في الثاني، المجموع 8 ليالٍ");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 8]);
+  });
 });

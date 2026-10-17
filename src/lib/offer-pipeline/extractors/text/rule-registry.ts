@@ -18,6 +18,7 @@ import { transfersRule } from "./rules/transfers-rule";
 import { flightRule } from "./rules/flight-rule";
 import { taxesRule } from "./rules/taxes-rule";
 import { cancellationRule } from "./rules/cancellation-rule";
+import { travelDatesRule } from "./rules/travel-dates-rule";
 import { accommodationRule } from "./rules/accommodation-rule";
 import { destinationRule } from "./rules/destination-rule";
 import { roomTypeRule } from "./rules/room-type-rule";
@@ -51,6 +52,7 @@ export function createDefaultRuleRegistry(): RuleRegistry {
     .register(flightRule)
     .register(taxesRule)
     .register(cancellationRule)
+    .register(travelDatesRule)
     .register(accommodationRule)
     .register(roomTypeRule)
     .register(flightDetailsRule)

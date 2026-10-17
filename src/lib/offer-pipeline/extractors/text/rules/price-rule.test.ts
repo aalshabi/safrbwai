@@ -288,3 +288,27 @@ describe("party-qualified totals", () => {
     expect(observations("Total for 6 nights SAR 5,000.")[0]?.party).toBeUndefined();
   });
 });
+
+describe("Arabic trip totals and subtotals", () => {
+  it.each([
+    ["إجمالي مبلغ الرحلة: 16,400 ريال", 16400],
+    ["إجمالي الباقة 9,000 ريال", 9000],
+    ["المبلغ الإجمالي: 7,250 ريال", 7250],
+    ["*إجمالي الرحلة لشخصين: 5,000 ريال*", 5000],
+  ])("reads %s as the trip total", (text, amount) => {
+    expect(priceRule.apply(text).facts.totalPrice?.value.amount).toBe(amount);
+  });
+
+  it("keeps itemized subtotals apart from the trip total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 14,400 ريال\nإجمالي الطيران: 3,000 ريال\nإجمالي مبلغ الرحلة: 17,400 ريال"
+    );
+    expect(r.facts.totalPrice?.value.amount).toBe(17400);
+    expect(r.facts.statedPrice).toBeUndefined();
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([14400, 3000]);
+  });
+
+  it("does not read a subtotal as the trip total", () => {
+    expect(priceRule.apply("إجمالي الإقامة: 14,400 ريال").facts.totalPrice).toBeUndefined();
+  });
+});

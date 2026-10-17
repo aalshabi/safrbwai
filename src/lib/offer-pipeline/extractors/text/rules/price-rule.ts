@@ -37,8 +37,10 @@ const PARTY_ALT =
   `|لـ?\\s*\\d{1,2}\\s*(?:أشخاص|اشخاص|شخص|أفراد|افراد|فرد|بالغين|مسافرين)${ARABIC_WORD_END}` +
   `|\\bfor\\s+(?:both|one|two|three|four|five|six|\\d{1,2})\\s+(?:${PARTY_NOUN_EN})\\b`;
 const LABEL_END = "\\s*(?:هو|is)?\\s*[:：\\-–—]?\\s*$";
+/** What a whole-trip total is named for ("إجمالي مبلغ الرحلة", "إجمالي الباقة"). */
+const TRIP_WORD = "(?:ال)?(?:رحلة|باقة|عرض|برنامج)";
 const TOTAL_PRICE_LABEL = new RegExp(
-  `(?:السعر\\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)(?:\\s+السعر)?|\\b(?:final|total)\\s+(?:price|cost)\\b|\\bgrand\\s+total\\b|\\btotal\\b)(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
+  `(?:السعر\\s+(?:النهائي|الإجمالي)|(?:و?ال)?(?:إجمالي|مجموع)\\s+(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}|(?:المبلغ|الإجمالي)\\s+(?:الإجمالي|النهائي|الكلي|العام)|التكلفة\\s+(?:الإجمالية|النهائية)|(?:و?ال)?(?:إجمالي|مجموع)(?:\\s+السعر)?|\\b(?:final|total)\\s+(?:price|cost)\\b|\\bgrand\\s+total\\b|\\btotal\\b)(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
   "i"
 );
 /**
@@ -98,6 +100,15 @@ const COMPONENT_TOTAL_LABEL = new RegExp(
   "i"
 );
 /**
+ * An Arabic subtotal of one part of the trip — «إجمالي الإقامة»، «إجمالي
+ * المواصلات والشرائح». Arabic names the part after «إجمالي», so the clause
+ * starts with the subtotal word; anything but a trip word makes it a part.
+ */
+const ARABIC_COMPONENT_TOTAL_LABEL = new RegExp(
+  `(?:^|[^\\p{L}])(?:و?ال)?(?:إجمالي|مجموع)\\s+(?!(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}(?![\\p{L}]))(?!السعر)(?!(?:${PARTY_ALT}))(?:ال)?\\p{L}+[^:：\\n]*?[:：\\-–—]?\\s*$`,
+  "u"
+);
+/**
  * A per-unit suffix right after the amount ("4200 ريال للشخص"). Such a figure
  * is a unit rate, not a competing total, so two of them differing is not a
  * contradiction. The word must end there: «للشخصين» is a party, not a person.
@@ -119,6 +130,8 @@ interface PriceMatch extends PriceObservation {
   length: number;
   /** A party's per-room or per-child rate ("للشخصين للغرفة"): never a total. */
   partyUnitRate?: boolean;
+  /** A subtotal of one part of the trip ("إجمالي الإقامة", "Hotel total"). */
+  component?: boolean;
 }
 
 type RawPriceMatch = Omit<PriceMatch, "basis">;
@@ -200,8 +213,10 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     (partyRaw !== null || labelParty !== null) &&
     !perNightSuffix &&
     OTHER_PER_UNIT_QUALIFIER.test(afterParty);
+  const component =
+    COMPONENT_TOTAL_LABEL.test(prefix) || ARABIC_COMPONENT_TOTAL_LABEL.test(prefix);
   const totalLabel =
-    (TOTAL_PRICE_LABEL.test(prefix) && !COMPONENT_TOTAL_LABEL.test(prefix)) ||
+    (TOTAL_PRICE_LABEL.test(prefix) && !component) ||
     (PARTY_PRICE_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix));
   // A party suffix makes a labelled price that party's total only when the
   // clause ends there or more people follow; on an unlabelled (possibly
@@ -249,6 +264,7 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     evidence: originalText.slice(match.index, suffixStart + suffixLength).trim(),
     ...(party ? { party } : {}),
     ...(partyUnitRate ? { partyUnitRate } : {}),
+    ...(component && basis === "unspecified" ? { component } : {}),
   };
 }
 
@@ -268,7 +284,32 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
  * final one whenever the offer states it.
  */
 export function extractPriceObservations(text: string): PriceObservation[] {
-  const normalizedText = toWesternDigits(text);
+  return extractPrices(text).observations;
+}
+
+/**
+ * Chat-style emphasis («*14,400 ريال*») is not part of a label. It is blanked
+ * with spaces so match indexes still point into the original text.
+ */
+function normalizeForPrices(text: string): string {
+  return toWesternDigits(text).replace(/[*_~]/g, " ");
+}
+
+/**
+ * The trip's itemized subtotals ("إجمالي الإقامة 14,400 ريال"), in order, each
+ * once. They are kept apart from the offer's price so they never rival it.
+ */
+function extractComponents(text: string, matches: PriceMatch[]): PriceComponent[] {
+  const seen = new Set<number>();
+  return matches
+    .filter((match) => match.component && !seen.has(match.index) && seen.add(match.index))
+    .map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
+}
+
+type PriceComponent = NonNullable<OfferObservations["priceComponents"]>[number];
+
+function extractPrices(text: string): { observations: PriceObservation[]; components: PriceComponent[] } {
+  const normalizedText = normalizeForPrices(text);
   const allMatches = [
     ...collectMatches(normalizedText, text, AMOUNT_THEN_CURRENCY, 1, 2),
     ...collectMatches(normalizedText, text, CURRENCY_THEN_AMOUNT, 2, 1),
@@ -277,7 +318,7 @@ export function extractPriceObservations(text: string): PriceObservation[] {
     .map((match) => classifyMatch(normalizedText, text, match));
 
   const contextual = allMatches.filter((match) => {
-    if (match.partyUnitRate) return false;
+    if (match.partyUnitRate || match.component) return false;
     if (match.basis !== "unspecified") return true;
     if (!hasPriceWordContext(normalizedText, match.index)) return false;
     return !OTHER_PER_UNIT_QUALIFIER.test(
@@ -317,13 +358,13 @@ export function extractPriceObservations(text: string): PriceObservation[] {
     seen.add(key);
     observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}) });
   }
-  return observations;
+  return { observations, components: extractComponents(text, allMatches) };
 }
 
 export const priceRule: ExtractionRule = {
   key: "price",
   apply(text: string): RuleResult {
-    const prices = extractPriceObservations(text);
+    const { observations: prices, components } = extractPrices(text);
     const first =
       prices.find((price) => price.basis === "total") ??
       prices.find((price) => price.basis === "unspecified") ??
@@ -360,6 +401,7 @@ export const priceRule: ExtractionRule = {
           code: price.currency,
           evidence: price.evidence,
         })),
+        ...(components.length > 0 ? { priceComponents: components } : {}),
       },
     };
   },

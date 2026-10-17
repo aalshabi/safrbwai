@@ -14,8 +14,7 @@ type NightObservation = NonNullable<OfferObservations["nights"]>[number];
 
 export function extractNightObservations(text: string): NightObservation[] {
   const normalizedText = toWesternDigits(text);
-  const seen = new Set<number>();
-  const observations: NightObservation[] = [];
+  const occurrences: NightObservation[] = [];
 
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
@@ -26,16 +25,35 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (preceding === "-" || preceding === "−") continue;
 
     const value = Number(match[1]);
-    if (!Number.isInteger(value) || value <= 0 || seen.has(value)) continue;
+    if (!Number.isInteger(value) || value <= 0) continue;
 
-    seen.add(value);
-    observations.push({
+    occurrences.push({
       value,
       evidence: text.slice(match.index, match.index + match[0].length),
     });
   }
 
-  return observations;
+  // A stay split across hotels ("7 ليالٍ" … "4 ليالٍ" … "3 ليالٍ") states its
+  // parts beside the total. When the largest count equals the sum of all the
+  // other counts, they are its parts, not rival values.
+  const largest = occurrences.reduce<NightObservation | undefined>(
+    (max, n) => (!max || n.value > max.value ? n : max),
+    undefined
+  );
+  if (largest) {
+    const parts = occurrences.filter((n) => n !== largest);
+    const sum = parts.reduce((total, n) => total + n.value, 0);
+    if (parts.length >= 2 && parts.every((n) => n.value < largest.value) && sum === largest.value) {
+      return [largest];
+    }
+  }
+
+  const seen = new Set<number>();
+  return occurrences.filter((n) => {
+    if (seen.has(n.value)) return false;
+    seen.add(n.value);
+    return true;
+  });
 }
 
 export const nightsRule: ExtractionRule = {

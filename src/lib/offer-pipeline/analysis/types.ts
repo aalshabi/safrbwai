@@ -29,6 +29,7 @@ export interface MissingField {
 export type ContradictionCode =
   | "multiple_prices"
   | "price_total_mismatch"
+  | "price_components_mismatch"
   | "conflicting_currency"
   | "conflicting_nights"
   | "conflicting_board"
@@ -112,6 +113,8 @@ export interface OfferObservations {
     party?: { size: number | null; evidence: string };
   }[];
   currencies?: { code: string; evidence: string }[];
+  /** Itemized subtotals of the trip ("إجمالي الإقامة"), never rival totals. */
+  priceComponents?: { amount: number; currency: string; evidence: string }[];
   nights?: { value: number; evidence: string }[];
   boards?: { value: string; evidence: string }[];
   baggage?: { value: string; evidence: string }[];

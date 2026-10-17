@@ -97,8 +97,14 @@ export function buildSuggestedQuestions(
     question: { ar: "هل يتطلب الترانزيت تغيير المطار؟", en: "Does the transit require an airport change?" },
   });
 
-  // 5) Baggage allowance.
-  candidates.push({ key: "baggage", priority: "high", when: missing.has("baggage"), question: registryQuestion("baggage") });
+  // 5) Baggage allowance — only an airline sets it, so only when the offer
+  // includes or mentions flights; a hotel-and-tours package has none to ask about.
+  candidates.push({
+    key: "baggage",
+    priority: "high",
+    when: missing.has("baggage") && context.hasFlight,
+    question: registryQuestion("baggage"),
+  });
 
   // (D) MEDIUM — useful, but only after the five above.
 

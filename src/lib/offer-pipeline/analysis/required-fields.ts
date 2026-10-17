@@ -42,11 +42,11 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "السعر النهائي", en: "Total price" },
     requirement: "required",
     inChecklist: true,
-    conflictCodes: ["multiple_prices", "price_total_mismatch"],
+    conflictCodes: ["multiple_prices", "price_total_mismatch", "price_components_mismatch"],
     fact: (f) => f.totalPrice,
     question: {
-      ar: "ما إجمالي الرحلة الصحيح، وهل يطابق سعر الشخص وعدد المسافرين؟",
-      en: "What is the correct trip total, and does it match the per-person price and traveller count?",
+      ar: "ما إجمالي الرحلة الصحيح، وهل يطابق تفاصيل السعر المذكورة؟",
+      en: "What is the correct trip total, and does it match the price details stated?",
     },
   },
   {
@@ -148,6 +148,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "تواريخ السفر", en: "Travel dates" },
     requirement: "recommended",
     inChecklist: false,
+    fact: (f) => f.travelDates,
     question: { ar: "ما تواريخ السفر؟", en: "What are the travel dates?" },
   },
   {
