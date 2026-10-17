@@ -361,6 +361,35 @@ describe("Arabic trip totals and subtotals", () => {
     }
   );
 
+  it.each(["SIM cards total", "Car rental total", "Airport pickup total", "Sub-total", "Spa's total"])(
+    "reads «%s», a part not on any list, as a subtotal",
+    (label) => {
+      const r = priceRule.apply(`${label}: SAR 1,000\nTrip total: SAR 6,000`);
+      expect(r.facts.totalPrice?.value.amount).toBe(6000);
+      expect(r.observations?.prices?.map((p) => p.amount)).toEqual([6000]);
+    }
+  );
+
+  it.each([
+    "Trip total",
+    "Package total",
+    "Grand total",
+    "Overall total",
+    "Final total",
+    "Offer total",
+    "Holiday total",
+    "The total",
+    "6 nights total",
+    "2 adults total",
+  ])("still reads «%s» as the trip total", (label) => {
+    const r = priceRule.apply(`${label}: SAR 6,000`);
+    expect(r.facts.totalPrice?.value).toEqual({ amount: 6000, currency: "SAR" });
+  });
+
+  it("still lets two whole-trip totals compete", () => {
+    expect(amounts("Package total: SAR 6,000\nGrand total: SAR 6,500")).toEqual([6000, 6500]);
+  });
+
   it("returns no breakdown when the subtotals are not next to the total", () => {
     const r = priceRule.apply(
       "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"

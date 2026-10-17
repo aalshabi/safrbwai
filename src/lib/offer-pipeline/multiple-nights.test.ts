@@ -192,3 +192,32 @@ describe("multiple night observations", () => {
     expect(summary).not.toContain("6 ليالٍ");
   });
 });
+
+describe("separate stays of the same length", () => {
+  it("asks how many nights instead of confirming one stay as the package", async () => {
+    const outcome = await runOfferPipeline({
+      type: "text",
+      text: "Bali offer, SAR 9,000 total.\nHotel A: 4 nights\nHotel B: 4 nights",
+    });
+    expect(outcome.status).toBe("ok");
+    if (outcome.status !== "ok") return;
+
+    expect(outcome.extraction.facts.nights).toBeUndefined();
+    expect(outcome.analysis.confirmedFacts.map((fact) => fact.key)).not.toContain("nights");
+    expect(outcome.analysis.missingFields.map((field) => field.key)).toContain("nights");
+    expect(outcome.analysis.suggestedQuestions.map((q) => q.key)).toContain("nights");
+  });
+
+  it("confirms the stated total when the equal stays add up to it", async () => {
+    const outcome = await runOfferPipeline({
+      type: "text",
+      text: "Bali, 8 nights, SAR 9,000 total.\nHotel A: 4 nights\nHotel B: 4 nights",
+    });
+    expect(outcome.status).toBe("ok");
+    if (outcome.status !== "ok") return;
+
+    expect(outcome.extraction.facts.nights?.value).toBe(8);
+    expect(outcome.analysis.contradictions.map((c) => c.code)).not.toContain("conflicting_nights");
+    expect(outcome.analysis.suggestedQuestions.map((q) => q.key)).not.toContain("nights");
+  });
+});

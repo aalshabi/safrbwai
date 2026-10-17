@@ -139,3 +139,20 @@ describe("multiple final price observations", () => {
     ).toHaveLength(1);
   });
 });
+
+describe("English component subtotals beside the trip total", () => {
+  it.each(["SIM cards total: SAR 200", "Car rental total: SAR 1,000"])(
+    "does not read «%s» as a rival trip total",
+    async (subtotal) => {
+      const outcome = await runOfferPipeline({
+        type: "text",
+        text: `Dubai, 5 nights for 2 adults.\n${subtotal}\nTrip total: SAR 6,000`,
+      });
+      expect(outcome.status).toBe("ok");
+      if (outcome.status !== "ok") return;
+
+      expect(outcome.extraction.facts.totalPrice?.value).toEqual({ amount: 6000, currency: "SAR" });
+      expect(outcome.analysis.contradictions.map((c) => c.code)).not.toContain("multiple_prices");
+    }
+  );
+});

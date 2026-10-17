@@ -36,6 +36,18 @@ function labelBefore(text: string, index: number, previousEnd: number): string {
 }
 
 export function extractNightObservations(text: string): NightObservation[] {
+  return readNights(text).observations;
+}
+
+/**
+ * The offer's night counts, and the one that states the package's length.
+ * Separate stays with no total that collapses them ("Hotel A: 4 nights",
+ * "Hotel B: 4 nights") span their sum, not any one of them, so none of them
+ * is the length: only a count that is not a stay can be, and with none the
+ * length is left unknown — and the stays are dropped, since they are parts,
+ * not rival lengths.
+ */
+function readNights(text: string): { observations: NightObservation[]; length?: NightObservation } {
   const normalizedText = toWesternDigits(text);
   const occurrences: (NightObservation & {
     isStay: boolean;
@@ -94,23 +106,28 @@ export function extractNightObservations(text: string): NightObservation[] {
       parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
     );
   });
-  if (total) return [toObservation(total)];
+  if (total) return { observations: [toObservation(total)], length: toObservation(total) };
 
   const seen = new Set<number>();
-  return occurrences
+  const observations = occurrences
     .filter((n) => {
       if (seen.has(n.value)) return false;
       seen.add(n.value);
       return true;
     })
     .map(toObservation);
+  if (occurrences.filter((n) => n.isStay).length < 2) {
+    return { observations, length: observations[0] };
+  }
+  const length = occurrences.find((n) => !n.isStay);
+  if (!length) return { observations: [] };
+  return { observations, length: toObservation(length) };
 }
 
 export const nightsRule: ExtractionRule = {
   key: "nights",
   apply(text: string): RuleResult {
-    const observations = extractNightObservations(text);
-    const first = observations[0];
+    const { observations, length: first } = readNights(text);
     if (!first) return { facts: {}, warnings: [] };
 
     return {
