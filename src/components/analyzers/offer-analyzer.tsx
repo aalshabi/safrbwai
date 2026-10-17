@@ -105,7 +105,8 @@ export function OfferAnalyzer() {
   const [text, setText] = React.useState("");
   const [url, setUrl] = React.useState("");
   const [pdf, setPdf] = React.useState<File | null>(null);
-  const [textFromPdf, setTextFromPdf] = React.useState(false);
+  // The text in the text field was read from a PDF or an image on the device.
+  const [textSource, setTextSource] = React.useState<"pdf" | "image" | null>(null);
   const [image, setImage] = React.useState<File | null>(null);
   const [pending, setPending] = React.useState<TravelOfferInputType | null>(null);
   const [submitted, setSubmitted] = React.useState<TravelOfferInput | null>(null);
@@ -154,18 +155,19 @@ export function OfferAnalyzer() {
     clearMethod(method); // enforce a single active method
     setMethod(next);
     setPending(null);
-    setTextFromPdf(false);
+    setTextSource(null);
   }
 
   /**
-   * A PDF's text was read on the device. It moves to the text field for the
-   * user to review before analysis; the file itself is dropped.
+   * A PDF's or an image's text was read on the device. It moves to the text
+   * field for the user to review before analysis; the file itself is dropped.
    */
-  function onPdfExtracted(extracted: string) {
-    setPdf(null);
+  function onFileExtracted(source: "pdf" | "image", extracted: string) {
+    if (source === "pdf") setPdf(null);
+    else setImage(null);
     setText(extracted);
     setMethod("text");
-    setTextFromPdf(true);
+    setTextSource(source);
   }
 
   function onSelect(next: TravelOfferInputType) {
@@ -273,7 +275,9 @@ export function OfferAnalyzer() {
       ? (validateUrl(url) as { ok: false; code: OfferErrorCode }).code
       : null;
 
-  const submittable = canSubmit(method, values);
+  // Only text is analyzed: a PDF or an image hands its text to the text tab
+  // for review, so their tabs never submit (the read may still be running).
+  const submittable = method === "text" && canSubmit(method, values);
   const rateLimited = errorCode === "rateLimited";
   const retryable = errorCode === "server" || errorCode === "network" || (rateLimited && cooldown === 0);
   const errorMessage = errorCode ? v2.errors[errorCode] : "";
@@ -300,14 +304,14 @@ export function OfferAnalyzer() {
                   <TravelOfferInputSelector method={method} onSelect={onSelect} />
 
                   <div>
-                    {method === "text" && textFromPdf && (
+                    {method === "text" && textSource && (
                       <p role="status" className="rounded-lg border border-teal/30 bg-teal/5 p-3 text-sm text-foreground">
-                        {t.analyzeOffer.v1.pdf.reviewNotice}
+                        {t.analyzeOffer.v1[textSource].reviewNotice}
                       </p>
                     )}
                     {method === "text" && <TextOfferInput value={text} onChange={setText} error={textError} />}
-                    {method === "pdf" && <FileOfferInput file={pdf} onFile={setPdf} onExtracted={onPdfExtracted} />}
-                    {method === "image" && <ImageOfferInput file={image} onFile={setImage} />}
+                    {method === "pdf" && <FileOfferInput file={pdf} onFile={setPdf} onExtracted={(x) => onFileExtracted("pdf", x)} />}
+                    {method === "image" && <ImageOfferInput file={image} onFile={setImage} onExtracted={(x) => onFileExtracted("image", x)} />}
                     {method === "url" && <UrlOfferInput value={url} onChange={setUrl} error={urlError} />}
                   </div>
 

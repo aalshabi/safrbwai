@@ -19,8 +19,12 @@ function isPdfTextResult(value: unknown): value is PdfTextResult {
   return result.ok === false && REFUSALS.has(result.reason as PdfTextRefusal);
 }
 
-export async function readPdfOfferText(file: File, timeoutMs = PDF_READ_TIMEOUT_MS): Promise<PdfTextResult> {
-  if (typeof Worker === "undefined") return { ok: false, reason: "failed" };
+export async function readPdfOfferText(
+  file: File,
+  timeoutMs = PDF_READ_TIMEOUT_MS,
+  signal?: AbortSignal
+): Promise<PdfTextResult> {
+  if (typeof Worker === "undefined" || signal?.aborted) return { ok: false, reason: "failed" };
 
   let buffer: ArrayBuffer;
   try {
@@ -28,12 +32,18 @@ export async function readPdfOfferText(file: File, timeoutMs = PDF_READ_TIMEOUT_
   } catch {
     return { ok: false, reason: "failed" };
   }
+  // The file may have been removed while its bytes were being read; an abort
+  // listener added now would never fire.
+  if (signal?.aborted) return { ok: false, reason: "failed" };
 
   return new Promise((resolve) => {
     // The bundler emits the worker as a classic script; its dynamic import of
     // the PDF library is loaded as a separate chunk inside the worker.
     const worker = new Worker(new URL("./pdf-text.worker.ts", import.meta.url));
+    let done = false;
     const finish = (result: PdfTextResult) => {
+      if (done) return;
+      done = true;
       window.clearTimeout(timer);
       worker.terminate();
       resolve(result);
@@ -47,6 +57,7 @@ export async function readPdfOfferText(file: File, timeoutMs = PDF_READ_TIMEOUT_
       finish(isPdfTextResult(message.result) ? message.result : { ok: false, reason: "failed" });
     };
     worker.onerror = () => finish({ ok: false, reason: "failed" });
+    signal?.addEventListener("abort", () => finish({ ok: false, reason: "failed" }), { once: true });
     worker.postMessage(buffer, [buffer]);
   });
 }

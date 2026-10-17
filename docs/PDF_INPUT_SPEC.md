@@ -3,8 +3,7 @@
 ## Status
 
 - Decision status: the four decisions below were **approved** by the Product Owner on 2026-10-10. A proof of concept and implementation followed on `feat/pdf-input-browser-extraction`.
-- Capability: `pdfInput` stays `disabled` in Production until the activation gates below pass. The PDF tab is offered only on Vercel Preview deployments, for verification.
-- This document does not authorize implementation, a new dependency, a deployment, or enabling the capability.
+- Capability: `pdfInput` is **enabled** in Production (Product Owner decision, 2026-10-17), after the security review below.
 
 ## Problem
 
@@ -191,10 +190,10 @@ Deployment: the Preview build of this branch at commit `d43d1b0`. The built-in b
 
 - [x] Product Owner approves the browser-side design and the review step (2026-10-10).
 - [x] Dependency chosen, pinned, license and advisories checked; proof of concept results recorded here.
-- [ ] Security review checklist passed.
-- [x] Privacy sentence approved (2026-10-11) and added to the Privacy page. The Terms scope line is unchanged, because PDF input stays disabled in Production.
+- [x] Security review checklist passed (2026-10-17): the bundled pdf.js has no `eval`/`new Function`; in the browser `cMapUrl` and `standardFontDataUrl` are null (no font or CMap fetch) and pdf.js is imported from the local bundle; the 10 MB check runs before reading and the 20-page check before any text is read; extraction runs in a dedicated worker terminated after 10 s; `unpdf@1.8.1` is pinned and has no `npm audit` advisory.
+- [x] Privacy sentence approved (2026-10-11) and added to the Privacy page; updated for PDF and images at activation, with the Terms scope line.
 - [x] Acceptance criteria verified on a Preview deployment (2026-10-11, see below).
-- [ ] Separate, explicit decision to enable `pdfInput` in Production.
+- [x] Separate, explicit decision to enable `pdfInput` in Production (2026-10-17).
 
 ## Decisions (approved 2026-10-10)
 
@@ -203,4 +202,4 @@ Deployment: the Preview build of this branch at commit `d43d1b0`. The built-in b
 3. Approve refusing, not truncating, text over 15,000 characters.
 4. Approve proceeding with a proof of concept using `unpdf` before committing to it.
 
-Image and URL input are not covered here. Image input needs OCR and an external or on-device model. URL input needs server-side fetching with SSRF protection. Each needs its own specification.
+Image input is specified in docs/IMAGE_INPUT_SPEC.md. URL input needs server-side fetching with SSRF protection and its own specification.
