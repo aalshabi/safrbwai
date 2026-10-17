@@ -19,9 +19,17 @@ export interface InclusionMatch {
   evidence: string;
 }
 
-/** A negating word ending right before the match ("لا يشمل", "غير شامل", "does not include"). */
+/**
+ * A negating word ending right before the match ("لا يشمل", "غير شامل", "does not include").
+ *
+ * The Arabic negators may carry the conjunction «و»/«ف» («ولا يشمل», «فلا يشمل»).
+ * Any non-letter may sit directly before the negator, so a list marker glued to
+ * it («-غير شامل», «1-لا يشمل», «2)غير شامل», «•ليس شامل») still negates, while
+ * a letter there means the negator is the tail of another word («بلا», «علا»).
+ * Combining marks count as letters so a vowelled word («بِلا») stays a word.
+ */
 const NEGATOR_BEFORE =
-  /(?:^|[\s(«"'])(و?(?:لا|غير|ليس|ليست|بدون|دون)|not|no|without|excluding|doesn['’]t|don['’]t|isn['’]t|aren['’]t)\s+$/i;
+  /(?<![\p{L}\p{M}])([وف]?(?:لا|غير|ليس|ليست|بدون|دون)|not|no|without|excluding|doesn['’]t|don['’]t|isn['’]t|aren['’]t)\s+$/iu;
 
 /** A negative status phrase ("غير مشمول", "not included", "غير متوفرة"). */
 const NEGATIVE_STATUS =
@@ -46,8 +54,7 @@ export function detectInclusion(
 
   const negator = NEGATOR_BEFORE.exec(text.slice(0, start));
   if (negator) {
-    const negatorStart = negator.index + negator[0].indexOf(negator[1]);
-    return { value: false, evidence: text.slice(negatorStart, end) };
+    return { value: false, evidence: text.slice(negator.index, end) };
   }
 
   const rest = text.slice(end);
