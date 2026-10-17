@@ -35,6 +35,43 @@ function labelBefore(text: string, index: number, previousEnd: number): string {
   return text.slice(start, index);
 }
 
+/**
+ * Words that say a count is a stay but not WHICH stay it is. The property
+ * type stays in the name ("Hotel Marina" and "Marina Resort" are two stays),
+ * with Arabic's article dropped so «الفندق X» and «فندق X» match.
+ */
+const GENERIC_STAY_WORDS =
+  /(?:^|\s)(?:الإقامة|إقامة|اقامة|مدة|لمدة|stay|accommodation|the|for|of)(?=\s|$)/giu;
+/**
+ * Where a stay is spent, right after its count ("4 nights in Dubai", «في دبي»,
+ * «بدبي»). It ends at «و»/"and" or a colon, so a label that follows ("… in
+ * Rome and Total: 7 nights") stays with the next count.
+ */
+const PLACE_AFTER =
+  /^\s*(?:(?:في|in|at)\s+|ب\s*)([^\d,،؛;\n|.:]+?)(?=\s+(?:and\b|و(?=\s|\d))|\s*[\d,،؛;\n|.:]|\s*$)/iu;
+
+/**
+ * Which stay a count names — "hotel a" for "Hotel A: 4 nights" and "Hotel A
+ * stay: 4 nights", «الأولى» for «الإقامة الأولى | 4 ليالٍ», "dubai" for "4 nights in
+ * Dubai" — so a stay mentioned twice counts once. Empty when the text does
+ * not say which stay it is; such counts are never merged.
+ */
+function stayName(label: string, after: string): string {
+  const named = label
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(GENERIC_STAY_WORDS, " ")
+    .replace(/(^|\s)ال(فندق|منتجع)(?=\s|$)/gu, "$1$2")
+    .replace(/\s+/g, " ")
+    .trim();
+  const place = (PLACE_AFTER.exec(after)?.[1] ?? "")
+    .toLowerCase()
+    .replace(/\s+(?:و|and)\s*$/u, "")
+    .replace(/\s+و$/u, "")
+    .trim();
+  return [named, place].filter(Boolean).join(" @ ");
+}
+
 export function extractNightObservations(text: string): NightObservation[] {
   return readNights(text).observations;
 }
@@ -53,6 +90,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
     isStay: boolean;
     onStayLine: boolean;
     onTotalLine: boolean;
+    stay: string;
   })[] = [];
 
   let previousEnd = 0;
@@ -69,14 +107,18 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
 
     const end = match.index + match[0].length;
     const label = labelBefore(normalizedText, match.index, previousEnd);
-    previousEnd = end;
+    // The place after a count ("in Dubai") belongs to it, never to the next
+    // count's label ("4 nights in Dubai, 4 nights in Dubai").
+    previousEnd = end + (PLACE_AFTER.exec(normalizedText.slice(end))?.[0].length ?? 0);
     const onStayLine = STAY_LINE.test(label);
+    const after = normalizedText.slice(end);
     occurrences.push({
       value,
       evidence: text.slice(match.index, end),
       onStayLine,
       onTotalLine: TOTAL_LINE.test(label),
-      isStay: onStayLine || STAY_AFTER.test(normalizedText.slice(end)),
+      isStay: onStayLine || STAY_AFTER.test(after),
+      stay: stayName(label, after),
     });
   }
 
@@ -116,8 +158,17 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       return true;
     })
     .map(toObservation);
-  if (occurrences.filter((n) => n.isStay).length < 2) {
-    return { observations, length: observations[0] };
+  // One stay mentioned twice ("Hotel A: 4 nights" … "Hotel A stay: 4 nights")
+  // is still one stay; stays that do not say which they are stay separate.
+  const stays = new Set(
+    occurrences
+      .filter((n) => n.isStay)
+      .map((n, i) => (n.stay ? `${n.stay}\u0000${n.value}` : `#${i}`))
+  );
+  if (stays.size < 2) {
+    // A stated length that is not a stay ("Duration: 7 nights") still wins.
+    const stated = occurrences.find((n) => !n.isStay);
+    return { observations, length: stated ? toObservation(stated) : observations[0] };
   }
   const length = occurrences.find((n) => !n.isStay);
   if (!length) return { observations: [] };
