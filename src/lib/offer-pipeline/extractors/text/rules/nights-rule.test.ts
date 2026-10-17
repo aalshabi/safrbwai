@@ -63,4 +63,9 @@ describe("nightsRule", () => {
     expect(r.facts.nights?.value).toBe(7);
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("reads a total restated around its stays as one stay", () => {
+    const r = nightsRule.apply("7 nights in Mauritius\nStay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

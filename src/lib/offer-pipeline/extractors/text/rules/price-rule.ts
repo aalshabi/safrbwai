@@ -305,9 +305,15 @@ function normalizeForPrices(text: string): string {
  * the breakdown unclear, so none is returned and nothing is summed.
  */
 function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
-  const total = matches.find((match) => match.basis === "total");
-  if (!total) return [];
+  // A total may be stated more than once; the summary block sits above one of them.
+  for (const total of matches.filter((match) => match.basis === "total")) {
+    const block = summaryBlock(normalizedText, matches, total);
+    if (block.length > 0) return uniqueComponents(normalizedText, block);
+  }
+  return [];
+}
 
+function summaryBlock(normalizedText: string, matches: PriceMatch[], total: PriceMatch): PriceMatch[] {
   const lineStart = (index: number) => normalizedText.lastIndexOf("\n", index - 1) + 1;
   const block: PriceMatch[] = [];
   let cursor = lineStart(total.index);
@@ -320,7 +326,10 @@ function extractComponents(normalizedText: string, matches: PriceMatch[]): Price
     if (parts.length === 0) break;
     block.unshift(...parts);
   }
+  return block;
+}
 
+function uniqueComponents(normalizedText: string, block: PriceMatch[]): PriceComponent[] {
   const byLabel = new Map<string, PriceMatch>();
   for (const match of block) {
     const label = clausePrefix(normalizedText, match.index)

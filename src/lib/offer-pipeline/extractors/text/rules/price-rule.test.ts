@@ -328,6 +328,13 @@ describe("Arabic trip totals and subtotals", () => {
     expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
   });
 
+  it("finds the summary block under a total repeated later in the offer", () => {
+    const r = priceRule.apply(
+      "إجمالي مبلغ الرحلة: 6,000 ريال\nتفاصيل الباقة\n\nإجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,500 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1500]);
+  });
+
   it("returns no breakdown when the subtotals are not next to the total", () => {
     const r = priceRule.apply(
       "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"

@@ -7,7 +7,8 @@
  * that hotel's dates, not the trip's, and a booking-validity range ("العرض
  * ساري من 8 إلى 15 نوفمبر") is not a trip at all; both are skipped. Any other
  * range must show it is the trip's: its line names travel or dates ("تواريخ
- * السفر", "📅", "Travel dates") or holds nothing but the range, so a
+ * السفر", "📅", "Travel dates") or holds nothing but the range under a
+ * heading that is not about a stay, validity or cancellation, so a
  * cancellation window or other period is never taken for the trip.
  */
 
@@ -26,8 +27,8 @@ const RANGE = new RegExp(
   [
     // "من 8 إلى 15 نوفمبر 2026", "8 - 15 November", "from 8 to 15 Nov 2026"
     `(?:(?:من|from)\\s+)?${DAY}(?:\\s+${MONTH})?${TO}${DAY}\\s+${MONTH}(?:,?\\s+${YEAR})?`,
-    // "November 8 - 15, 2026"
-    `${MONTH}\\s+${DAY}${TO}${DAY}(?:,?\\s+${YEAR})?`,
+    // "November 8 - 15, 2026", "October 28 - November 3, 2026"
+    `${MONTH}\\s+${DAY}${TO}(?:${MONTH}\\s+)?${DAY}(?:,?\\s+${YEAR})?`,
     // "من 8/11/2026 إلى 15/11/2026"
     `(?:(?:من|from)\\s+)?${NUMERIC_DATE}${TO}${NUMERIC_DATE}`,
   ].join("|"),
@@ -37,9 +38,9 @@ const RANGE = new RegExp(
 const STAY_LINE =
   /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|الدخول|الخروج|\bstay\b|\bhotel\b|\bresort\b|check[-\s]?(?:in|out))/iu;
 
-/** When the offer can be booked, not when the traveller goes. */
+/** When the offer can be booked or cancelled, not when the traveller goes. */
 const VALIDITY_LINE =
-  /(?:ساري|سارية|صالح|صالحة|صلاحية|العرض\s+(?:من|حتى|لغاية)|الحجز|احجز|\bvalid\b|\bvalidity\b|\bbook(?:ing)?\b|\boffer\s+(?:ends|expires|runs)\b|\bexpires?\b)/iu;
+  /(?:ساري|سارية|صالح|صالحة|صلاحية|العرض\s+(?:من|حتى|لغاية)|الحجز|احجز|إلغاء|الإلغاء|استرداد|\bvalid\b|\bvalidity\b|\bbook(?:ing)?\b|\boffer\s+(?:ends|expires|runs)\b|\bexpires?\b|\bcancel(?:l?ation)?\b|\brefund)/iu;
 
 const TRAVEL_LINE =
   /(?:السفر|الرحلة|تاريخ|تواريخ|المغادرة|الذهاب|العودة|📅|🗓|\btravel\b|\btrip\b|\bdates?\b|\bdepart(?:ure|ing)?\b|\breturn\b)/iu;
@@ -55,6 +56,18 @@ function lineAround(text: string, index: number): string {
   return text.slice(start, end < 0 ? undefined : end);
 }
 
+/** The nearest non-blank line above the one holding `index` (its heading). */
+function lineAbove(text: string, index: number): string {
+  let end = text.lastIndexOf("\n", index);
+  while (end > 0) {
+    const start = text.lastIndexOf("\n", end - 1) + 1;
+    const line = text.slice(start, end);
+    if (line.trim() !== "") return line;
+    end = start - 1;
+  }
+  return "";
+}
+
 export const travelDatesRule: ExtractionRule = {
   key: "travelDates",
   apply(text: string): RuleResult {
@@ -63,7 +76,12 @@ export const travelDatesRule: ExtractionRule = {
       (match) => {
         const line = lineAround(normalized, match.index ?? 0);
         if (STAY_LINE.test(line) || VALIDITY_LINE.test(line)) return false;
-        return TRAVEL_LINE.test(line) || onlyRange(line, match[0]);
+        if (TRAVEL_LINE.test(line)) return true;
+        // A bare range takes its meaning from the heading above it
+        // ("Hotel 1:", "Free cancellation:").
+        if (!onlyRange(line, match[0])) return false;
+        const heading = lineAbove(normalized, match.index ?? 0);
+        return !STAY_LINE.test(heading) && !VALIDITY_LINE.test(heading);
       }
     );
     if (!m || m.index === undefined) return { facts: {}, warnings: [] };
