@@ -23,15 +23,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
     ar: [
       {
         h: "نطاق الخدمة",
-        p: "سافر بوعي أداة لمراجعة عروض السفر النصية. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
+        p: "سافر بوعي أداة لمراجعة عروض السفر من نصها، سواء لُصق أو استُخرج على جهازك من ملف PDF أو صورة. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
       },
       {
         h: "المصادر المدعومة",
-        p: "تدعم الواجهة العاملة تحليل النص وبحث هوية الفندق. رفع ملفات PDF أو الصور وتحليل الروابط غير مدعوم، ولا تُرسل هذه المصادر إلى API التحليل.",
+        p: "تدعم الواجهة العاملة تحليل النص، واستخراج النص من ملفات PDF والصور على جهازك، وبحث هوية الفندق. تحليل الروابط غير مدعوم. لا تُرسل ملفات PDF ولا الصور إلى API التحليل؛ يُرسل النص الذي تراجعه وتؤكده فقط.",
       },
       {
-        h: "قراءة ملفات PDF (معاينة)",
-        p: "قراءة ملفات PDF في وضع المعاينة وغير مفعّلة في الموقع الرسمي. عند اختيار ملف PDF، يُقرأ نصه على جهازك داخل المتصفح ولا يُرفع الملف إلى خوادمنا؛ يُرسل فقط النص الذي تراجعه وتؤكده للتحليل، مثل النص الملصق.",
+        h: "قراءة ملفات PDF والصور",
+        p: "عند اختيار ملف PDF أو صورة، يُقرأ نصهما على جهازك داخل المتصفح ولا يُرفعان إلى خوادمنا. تُقرأ الصورة بتقنية التعرف الضوئي على النص (OCR) التي تُحمَّل ملفاتها من موقعنا فقط، ولا تُحفظ الصورة ولا نصها. يُرسل فقط النص الذي تراجعه وتؤكده للتحليل، مثل النص الملصق.",
       },
       {
         h: "بحث هوية الفندق",
@@ -84,15 +84,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
     en: [
       {
         h: "Service scope",
-        p: "SafrBwai is a tool for reviewing text travel offers. Sign-in and user accounts are not enabled in the current flow.",
+        p: "SafrBwai is a tool for reviewing travel offers from their text, whether pasted or extracted on your device from a PDF or an image. Sign-in and user accounts are not enabled in the current flow.",
       },
       {
         h: "Supported sources",
-        p: "The working interface supports text analysis and hotel identity search. PDF uploads, image uploads, and link analysis are not currently supported, and those sources are not sent to the analysis API.",
+        p: "The working interface supports text analysis, extracting text from PDF files and images on your device, and hotel identity search. Link analysis is not supported. PDF files and images are not sent to the analysis API; only the text you review and confirm is sent.",
       },
       {
-        h: "PDF reading (preview)",
-        p: "PDF reading is in preview and is not enabled on the official site. When you choose a PDF, its text is read on your device inside the browser and the file is not uploaded to our servers; only the text you review and confirm is sent for analysis, like pasted text.",
+        h: "Reading PDF files and images",
+        p: "When you choose a PDF or an image, its text is read on your device inside the browser and the file is not uploaded to our servers. Images are read with optical character recognition (OCR), whose files load from our site only; neither the image nor its text is stored. Only the text you review and confirm is sent for analysis, like pasted text.",
       },
       {
         h: "Hotel identity search",
@@ -151,7 +151,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "نطاق الخدمة الحالي",
-        p: "تحليل النص هو المصدر الوحيد المدعوم لتحليل العروض في الإصدار الحالي. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). ملفات PDF والصور والروابط وميزات الحسابات غير مفعّلة.",
+        p: "يُحلَّل نص العرض فقط. يمكن استخراج النص من ملف PDF أو صورة على جهازك ثم مراجعته قبل التحليل، والقراءة الآلية للصور قد تخطئ في كلمات أو أرقام، ومسؤولية مراجعة النص على المستخدم قبل التحليل. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). تحليل الروابط وميزات الحسابات غير مفعّلة.",
       },
       {
         h: "بيانات الفندق الرسمية",
@@ -209,7 +209,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Current service scope",
-        p: "Text analysis is the only supported source for offer analysis in the current release. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). PDF files, images, links, and account features are not enabled.",
+        p: "Only the offer text is analyzed. Text can be extracted on your device from a PDF or an image and reviewed before analysis; automatic image reading can get words or numbers wrong, and reviewing the text before analysis is the user's responsibility. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). Link analysis and account features are not enabled.",
       },
       {
         h: "Official hotel data",

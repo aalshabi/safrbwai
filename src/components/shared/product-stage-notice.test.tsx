@@ -21,14 +21,14 @@ afterEach(() => {
 });
 
 describe("ProductStageNotice", () => {
-  it("shows the Arabic public-release label, text-only scope, safety warning, and policy links", () => {
+  it("shows the Arabic public-release label, input scope, safety warning, and policy links", () => {
     renderNotice();
 
     expect(screen.getByRole("heading", { name: "الإصدار الأول" })).toBeTruthy();
     expect(screen.getByText("إصدار عام")).toBeTruthy();
     expect(screen.queryByText(/ما قبل الإطلاق/)).toBeNull();
     expect(
-      screen.getByText("تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد.")
+      screen.getByText("يمكنك لصق النص أو اختيار ملف PDF أو صورة؛ يُقرأ الملف والصورة على جهازك ولا يُرفعان. تحليل الروابط غير مدعوم بعد.")
     ).toBeTruthy();
     expect(
       screen.getByText(
@@ -52,7 +52,7 @@ describe("ProductStageNotice", () => {
     expect(screen.queryByText(/Pre-launch/)).toBeNull();
     expect(
       screen.getByText(
-        "Text analysis is currently available. PDF files, images, and links are not supported yet."
+        "Paste text or choose a PDF or an image; files and images are read on your device and not uploaded. Link analysis is not supported yet."
       )
     ).toBeTruthy();
     expect(

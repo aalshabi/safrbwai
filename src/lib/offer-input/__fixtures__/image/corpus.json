@@ -1,0 +1,39 @@
+{
+ "ar1-1x": {
+  "file": "ar1-1x.png",
+  "source": "عرض باقة اسطنبول\n5 ليالٍ في فندق Grand Bosphorus Hotel لشخصين\nالسعر الإجمالي 4500 ريال\nشامل الإفطار (Breakfast included)\nغير شامل الطيران\nالإلغاء مجاني حتى 7 أيام قبل الوصول",
+  "mustContain": [
+   "غير شامل الطيران"
+  ]
+ },
+ "ar2-dark": {
+  "file": "ar2-dark.png",
+  "source": "عرض شهر العسل في المالديف\n7 ليالٍ في منتجع Sun Siyam Iru Fushi\nفيلا شاطئية مع مسبح خاص\nالسعر 18900 ريال للشخصين\nشامل التنقل بالطائرة المائية\nلا يشمل تذاكر الطيران الدولية",
+  "mustContain": [
+   "لا يشمل تذاكر الطيران"
+  ]
+ },
+ "ar3-wrap": {
+  "file": "ar3-wrap.png",
+  "source": "باقة دبي العائلية: 4 ليالٍ في فندق Atlantis The Palm لعائلة من شخصين وطفلين، السعر الإجمالي 9800 ريال شامل الإفطار والدخول إلى Aquaventure، الأسعار لا تشمل الضرائب البلدية ولا تذاكر الطيران.",
+  "mustContain": [
+   "لا تشمل الضرائب",
+   "ولا تذاكر الطيران"
+  ]
+ },
+ "en1-2x": {
+  "file": "en1-2x.png",
+  "source": "Dubai package offer\n4 nights at Marina View Hotel for 2 adults\nTotal price 3200 SAR\nBreakfast included\nFlights not included\nFree cancellation up to 3 days before arrival",
+  "mustContain": [
+   "Flights not included"
+  ]
+ },
+ "ar4-bullets": {
+  "file": "ar4-bullets.png",
+  "source": "عرض جورجيا الصيفي\n• 6 ليالٍ في فندق Rooms Hotel Kazbegi لشخصين\n• السعر 7400 ريال شامل الإفطار\n• ولا يشمل تذاكر الطيران\n-غير شامل التأمين الصحي",
+  "mustContain": [
+   "ولا يشمل تذاكر الطيران",
+   "غير شامل التأمين"
+  ]
+ }
+}

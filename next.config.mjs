@@ -10,6 +10,9 @@ const isDev = process.env.NODE_ENV !== "production";
  * - Next.js injects inline bootstrap/JSON-LD; without a nonce pipeline we allow
  *   'unsafe-inline' for scripts/styles. 'unsafe-eval' is added ONLY in dev
  *   (React Fast Refresh / dev overlay) and never in production.
+ * - 'wasm-unsafe-eval' lets the on-device image reader (tesseract.js, loaded
+ *   from /ocr on this site) compile WebAssembly. It does not allow JavaScript
+ *   eval.
  * - OAuth (Supabase → Google) is a top-level navigation, not restricted here.
  */
 const csp = [
@@ -21,7 +24,7 @@ const csp = [
   "img-src 'self' data: blob: https://images.unsplash.com https://*.supabase.co",
   "font-src 'self' data:",
   "style-src 'self' 'unsafe-inline'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   `connect-src 'self' https://*.supabase.co wss://*.supabase.co${isDev ? " ws: http://localhost:*" : ""}`,
   "manifest-src 'self'",
   "frame-src 'self'",
