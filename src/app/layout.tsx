@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { WebAnalytics } from "@/components/web-analytics";
 import { SITE_ROBOTS } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -97,6 +98,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
+          <WebAnalytics />
         </Providers>
       </body>
     </html>

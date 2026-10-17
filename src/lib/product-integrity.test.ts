@@ -87,9 +87,13 @@ describe("current public product integrity", () => {
     expect(privacyEn).toContain("does not log the offer text or short evidence");
     expect(privacyAr).toContain("لا يدخل هذا الدليل في نص نسخ الأسئلة أو الملخص");
     expect(privacyEn).toContain("excluded from copied questions and summaries");
-    expect(privacyAr).toContain("الإرسال الخارجي معطّل حاليًا");
+    expect(privacyAr).toContain("إرسالها الخارجي معطّل حاليًا");
+    expect(privacyAr).toContain("Vercel Web Analytics دون ملفات تعريف الارتباط");
+    expect(privacyAr).toContain("نحذف بقية معاملات الرابط قبل الإرسال");
+    expect(privacyEn).toContain("Vercel Web Analytics, without cookies");
+    expect(privacyEn).toContain("All other link parameters are removed before sending");
     expect(privacyAr).toContain("لا يدخل نص العرض أو الدليل أو النتيجة");
-    expect(privacyEn).toContain("External transmission is currently disabled");
+    expect(privacyEn).toContain("whose external transmission is currently disabled");
     expect(privacyEn).toContain("offer text, evidence, results, names");
     expect(privacyAr).toContain("تفضيلات اللغة والمظهر");
     expect(privacyEn).toContain("Language and theme preferences");
