@@ -28,7 +28,7 @@ describe("ProductStageNotice", () => {
     expect(screen.getByText("إصدار عام")).toBeTruthy();
     expect(screen.queryByText(/ما قبل الإطلاق/)).toBeNull();
     expect(
-      screen.getByText("يمكنك لصق النص أو اختيار ملف PDF أو صورة؛ يُقرأ الملف والصورة على جهازك ولا يُرفعان. تحليل الروابط غير مدعوم بعد.")
+      screen.getByText("يمكنك لصق النص أو اختيار ملف PDF أو صورة أو إدخال رابط العرض. يُقرأ الملف والصورة على جهازك ولا يُرفعان، ويقرأ خادمنا الصفحة العامة للرابط دون حفظها.")
     ).toBeTruthy();
     expect(
       screen.getByText(
@@ -52,7 +52,7 @@ describe("ProductStageNotice", () => {
     expect(screen.queryByText(/Pre-launch/)).toBeNull();
     expect(
       screen.getByText(
-        "Paste text or choose a PDF or an image; files and images are read on your device and not uploaded. Link analysis is not supported yet."
+        "Paste text, choose a PDF or an image, or enter the offer link. Files and images are read on your device and not uploaded; our server reads a link's public page without storing it."
       )
     ).toBeTruthy();
     expect(

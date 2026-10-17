@@ -368,7 +368,7 @@ export const dictionaries = {
       v1: {
         title: "حلّل عرض سفرك",
         subtitle:
-          "ألصق نص عرض السفر أو اختر ملف PDF أو صورة. سنرتب المعلومات ونوضح لك النقاط التي تحتاج إلى مراجعتها قبل الحجز.",
+          "ألصق نص عرض السفر أو اختر ملف PDF أو صورة أو أدخل رابط العرض. سنرتب المعلومات ونوضح لك النقاط التي تحتاج إلى مراجعتها قبل الحجز.",
         methods: {
           text: "نص",
           pdf: "ملف PDF",
@@ -425,8 +425,38 @@ export const dictionaries = {
         url: {
           label: "رابط العرض",
           placeholder: "https://example.com/offer",
-          laterNote:
-            "تحليل الروابط سيُفعّل في مرحلة لاحقة — لن نجلب محتوى الرابط الآن.",
+          read: "اقرأ الصفحة",
+          reading: "جارٍ قراءة الصفحة…",
+          note: "نقرأ الصفحة العامة من خادمنا مرة واحدة لاستخراج نصها، ولا نحفظ الرابط ولا الصفحة. لا تُدخل رابطًا فيه رقم حجز أو بيانات شخصية.",
+          reviewNotice:
+            "نص مستخرج من صفحة الرابط — قد ينقصه ما تعرضه الصفحة بعد تحميلها أو بعد تسجيل الدخول. قارنه بالصفحة وصحّحه قبل التحليل.",
+          refusals: {
+            invalid_url: "الرابط غير صالح. تأكد أنه يبدأ بـ https:// وانسخه كاملًا.",
+            blocked_address: "لا يمكن قراءة هذا الرابط لأنه لا يشير إلى موقع عام.",
+            robots_disallowed: "الموقع لا يسمح بالقراءة الآلية لهذه الصفحة. الصق نص العرض أو ارفع لقطة شاشة.",
+            not_found: "الصفحة غير موجودة. تأكد من الرابط.",
+            http_error: "رفض الموقع الطلب أو تعذّر فتح الصفحة. الصق نص العرض أو ارفع لقطة شاشة.",
+            not_html: "الرابط لا يشير إلى صفحة نصية. إن كان ملف PDF فحمّله واختره من تبويب PDF.",
+            too_large: "الصفحة أكبر من الحد المسموح. الصق جزء العرض فقط.",
+            timeout: "استغرقت الصفحة وقتًا طويلًا. حاول مرة أخرى أو الصق نص العرض.",
+            unreachable: "تعذّر الوصول إلى الموقع. تحقق من الرابط أو الصق نص العرض.",
+            too_many_redirects: "الرابط يعيد التوجيه مرات كثيرة. افتحه في المتصفح وانسخ الرابط النهائي.",
+            no_text: "لم نجد في الصفحة نصًا كافيًا (قد تُحمّل محتواها لاحقًا أو تتطلب تسجيل الدخول). الصق نص العرض أو ارفع لقطة شاشة.",
+            too_long: "نص الصفحة أطول من الحد المسموح. الصق جزء العرض فقط.",
+            rate_limited: "طلبات كثيرة خلال وقت قصير. حاول بعد دقيقة.",
+            failed: "تعذّرت قراءة الرابط. حاول مرة أخرى أو الصق نص العرض.",
+          },
+          signalsTitle: "ملاحظات عن الرابط — للتحقق، وليست حكمًا على الموقع",
+          signals: {
+            not_https: "الرابط غير مشفّر (http). لا تُدخل بيانات دفع في صفحة غير مشفّرة.",
+            ip_host: "الرابط عنوان رقمي بدل اسم موقع، وهذا غير معتاد لمواقع الحجز.",
+            punycode: "اسم الموقع مكتوب بحروف قد تشبه حروفًا أخرى. تأكد من الاسم حرفًا حرفًا.",
+            shortener: "رابط مختصر. تحقق من الموقع الذي يوصل إليه.",
+            lookalike: "اسم الموقع يشبه {domain} لكنه ليس هو. تأكد أنك في الموقع الرسمي.",
+            brand_domain: "اسم الموقع مطابق لاسم {domain} لكن بامتداد مختلف. قد يكون نسخة رسمية لبلد آخر أو تقليدًا، فتأكد منه.",
+            redirected_elsewhere: "الرابط نقلك إلى موقع آخر: {domain}.",
+            known_site: "الرابط من موقع معروف ({domain})، وهذا لا يعني صحة العرض نفسه.",
+          },
         },
         errors: {
           empty: "الرجاء إدخال محتوى العرض أولًا.",
@@ -469,7 +499,7 @@ export const dictionaries = {
         releaseScope: {
           title: "الإصدار الأول",
           supportedSources:
-            "يمكنك لصق النص أو اختيار ملف PDF أو صورة؛ يُقرأ الملف والصورة على جهازك ولا يُرفعان. تحليل الروابط غير مدعوم بعد.",
+            "يمكنك لصق النص أو اختيار ملف PDF أو صورة أو إدخال رابط العرض. يُقرأ الملف والصورة على جهازك ولا يُرفعان، ويقرأ خادمنا الصفحة العامة للرابط دون حفظها.",
           safetyNotice:
             "سافر بوعي يساعدك على مراجعة المعلومات المذكورة في العرض، لكنه لا يتحقق من هوية البائع ولا يضمن صحة العرض. لا تُدخل بيانات شخصية أو معلومات دفع.",
           privacyLink: "سياسة الخصوصية",
@@ -1051,7 +1081,7 @@ export const dictionaries = {
       v1: {
         title: "Analyze your travel offer",
         subtitle:
-          "Paste the travel offer text, or choose a PDF or an image. We'll organize the information and show you the points to review before booking.",
+          "Paste the travel offer text, or choose a PDF, an image or the offer link. We'll organize the information and show you the points to review before booking.",
         methods: {
           text: "Text",
           pdf: "PDF file",
@@ -1108,7 +1138,38 @@ export const dictionaries = {
         url: {
           label: "Offer link",
           placeholder: "https://example.com/offer",
-          laterNote: "Link analysis will be enabled in a later phase — we won't fetch the link now.",
+          read: "Read the page",
+          reading: "Reading the page…",
+          note: "Our server reads the public page once to extract its text; the link and the page are not stored. Don't enter a link that contains a booking number or personal data.",
+          reviewNotice:
+            "Text extracted from the linked page — it may miss what the page shows after loading or after signing in. Compare it with the page and correct it before analysis.",
+          refusals: {
+            invalid_url: "The link is not valid. Make sure it starts with https:// and copy it in full.",
+            blocked_address: "This link can't be read because it doesn't point to a public site.",
+            robots_disallowed: "The site doesn't allow automated reading of this page. Paste the offer text or upload a screenshot.",
+            not_found: "The page doesn't exist. Check the link.",
+            http_error: "The site refused the request or the page couldn't be opened. Paste the offer text or upload a screenshot.",
+            not_html: "The link doesn't point to a text page. If it's a PDF, download it and choose it in the PDF tab.",
+            too_large: "The page is larger than the allowed limit. Paste only the offer part.",
+            timeout: "The page took too long. Try again or paste the offer text.",
+            unreachable: "The site couldn't be reached. Check the link or paste the offer text.",
+            too_many_redirects: "The link redirects too many times. Open it in your browser and copy the final link.",
+            no_text: "Not enough text was found on the page (it may load its content later or require signing in). Paste the offer text or upload a screenshot.",
+            too_long: "The page's text is longer than the allowed limit. Paste only the offer part.",
+            rate_limited: "Too many requests in a short time. Try again in a minute.",
+            failed: "The link couldn't be read. Try again or paste the offer text.",
+          },
+          signalsTitle: "Notes about the link — for checking, not a verdict on the site",
+          signals: {
+            not_https: "The link isn't encrypted (http). Don't enter payment details on an unencrypted page.",
+            ip_host: "The link is a numeric address instead of a site name, which is unusual for booking sites.",
+            punycode: "The site name uses characters that can look like others. Check the name letter by letter.",
+            shortener: "A shortened link. Check which site it leads to.",
+            lookalike: "The site name looks like {domain} but isn't it. Make sure you're on the official site.",
+            brand_domain: "The site has the same name as {domain} but a different ending. It may be an official site for another country or an imitation, so check it.",
+            redirected_elsewhere: "The link took you to another site: {domain}.",
+            known_site: "The link is from a well-known site ({domain}); that says nothing about the offer itself.",
+          },
         },
         errors: {
           empty: "Please enter the offer content first.",
@@ -1151,7 +1212,7 @@ export const dictionaries = {
         releaseScope: {
           title: "First release",
           supportedSources:
-            "Paste text or choose a PDF or an image; files and images are read on your device and not uploaded. Link analysis is not supported yet.",
+            "Paste text, choose a PDF or an image, or enter the offer link. Files and images are read on your device and not uploaded; our server reads a link's public page without storing it.",
           safetyNotice:
             "SafrBwai helps you review the information stated in an offer. It does not verify the seller or guarantee the offer’s accuracy. Do not enter personal or payment information.",
           privacyLink: "Privacy Policy",

@@ -4,7 +4,7 @@ import { OfferAnalyzer } from "@/components/analyzers/offer-analyzer";
 export const metadata: Metadata = {
   title: "حلّل عرض سفرك — Analyze your travel offer",
   description:
-    "ألصق نص عرض السفر وراجع المعلومات المذكورة فيه قبل الحجز. تحليل النص متاح الآن. Paste travel offer text and review the stated information before booking. Text analysis is available now.",
+    "حلّل عرض السفر من نصه أو ملف PDF أو صورة أو رابط، وراجع المعلومات المذكورة فيه قبل الحجز. Analyze a travel offer from its text, a PDF, an image or a link, and review the stated information before booking.",
   alternates: { canonical: "/analyze-offer" },
 };
 
