@@ -66,8 +66,14 @@ describe("current public product integrity", () => {
   it("keeps the privacy policy aligned with the current Arabic and English flow", () => {
     expect(privacyAr).toContain("لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة");
     expect(privacyEn).toContain("Sign-in and user accounts are not enabled");
-    expect(privacyAr).toContain("تحليل الروابط غير مدعوم");
-    expect(privacyEn).toContain("Link analysis is not supported");
+    // A link is read server-side: public pages only, robots.txt honoured,
+    // no cookies, nothing stored or logged.
+    expect(privacyAr).toContain("يُرسل الرابط إلى خادم سافر بوعي");
+    expect(privacyAr).toContain("ونحترم ملف robots.txt للموقع، ولا نفتح العناوين الداخلية أو الخاصة");
+    expect(privacyAr).toContain("لا يُحفظ الرابط ولا الصفحة ولا نصها، ولا يُسجَّل الرابط في سجلات التشغيل");
+    expect(privacyEn).toContain("the link is sent to the SafrBwai server");
+    expect(privacyEn).toContain("honour the site's robots.txt, and never open internal or private addresses");
+    expect(privacyEn).toContain("The link, the page and its text are not stored, and the link is not written to operational logs");
     // PDF and image text is read on the device; the files are never uploaded.
     expect(privacyAr).toContain("يُقرأ نصهما على جهازك داخل المتصفح ولا يُرفعان إلى خوادمنا");
     expect(privacyEn).toContain("its text is read on your device inside the browser and the file is not uploaded to our servers");
@@ -89,8 +95,8 @@ describe("current public product integrity", () => {
     expect(privacyEn).toContain("Language and theme preferences");
     expect(privacyAr).toContain("يُرسل فقط النص الذي تراجعه وتؤكده للتحليل");
     expect(privacyEn).toContain("Only the text you review and confirm is sent for analysis");
-    expect(privacyAr).toContain("تدعم الواجهة العاملة تحليل النص، واستخراج النص من ملفات PDF والصور على جهازك، وبحث هوية الفندق");
-    expect(privacyEn).toContain("supports text analysis, extracting text from PDF files and images on your device, and hotel identity search");
+    expect(privacyAr).toContain("تدعم الواجهة العاملة تحليل النص، واستخراج النص من ملفات PDF والصور على جهازك، وقراءة الصفحة العامة لرابط العرض، وبحث هوية الفندق");
+    expect(privacyEn).toContain("supports text analysis, extracting text from PDF files and images on your device, reading the public page of an offer link, and hotel identity search");
     expect(privacyAr).toContain("اسم الفندق، والمدينة الاختيارية، ولغة الواجهة المختارة");
     expect(privacyEn).toContain("hotel name, optional city, and selected interface language");
     expect(privacyAr).toContain("لا يُرسل نص عرض السفر إلى Google");
@@ -127,11 +133,13 @@ describe("current public product integrity", () => {
     expect(termsAr).toContain("لا تُدخل بيانات شخصية أو معلومات دفع");
     expect(termsEn).toContain("Do not enter personal or payment information");
     expect(termsAr).toContain("يُحلَّل نص العرض فقط");
-    expect(termsAr).toContain("القراءة الآلية للصور قد تخطئ في كلمات أو أرقام");
+    expect(termsAr).toContain("القراءة الآلية للصور وللصفحات قد تخطئ أو تُغفل جزءًا من المحتوى");
+    expect(termsAr).toContain("ملاحظات الرابط إرشادية للتحقق وليست حكمًا على موثوقية الموقع");
     expect(termsAr).toContain("بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New)");
     expect(termsAr).toContain("يظهر إسناد Google Maps ورابط المصدر مع البيانات");
     expect(termsEn).toContain("Only the offer text is analyzed");
-    expect(termsEn).toContain("automatic image reading can get words or numbers wrong");
+    expect(termsEn).toContain("Automatic reading of images and pages can get things wrong or miss part of the content");
+    expect(termsEn).toContain("Notes about a link are prompts to verify, not a verdict on the site's trustworthiness");
     expect(termsEn).toContain("Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New)");
     expect(termsEn).toContain("Google Maps attribution and a source link appear with the data");
     expect(termsAr).toContain("التقييم وعدد المراجعات والمراجعات والصور والأسعار والتوفر ليست ضمن الإصدار الأول");

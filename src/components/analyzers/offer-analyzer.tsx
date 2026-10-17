@@ -23,6 +23,8 @@ import { TextOfferInput } from "@/components/offer-input/text-offer-input";
 import { FileOfferInput } from "@/components/offer-input/file-offer-input";
 import { ImageOfferInput } from "@/components/offer-input/image-offer-input";
 import { UrlOfferInput } from "@/components/offer-input/url-offer-input";
+import { LinkSignals } from "@/components/offer-input/link-signals";
+import type { LinkSignal } from "@/lib/offer-input/url/link-check";
 import { TravelOfferReview } from "@/components/offer-input/travel-offer-review";
 import { OfferAnalysisResult } from "@/components/offer-input/offer-analysis-result";
 import { BetaFeedback } from "@/components/offer-input/beta-feedback";
@@ -106,7 +108,19 @@ export function OfferAnalyzer() {
   const [url, setUrl] = React.useState("");
   const [pdf, setPdf] = React.useState<File | null>(null);
   // The text in the text field was read from a PDF or an image on the device.
-  const [textSource, setTextSource] = React.useState<"pdf" | "image" | null>(null);
+  const [textSource, setTextSource] = React.useState<"pdf" | "image" | "url" | null>(null);
+  // After a PDF, image or link is read, focus moves to the review notice so the
+  // user (and a screen reader) lands on the text to check, not on <body>.
+  const reviewNoticeRef = React.useRef<HTMLParagraphElement>(null);
+  const focusReviewNotice = React.useRef(false);
+  React.useEffect(() => {
+    if (focusReviewNotice.current && method === "text" && textSource) {
+      focusReviewNotice.current = false;
+      reviewNoticeRef.current?.focus();
+    }
+  }, [method, textSource]);
+  // Notes about the link whose page text is in the text field.
+  const [linkSignals, setLinkSignals] = React.useState<LinkSignal[]>([]);
   const [image, setImage] = React.useState<File | null>(null);
   const [pending, setPending] = React.useState<TravelOfferInputType | null>(null);
   const [submitted, setSubmitted] = React.useState<TravelOfferInput | null>(null);
@@ -156,6 +170,7 @@ export function OfferAnalyzer() {
     setMethod(next);
     setPending(null);
     setTextSource(null);
+    setLinkSignals([]);
   }
 
   /**
@@ -163,11 +178,23 @@ export function OfferAnalyzer() {
    * field for the user to review before analysis; the file itself is dropped.
    */
   function onFileExtracted(source: "pdf" | "image", extracted: string) {
+    focusReviewNotice.current = true;
     if (source === "pdf") setPdf(null);
     else setImage(null);
     setText(extracted);
     setMethod("text");
     setTextSource(source);
+    setLinkSignals([]);
+  }
+
+  /** A link's page was read by the server; its text moves to the text field for review. */
+  function onUrlExtracted(extracted: string, signals: LinkSignal[]) {
+    focusReviewNotice.current = true;
+    setUrl("");
+    setText(extracted);
+    setMethod("text");
+    setTextSource("url");
+    setLinkSignals(signals);
   }
 
   function onSelect(next: TravelOfferInputType) {
@@ -305,14 +332,20 @@ export function OfferAnalyzer() {
 
                   <div>
                     {method === "text" && textSource && (
-                      <p role="status" className="rounded-lg border border-teal/30 bg-teal/5 p-3 text-sm text-foreground">
+                      <p
+                        ref={reviewNoticeRef}
+                        tabIndex={-1}
+                        role="status"
+                        className="rounded-lg border border-teal/30 bg-teal/5 p-3 text-sm text-foreground focus:outline-none"
+                      >
                         {t.analyzeOffer.v1[textSource].reviewNotice}
                       </p>
                     )}
+                    {method === "text" && textSource === "url" && <LinkSignals signals={linkSignals} className="mt-2" />}
                     {method === "text" && <TextOfferInput value={text} onChange={setText} error={textError} />}
                     {method === "pdf" && <FileOfferInput file={pdf} onFile={setPdf} onExtracted={(x) => onFileExtracted("pdf", x)} />}
                     {method === "image" && <ImageOfferInput file={image} onFile={setImage} onExtracted={(x) => onFileExtracted("image", x)} />}
-                    {method === "url" && <UrlOfferInput value={url} onChange={setUrl} error={urlError} />}
+                    {method === "url" && <UrlOfferInput value={url} onChange={setUrl} error={urlError} onExtracted={onUrlExtracted} />}
                   </div>
 
                   <Button type="submit" size="lg" className="w-full" disabled={!submittable}>

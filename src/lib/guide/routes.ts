@@ -53,8 +53,8 @@ const homeSteps: readonly GuideStep[] = [
 
 const offerSteps: readonly GuideStep[] = [
   step("/analyze-offer", "offer-source", text("المصدر النصي", "Text source"), text(
-    "ألصق النص أو اختر ملف PDF أو صورة لاستخراج نصها على جهازك ومراجعته. الروابط غير متاحة.",
-    "Paste text, or choose a PDF or an image to extract its text on your device and review it. Links are unavailable."
+    "ألصق النص، أو اختر ملف PDF أو صورة، أو أدخل رابط العرض لاستخراج نصه ومراجعته قبل التحليل.",
+    "Paste text, or choose a PDF, an image or the offer link to extract its text and review it before analysis."
   ), { target: "offer-source-text", capability: "textOfferAnalysis" }),
   step("/analyze-offer", "offer-paste", text("ألصق نصًا مجهّلًا", "Paste anonymized text"), text(
     "ألصق عرض سفر غير حساس بعد حذف الأسماء وبيانات التواصل والحجز والدفع.",

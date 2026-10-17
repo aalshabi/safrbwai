@@ -27,11 +27,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "المصادر المدعومة",
-        p: "تدعم الواجهة العاملة تحليل النص، واستخراج النص من ملفات PDF والصور على جهازك، وبحث هوية الفندق. تحليل الروابط غير مدعوم. لا تُرسل ملفات PDF ولا الصور إلى API التحليل؛ يُرسل النص الذي تراجعه وتؤكده فقط.",
+        p: "تدعم الواجهة العاملة تحليل النص، واستخراج النص من ملفات PDF والصور على جهازك، وقراءة الصفحة العامة لرابط العرض، وبحث هوية الفندق. لا تُرسل ملفات PDF ولا الصور ولا الصفحات إلى API التحليل؛ يُرسل النص الذي تراجعه وتؤكده فقط.",
       },
       {
         h: "قراءة ملفات PDF والصور",
         p: "عند اختيار ملف PDF أو صورة، يُقرأ نصهما على جهازك داخل المتصفح ولا يُرفعان إلى خوادمنا. تُقرأ الصورة بتقنية التعرف الضوئي على النص (OCR) التي تُحمَّل ملفاتها من موقعنا فقط، ولا تُحفظ الصورة ولا نصها. يُرسل فقط النص الذي تراجعه وتؤكده للتحليل، مثل النص الملصق.",
+      },
+      {
+        h: "قراءة رابط العرض",
+        p: "عند طلب قراءة رابط، يُرسل الرابط إلى خادم سافر بوعي، فيفتح الخادم الصفحة العامة مرة واحدة باسم SafrBwaiBot ويستخرج نصها ويعيده إليك للمراجعة. يرى الموقع صاحب الرابط عنوان خادمنا لا عنوانك، ولا تُرسل ملفات تعريف الارتباط (cookies). لا نقرأ إلا الصفحات العامة، ونحترم ملف robots.txt للموقع، ولا نفتح العناوين الداخلية أو الخاصة. لا يُحفظ الرابط ولا الصفحة ولا نصها، ولا يُسجَّل الرابط في سجلات التشغيل. لا تُدخل رابطًا يحتوي رقم حجز أو بيانات شخصية.",
       },
       {
         h: "بحث هوية الفندق",
@@ -88,11 +92,15 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Supported sources",
-        p: "The working interface supports text analysis, extracting text from PDF files and images on your device, and hotel identity search. Link analysis is not supported. PDF files and images are not sent to the analysis API; only the text you review and confirm is sent.",
+        p: "The working interface supports text analysis, extracting text from PDF files and images on your device, reading the public page of an offer link, and hotel identity search. PDF files, images and pages are not sent to the analysis API; only the text you review and confirm is sent.",
       },
       {
         h: "Reading PDF files and images",
         p: "When you choose a PDF or an image, its text is read on your device inside the browser and the file is not uploaded to our servers. Images are read with optical character recognition (OCR), whose files load from our site only; neither the image nor its text is stored. Only the text you review and confirm is sent for analysis, like pasted text.",
+      },
+      {
+        h: "Reading an offer link",
+        p: "When you ask us to read a link, the link is sent to the SafrBwai server, which opens the public page once as SafrBwaiBot, extracts its text and returns it to you for review. The linked site sees our server's address, not yours, and no cookies are sent. We read public pages only, honour the site's robots.txt, and never open internal or private addresses. The link, the page and its text are not stored, and the link is not written to operational logs. Don't enter a link that contains a booking number or personal data.",
       },
       {
         h: "Hotel identity search",
@@ -151,7 +159,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "نطاق الخدمة الحالي",
-        p: "يُحلَّل نص العرض فقط. يمكن استخراج النص من ملف PDF أو صورة على جهازك ثم مراجعته قبل التحليل، والقراءة الآلية للصور قد تخطئ في كلمات أو أرقام، ومسؤولية مراجعة النص على المستخدم قبل التحليل. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). تحليل الروابط وميزات الحسابات غير مفعّلة.",
+        p: "يُحلَّل نص العرض فقط. يمكن استخراج النص من ملف PDF أو صورة على جهازك، أو من الصفحة العامة لرابط العرض، ثم مراجعته قبل التحليل. القراءة الآلية للصور وللصفحات قد تخطئ أو تُغفل جزءًا من المحتوى، ومسؤولية مراجعة النص على المستخدم قبل التحليل. ملاحظات الرابط إرشادية للتحقق وليست حكمًا على موثوقية الموقع. بحث هوية الفندق مفعّل ويرسل اسم الفندق والمدينة الاختيارية ولغة الواجهة إلى Google Places API (New). ميزات الحسابات غير مفعّلة.",
       },
       {
         h: "بيانات الفندق الرسمية",
@@ -209,7 +217,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Current service scope",
-        p: "Only the offer text is analyzed. Text can be extracted on your device from a PDF or an image and reviewed before analysis; automatic image reading can get words or numbers wrong, and reviewing the text before analysis is the user's responsibility. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). Link analysis and account features are not enabled.",
+        p: "Only the offer text is analyzed. Text can be extracted on your device from a PDF or an image, or from the public page of an offer link, and reviewed before analysis. Automatic reading of images and pages can get things wrong or miss part of the content, and reviewing the text before analysis is the user's responsibility. Notes about a link are prompts to verify, not a verdict on the site's trustworthiness. Hotel identity search is enabled and sends the hotel name, optional city, and interface language to Google Places API (New). Account features are not enabled.",
       },
       {
         h: "Official hotel data",

@@ -40,7 +40,7 @@ describe("product capability registry", () => {
   });
 
   it("marks only working first-release surfaces as enabled", () => {
-    const enabled = ["textOfferAnalysis", "travelGuides", "hotelIdentityLookup", "pdfInput", "imageInput", "publicIndexing"];
+    const enabled = ["textOfferAnalysis", "travelGuides", "hotelIdentityLookup", "pdfInput", "imageInput", "urlInput", "publicIndexing"];
     for (const key of enabled) {
       expect(isFeatureEnabled(key as ProductCapabilityKey)).toBe(true);
     }

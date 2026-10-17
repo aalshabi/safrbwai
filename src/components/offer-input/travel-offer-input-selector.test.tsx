@@ -9,7 +9,7 @@ afterEach(() => {
 });
 
 describe("TravelOfferInputSelector sources", () => {
-  it("enables text, PDF and image in Production and keeps the link disabled", () => {
+  it("enables text, PDF, image and link in Production", () => {
     vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "production");
     const onSelect = vi.fn();
     render(
@@ -18,20 +18,13 @@ describe("TravelOfferInputSelector sources", () => {
       </LanguageProvider>
     );
 
-    for (const [name, method] of [[/ملف PDF/, "pdf"], [/صورة/, "image"]] as const) {
+    for (const [name, method] of [[/ملف PDF/, "pdf"], [/صورة/, "image"], [/رابط/, "url"]] as const) {
       const tab = screen.getByRole("tab", { name });
       expect(tab.hasAttribute("disabled")).toBe(false);
       fireEvent.click(tab);
       expect(onSelect).toHaveBeenLastCalledWith(method);
     }
     expect(screen.getByRole("tab", { name: "نص" }).hasAttribute("disabled")).toBe(false);
-
-    const link = screen.getByRole("tab", { name: /رابط/ });
-    expect(link.hasAttribute("disabled")).toBe(true);
-    expect(link.getAttribute("aria-disabled")).toBe("true");
-    onSelect.mockClear();
-    fireEvent.click(link);
-    expect(onSelect).not.toHaveBeenCalled();
-    expect(screen.getAllByText("قريبًا")).toHaveLength(1);
+    expect(screen.queryByText("قريبًا")).toBeNull();
   });
 });

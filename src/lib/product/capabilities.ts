@@ -201,16 +201,16 @@ export const PRODUCT_CAPABILITIES = {
   },
   urlInput: {
     key: "urlInput",
-    status: "disabled",
+    status: "enabled",
     title: { ar: "إدخال الروابط", en: "URL input" },
     route: null,
     reason: {
-      ar: "جلب الروابط الخارجية غير مدعوم.",
-      en: "External URL fetching is not supported.",
+      ar: "يقرأ الخادم الصفحة العامة للرابط ويُراجع نصها قبل التحليل، مع ملاحظات عن الرابط.",
+      en: "The server reads the link's public page; its text is reviewed before analysis, with notes about the link.",
     },
     launchRequirement: {
-      ar: "مراجعة SSRF والأمان والخصوصية قبل التفعيل.",
-      en: "Complete SSRF, security, and privacy review before enabling.",
+      ar: "اكتملت مراجعة SSRF والأمان والخصوصية (docs/URL_INPUT_SPEC.md).",
+      en: "SSRF, security and privacy review completed (docs/URL_INPUT_SPEC.md).",
     },
     requiredForPublicLaunch: false,
   },

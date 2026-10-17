@@ -39,12 +39,12 @@ describe("PDF tab availability", () => {
     expect(onSelect).toHaveBeenCalledWith("pdf");
   });
 
-  it("is offered on a Preview deployment, with the image tab, while the link stays unavailable", () => {
+  it("is offered on a Preview deployment, with the image and link tabs", () => {
     vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "preview");
     render(<LanguageProvider><TravelOfferInputSelector method="text" onSelect={vi.fn()} /></LanguageProvider>);
-    expect(screen.getByRole("tab", { name: /ملف PDF/ }).hasAttribute("disabled")).toBe(false);
-    expect(screen.getByRole("tab", { name: /صورة/ }).hasAttribute("disabled")).toBe(false);
-    expect(screen.getByRole("tab", { name: /رابط/ }).hasAttribute("disabled")).toBe(true);
+    for (const name of [/ملف PDF/, /صورة/, /رابط/]) {
+      expect(screen.getByRole("tab", { name }).hasAttribute("disabled")).toBe(false);
+    }
   });
 });
 
