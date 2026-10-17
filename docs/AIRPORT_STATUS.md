@@ -1,5 +1,7 @@
 # Airport status ("حالة المطارات الآن")
 
+Editors entering official notices (GACA, SPA, airports): see [AIRPORT_STATUS_EDITOR.md](./AIRPORT_STATUS_EDITOR.md).
+
 Shown on `/insights` (مرصد السفر) in three presentations of one server-rendered snapshot:
 
 | Width | Presentation | Component |

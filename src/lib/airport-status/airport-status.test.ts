@@ -158,6 +158,20 @@ describe("normalization", () => {
     expect(issues).toHaveLength(3);
   });
 
+  it("reports optional fields it drops instead of dropping them silently", () => {
+    const { records, issues } = norm([
+      rec({ statusMessageAr: "ت".repeat(161), passengerActionAr: "", airlineStatus: { name: "X", url: "http://x.example" }, confidence: "sure" }),
+    ]);
+    expect(records[0]).not.toHaveProperty("statusMessageAr");
+    expect(records[0].confidence).toBe("medium");
+    expect(issues.map((i) => i.split(": ")[1])).toEqual([
+      "confidence ignored (expected high, medium or low)",
+      "statusMessageAr ignored (1–160 characters)",
+      "passengerActionAr ignored (1–160 characters)",
+      "airlineStatus ignored (name and https url)",
+    ]);
+  });
+
   it("strips bidi control characters from text", () => {
     const { records } = norm([rec({ statusMessageAr: "تأخير‮ RUH⁦ 40%" })]);
     expect(records[0].statusMessageAr).toBe("تأخير RUH 40%");
