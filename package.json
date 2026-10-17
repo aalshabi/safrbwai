@@ -13,7 +13,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:regression": "vitest run src/lib/offer-pipeline/regression"
+    "test:regression": "vitest run src/lib/offer-pipeline/regression",
+    "airport:check": "vitest run src/lib/airport-status/manual-feed.test.ts"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.2",
