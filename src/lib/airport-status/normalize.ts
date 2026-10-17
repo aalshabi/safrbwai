@@ -172,6 +172,9 @@ function parseRecord(v: unknown, where: string, opts: NormalizeOptions, issues: 
     status = derived;
   }
 
+  if (v.confidence !== undefined && !CONFIDENCES.includes(v.confidence as Confidence)) {
+    issues.push(`${where} (${airportCode}): confidence ignored (expected high, medium or low)`);
+  }
   const confidence: Confidence = CONFIDENCES.includes(v.confidence as Confidence)
     ? (v.confidence as Confidence)
     : AUTHORITATIVE_TYPES.includes(src.type)
@@ -193,11 +196,16 @@ function parseRecord(v: unknown, where: string, opts: NormalizeOptions, issues: 
   for (const [k, value] of Object.entries(metrics)) if (value !== undefined) (record as unknown as Record<string, number>)[k] = value;
   if (expiresAt !== undefined) record.expiresAt = new Date(expiresAt).toISOString();
   if (status === "suspended" && evidence) record.suspensionEvidence = evidence;
-  const message = text(v.statusMessageAr, 160);
+  // Optional fields that fail validation are dropped, but never silently.
+  const optional = <T>(key: string, value: T | undefined, rule: string): T | undefined => {
+    if (v[key] !== undefined && value === undefined) issues.push(`${where} (${airportCode}): ${key} ignored (${rule})`);
+    return value;
+  };
+  const message = optional("statusMessageAr", text(v.statusMessageAr, 160), "1–160 characters");
   if (message) record.statusMessageAr = message;
-  const action = text(v.passengerActionAr, 160);
+  const action = optional("passengerActionAr", text(v.passengerActionAr, 160), "1–160 characters");
   if (action) record.passengerActionAr = action;
-  const airline = link(v.airlineStatus);
+  const airline = optional("airlineStatus", link(v.airlineStatus), "name and https url");
   if (airline) record.airlineStatus = airline;
   if (v.sample === true) record.sample = true;
   return { kind: "record", record };

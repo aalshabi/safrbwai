@@ -5,7 +5,8 @@
 
 import { describe, expect, it } from "vitest";
 import manualFeed from "./manual-feed.json";
-import { normalizeFeed } from "./normalize";
+import { isApprovedAuthorityHost, normalizeFeed } from "./normalize";
+import { AUTHORITATIVE_TYPES } from "./status";
 
 describe("manual-feed.json", () => {
   const now = new Date();
@@ -19,6 +20,20 @@ describe("manual-feed.json", () => {
   it("has no rejected fields or records", () => {
     // Each issue names the record index, airport and the reason.
     expect(feed.issues).toEqual([]);
+  });
+
+  it("uses only the sources the editor guide accepts", () => {
+    // Official airport, GACA and SPA records must come from a government or
+    // approved host; airline notices may come from the airline's own site.
+    // Trackers, manual reviews and other news sites are not accepted here.
+    const rejected = feed.records
+      .filter(
+        (r) =>
+          !AUTHORITATIVE_TYPES.includes(r.source.type) ||
+          (r.source.type !== "airline_notice" && !isApprovedAuthorityHost(r.source.url))
+      )
+      .map((r) => `${r.airportCode}: ${r.source.type} ${r.source.url}`);
+    expect(rejected).toEqual([]);
   });
 
   it("has no template placeholders left in links or dates", () => {
