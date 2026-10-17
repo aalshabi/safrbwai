@@ -23,7 +23,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
     ar: [
       {
         h: "نطاق الخدمة",
-        p: "سافر بوعي أداة لمراجعة عروض السفر من نصها، سواء لُصق أو استُخرج على جهازك من ملف PDF أو صورة. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
+        p: "سافر بوعي أداة لمراجعة عروض السفر من نصها، سواء لُصق، أو استُخرج على جهازك من ملف PDF أو صورة، أو من الصفحة العامة لرابط العرض. لا يوجد تسجيل دخول أو حسابات مستخدمين مفعّلة في التدفق الحالي.",
       },
       {
         h: "المصادر المدعومة",
@@ -88,7 +88,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
     en: [
       {
         h: "Service scope",
-        p: "SafrBwai is a tool for reviewing travel offers from their text, whether pasted or extracted on your device from a PDF or an image. Sign-in and user accounts are not enabled in the current flow.",
+        p: "SafrBwai is a tool for reviewing travel offers from their text, whether pasted, extracted on your device from a PDF or an image, or taken from the public page of the offer's link. Sign-in and user accounts are not enabled in the current flow.",
       },
       {
         h: "Supported sources",
