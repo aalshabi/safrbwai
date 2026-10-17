@@ -5,7 +5,7 @@ import { WebAnalytics } from "./web-analytics";
 afterEach(() => {
   cleanup();
   vi.unstubAllEnvs();
-  document.head.querySelectorAll('script[src="/_vercel/insights/script.js"]').forEach((s) => s.remove());
+  document.head.querySelectorAll("script").forEach((s) => s.remove());
   delete window.va;
   delete window.vaq;
 });
@@ -30,5 +30,14 @@ describe("WebAnalytics", () => {
       url: "https://www.safrbwai.com/analyze-hotel?utm_source=x",
     });
     expect(beforeSend({ type: "pageview", url: "::" })).toBeNull();
+  });
+
+  it("loads the script from the project path Vercel sets at build time", () => {
+    vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH", "/x7k2");
+    render(<WebAnalytics />);
+    const script = document.head.querySelector<HTMLScriptElement>('script[src="/x7k2/insights/script.js"]');
+    expect(script?.dataset.endpoint).toBe("/x7k2/insights");
+    expect(document.head.querySelector('script[src="/_vercel/insights/script.js"]')).toBeNull();
   });
 });

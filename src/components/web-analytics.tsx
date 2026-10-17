@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { WEB_ANALYTICS_SCRIPT, isWebAnalyticsEnabled, sanitizeAnalyticsUrl } from "@/lib/analytics/web-analytics";
+import { isWebAnalyticsEnabled, resolveWebAnalyticsScript, sanitizeAnalyticsUrl } from "@/lib/analytics/web-analytics";
 
 type VaEvent = { type: "pageview" | "event"; url: string };
 type VaQueue = (...args: unknown[]) => void;
@@ -30,9 +30,11 @@ export function WebAnalytics() {
       const url = sanitizeAnalyticsUrl(event.url);
       return url ? { ...event, url } : null;
     });
-    if (document.head.querySelector(`script[src="${WEB_ANALYTICS_SCRIPT}"]`)) return;
+    const { src, dataset } = resolveWebAnalyticsScript();
+    if (document.head.querySelector(`script[src="${src}"]`)) return;
     const script = document.createElement("script");
-    script.src = WEB_ANALYTICS_SCRIPT;
+    script.src = src;
+    Object.assign(script.dataset, dataset);
     script.defer = true;
     document.head.appendChild(script);
   }, []);
