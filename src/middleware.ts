@@ -62,6 +62,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   // Static assets skip the auth middleware, including the on-device OCR engine
-  // and models under /ocr (several MB, fetched by the image reader).
-  matcher: ["/((?!_next/static|_next/image|ocr/|favicon.ico|icon.svg|.*\\.svg$).*)"],
+  // and models under /ocr (several MB, fetched by the image reader), and the
+  // web app manifest and home-screen icons.
+  matcher: ["/((?!_next/static|_next/image|ocr/|icons/|apple-icon|manifest\\.webmanifest|favicon.ico|icon.svg|.*\\.svg$).*)"],
 };
