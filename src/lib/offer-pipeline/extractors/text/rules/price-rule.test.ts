@@ -311,4 +311,18 @@ describe("Arabic trip totals and subtotals", () => {
   it("does not read a subtotal as the trip total", () => {
     expect(priceRule.apply("إجمالي الإقامة: 14,400 ريال").facts.totalPrice).toBeUndefined();
   });
+
+  it("counts a subtotal restated in the summary once", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nالملخص:\nإجمالي الإقامة: 5,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+  });
+
+  it("returns no breakdown when one subtotal is stated with two amounts", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nإجمالي الإقامة: 5,500 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
 });

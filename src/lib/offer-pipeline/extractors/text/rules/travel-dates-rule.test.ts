@@ -23,4 +23,14 @@ describe("travelDatesRule", () => {
       expect(travelDatesRule.apply(text).facts.travelDates).toBeUndefined();
     }
   );
+
+  it("takes the trip range, not an earlier per-hotel range", () => {
+    const text = "الإقامة الأولى: 8 - 12 نوفمبر\nالإقامة الثانية: 12 - 15 نوفمبر\nتواريخ السفر: 8 - 15 نوفمبر";
+    expect(travelDatesRule.apply(text).facts.travelDates?.value).toBe("8 - 15 نوفمبر");
+  });
+
+  it("confirms no trip dates when only per-hotel ranges are given", () => {
+    const text = "Hotel 1: 8 - 12 November\nHotel 2: 12 - 15 November";
+    expect(travelDatesRule.apply(text).facts.travelDates).toBeUndefined();
+  });
 });

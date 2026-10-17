@@ -297,13 +297,25 @@ function normalizeForPrices(text: string): string {
 
 /**
  * The trip's itemized subtotals ("إجمالي الإقامة 14,400 ريال"), in order, each
- * once. They are kept apart from the offer's price so they never rival it.
+ * once. They are kept apart from the offer's price so they never rival it. A
+ * subtotal restated in a summary (same label, same amount) counts once; the
+ * same label with a different amount makes the breakdown unclear, so none is
+ * returned and nothing is summed.
  */
-function extractComponents(text: string, matches: PriceMatch[]): PriceComponent[] {
-  const seen = new Set<number>();
-  return matches
-    .filter((match) => match.component && !seen.has(match.index) && seen.add(match.index))
-    .map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
+function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
+  const byLabel = new Map<string, PriceMatch>();
+  for (const match of matches) {
+    if (!match.component) continue;
+    const label = clausePrefix(normalizedText, match.index)
+      .replace(/[^\p{L}\s]/gu, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+    const previous = byLabel.get(label);
+    if (!previous) byLabel.set(label, match);
+    else if (previous.amount !== match.amount || previous.currency !== match.currency) return [];
+  }
+  return [...byLabel.values()].map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
 }
 
 type PriceComponent = NonNullable<OfferObservations["priceComponents"]>[number];
@@ -358,7 +370,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     seen.add(key);
     observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}) });
   }
-  return { observations, components: extractComponents(text, allMatches) };
+  return { observations, components: extractComponents(normalizedText, allMatches) };
 }
 
 export const priceRule: ExtractionRule = {

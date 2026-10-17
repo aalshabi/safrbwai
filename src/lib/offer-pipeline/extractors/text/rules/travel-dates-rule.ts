@@ -2,7 +2,9 @@
  * TravelDatesRule — extracts the trip's dates EXACTLY as stated, only when the
  * offer gives a range ("من 8 إلى 15 نوفمبر 2026", "8–15/11/2026", "from 8 to
  * 15 November"). A single date is not enough: it may be an offer deadline
- * ("العرض حتى 30 نوفمبر") rather than when the traveller goes.
+ * ("العرض حتى 30 نوفمبر") rather than when the traveller goes. A range on a
+ * line about one stay ("الإقامة الأولى: 8–12 نوفمبر", "Hotel 1 check-in") is
+ * that hotel's dates, not the trip's, so it is skipped.
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
@@ -25,14 +27,26 @@ const RANGE = new RegExp(
     // "من 8/11/2026 إلى 15/11/2026"
     `(?:(?:من|from)\\s+)?${NUMERIC_DATE}${TO}${NUMERIC_DATE}`,
   ].join("|"),
-  "iu"
+  "giu"
 );
+
+const STAY_LINE =
+  /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|الدخول|الخروج|\bstay\b|\bhotel\b|\bresort\b|check[-\s]?(?:in|out))/iu;
+
+function lineAround(text: string, index: number): string {
+  const start = text.lastIndexOf("\n", index) + 1;
+  const end = text.indexOf("\n", index);
+  return text.slice(start, end < 0 ? undefined : end);
+}
 
 export const travelDatesRule: ExtractionRule = {
   key: "travelDates",
   apply(text: string): RuleResult {
-    const m = RANGE.exec(toWesternDigits(text));
-    if (!m) return { facts: {}, warnings: [] };
+    const normalized = toWesternDigits(text);
+    const m = [...normalized.matchAll(RANGE)].find(
+      (match) => !STAY_LINE.test(lineAround(normalized, match.index ?? 0))
+    );
+    if (!m || m.index === undefined) return { facts: {}, warnings: [] };
     const evidence = text.slice(m.index, m.index + m[0].length).trim();
     return { facts: { travelDates: exact(evidence, evidence) }, warnings: [] };
   },

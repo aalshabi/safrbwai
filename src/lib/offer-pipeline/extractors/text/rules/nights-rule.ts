@@ -12,9 +12,23 @@ const NIGHTS = /(\d{1,3})[\s-]*(?:ليال(?:ٍ|ي)?|ليلة|nights?)/gi;
 
 type NightObservation = NonNullable<OfferObservations["nights"]>[number];
 
+/**
+ * What marks a count as one stay of a split trip: its line names a stay
+ * («الإقامة الأولى | 4 ليالٍ», "Hotel 2: 3 nights") or the count is followed by
+ * where it is spent («4 ليالٍ في دبي», "3 nights in Rome").
+ */
+const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|\bstay\b|\bhotel\b|\bresort\b)/iu;
+const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
+
+function lineAround(text: string, index: number): string {
+  const start = text.lastIndexOf("\n", index) + 1;
+  const end = text.indexOf("\n", index);
+  return text.slice(start, end < 0 ? undefined : end);
+}
+
 export function extractNightObservations(text: string): NightObservation[] {
   const normalizedText = toWesternDigits(text);
-  const occurrences: NightObservation[] = [];
+  const occurrences: (NightObservation & { isStay: boolean; index: number })[] = [];
 
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
@@ -27,33 +41,40 @@ export function extractNightObservations(text: string): NightObservation[] {
     const value = Number(match[1]);
     if (!Number.isInteger(value) || value <= 0) continue;
 
+    const end = match.index + match[0].length;
     occurrences.push({
       value,
-      evidence: text.slice(match.index, match.index + match[0].length),
+      evidence: text.slice(match.index, end),
+      index: match.index,
+      isStay:
+        STAY_LINE.test(lineAround(normalizedText, match.index)) ||
+        STAY_AFTER.test(normalizedText.slice(end)),
     });
   }
 
-  // A stay split across hotels ("7 ليالٍ" … "4 ليالٍ" … "3 ليالٍ") states its
-  // parts beside the total. When the largest count equals the sum of all the
-  // other counts, they are its parts, not rival values.
-  const largest = occurrences.reduce<NightObservation | undefined>(
-    (max, n) => (!max || n.value > max.value ? n : max),
-    undefined
-  );
-  if (largest) {
-    const parts = occurrences.filter((n) => n !== largest);
-    const sum = parts.reduce((total, n) => total + n.value, 0);
-    if (parts.length >= 2 && parts.every((n) => n.value < largest.value) && sum === largest.value) {
-      return [largest];
-    }
+  // A stay split across hotels ("7 ليالٍ" … "الإقامة الأولى | 4 ليالٍ" …
+  // "الإقامة الثانية | 3 ليالٍ") states its parts after the total. They are its
+  // parts, not rival values, only when every later count is marked as a stay
+  // and together they add up to the first count; the sum alone proves nothing.
+  const [total, ...parts] = occurrences;
+  const toObservation = ({ value, evidence }: NightObservation) => ({ value, evidence });
+  if (
+    total &&
+    parts.length >= 2 &&
+    parts.every((n) => n.isStay && n.value < total.value) &&
+    parts.reduce((sum, n) => sum + n.value, 0) === total.value
+  ) {
+    return [toObservation(total)];
   }
 
   const seen = new Set<number>();
-  return occurrences.filter((n) => {
-    if (seen.has(n.value)) return false;
-    seen.add(n.value);
-    return true;
-  });
+  return occurrences
+    .filter((n) => {
+      if (seen.has(n.value)) return false;
+      seen.add(n.value);
+      return true;
+    })
+    .map(toObservation);
 }
 
 export const nightsRule: ExtractionRule = {

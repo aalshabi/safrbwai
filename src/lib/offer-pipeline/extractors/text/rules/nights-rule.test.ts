@@ -47,4 +47,14 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("4 ليالٍ في الفندق الأول و3 ليالٍ في الثاني، المجموع 8 ليالٍ");
     expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 8]);
   });
+
+  it("keeps counts that add up but are not marked as stays (alternative options)", () => {
+    const r = nightsRule.apply("الباقة الذهبية 7 ليالٍ\nالباقة الفضية 4 ليالٍ\nالباقة البرونزية 3 ليالٍ");
+    expect(r.observations?.nights?.map((n) => n.value)).toEqual([7, 4, 3]);
+  });
+
+  it("reads a city split («4 ليالٍ في دبي و3 ليالٍ في أبوظبي») as one stay", () => {
+    const r = nightsRule.apply("رحلة 7 ليالٍ: 4 ليالٍ في دبي و3 ليالٍ في أبوظبي");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
 });
