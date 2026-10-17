@@ -404,3 +404,20 @@ describe("Arabic trip totals and subtotals", () => {
     expect(r.observations?.priceComponents).toBeUndefined();
   });
 });
+
+describe("qualified English totals", () => {
+  it.each(["Estimated total", "Net total"])(
+    "reads «%s» as the trip total when no other trip total is stated",
+    (label) => {
+      const r = priceRule.apply(`Hotel price SAR 1,000\n${label}: SAR 6,000`);
+      expect(r.facts.totalPrice?.value.amount).toBe(6000);
+      expect(r.facts.price?.value.amount).toBe(6000);
+    }
+  );
+
+  it("reads a qualified total as a part beside an unqualified trip total", () => {
+    const r = priceRule.apply("SIM cards total: SAR 200\nTrip total: SAR 6,000");
+    expect(r.facts.totalPrice?.value.amount).toBe(6000);
+    expect(r.observations?.prices?.map((p) => p.amount)).toEqual([6000]);
+  });
+});
