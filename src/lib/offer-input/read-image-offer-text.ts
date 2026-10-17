@@ -63,19 +63,23 @@ export async function readImageOfferText(
   if (typeof Worker === "undefined" || typeof createImageBitmap === "undefined") return { ok: false, reason: "failed" };
   if (signal?.aborted) return { ok: false, reason: "failed" };
 
-  const canvas = await drawScaled(file);
-  if (!(canvas instanceof HTMLCanvasElement)) return canvas;
-
+  let canvas: HTMLCanvasElement | null = null;
   let worker: OcrWorker | null = null;
   let settled = false;
   const release = () => {
     void worker?.terminate().catch(() => undefined);
     worker = null;
-    canvas.width = 0;
-    canvas.height = 0;
+    if (canvas) {
+      canvas.width = 0;
+      canvas.height = 0;
+    }
   };
 
   const run = async (): Promise<ImageTextResult> => {
+    const drawn = await drawScaled(file);
+    if (!(drawn instanceof HTMLCanvasElement)) return drawn;
+    canvas = drawn;
+    if (settled) return { ok: false, reason: "failed" };
     const { createWorker } = await import("tesseract.js");
     const created = (await createWorker([...OCR_LANGS], OCR_OEM_LSTM_ONLY, {
       workerPath: `${OCR_ASSET_BASE}/worker.min.js`,
@@ -93,10 +97,11 @@ export async function readImageOfferText(
     worker = created;
     // The time limit may have passed while the engine was loading.
     if (settled) return { ok: false, reason: "failed" };
-    return readOfferWithEngine(created, canvas, () => settled);
+    return readOfferWithEngine(created, drawn, () => settled);
   };
 
-  // The time limit ends the read even if loading the engine itself hangs.
+  // The time limit and cancellation are armed before any await (decoding,
+  // loading the engine, recognition), so they end the read wherever it stalls.
   return new Promise<ImageTextResult>((resolve) => {
     const finish = (result: ImageTextResult) => {
       if (settled) return;
@@ -109,6 +114,10 @@ export async function readImageOfferText(
     // Removing or replacing the image, or leaving the tab, stops the read and
     // terminates the engine instead of letting it run on in the background.
     signal?.addEventListener("abort", () => finish({ ok: false, reason: "failed" }), { once: true });
+    if (signal?.aborted) {
+      finish({ ok: false, reason: "failed" });
+      return;
+    }
     run().then(finish, () => finish({ ok: false, reason: "failed" })).finally(() => {
       if (settled) release();
     });

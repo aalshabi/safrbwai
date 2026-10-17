@@ -32,6 +32,9 @@ export async function readPdfOfferText(
   } catch {
     return { ok: false, reason: "failed" };
   }
+  // The file may have been removed while its bytes were being read; an abort
+  // listener added now would never fire.
+  if (signal?.aborted) return { ok: false, reason: "failed" };
 
   return new Promise((resolve) => {
     // The bundler emits the worker as a classic script; its dynamic import of

@@ -285,6 +285,27 @@ describe("readImageOfferText", () => {
     expect(tesseract.terminate).toHaveBeenCalled();
   });
 
+  it("stops without loading the engine when aborted while the image is decoding", async () => {
+    let decoded!: (bitmap: unknown) => void;
+    vi.stubGlobal("createImageBitmap", vi.fn(() => new Promise((r) => (decoded = r))));
+    const { readImageOfferText } = await import("./read-image-offer-text");
+    const controller = new AbortController();
+    const pending = readImageOfferText(file(), { signal: controller.signal });
+    await vi.waitFor(() => expect(decoded).toBeTypeOf("function"));
+    controller.abort();
+    expect(await pending).toEqual({ ok: false, reason: "failed" });
+    decoded({ width: 1200, height: 2400, close: vi.fn() });
+    await new Promise((r) => setTimeout(r, 10));
+    expect(tesseract.createWorker).not.toHaveBeenCalled();
+  });
+
+  it("times out a decode that never finishes", async () => {
+    vi.stubGlobal("createImageBitmap", vi.fn(() => new Promise(() => undefined)));
+    const { readImageOfferText } = await import("./read-image-offer-text");
+    expect(await readImageOfferText(file(), { timeoutMs: 20 })).toEqual({ ok: false, reason: "failed" });
+    expect(tesseract.createWorker).not.toHaveBeenCalled();
+  });
+
   it("ends in a refusal even when loading the engine hangs", async () => {
     tesseract.createWorker.mockReturnValue(new Promise(() => undefined));
     const { readImageOfferText } = await import("./read-image-offer-text");
