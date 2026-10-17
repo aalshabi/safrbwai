@@ -28,8 +28,8 @@ const RANGE = new RegExp(
   [
     // "من 8 إلى 15 نوفمبر 2026", "8 - 15 November", "28 October 2026 - 3 November 2026"
     `(?:(?:من|from)\\s+)?${DAY}(?:\\s+${MONTH}(?:,?\\s+${YEAR})?)?${TO}${DAY}\\s+${MONTH}(?:,?\\s+${YEAR})?`,
-    // "November 8 - 15, 2026", "October 28 - November 3, 2026"
-    `${MONTH}\\s+${DAY}${TO}(?:${MONTH}\\s+)?${DAY}(?:,?\\s+${YEAR})?`,
+    // "November 8 - 15, 2026", "October 28, 2026 - November 3, 2026"
+    `${MONTH}\\s+${DAY}(?:,?\\s+${YEAR})?${TO}(?:${MONTH}\\s+)?${DAY}(?:,?\\s+${YEAR})?`,
     // "من 8/11/2026 إلى 15/11/2026"
     `(?:(?:من|from)\\s+)?${NUMERIC_DATE}${TO}${NUMERIC_DATE}`,
   ].join("|"),

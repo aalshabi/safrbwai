@@ -10,6 +10,7 @@ describe("travelDatesRule", () => {
     ["Dates: November 8 – 15, 2026", "November 8 – 15, 2026"],
     ["Travel dates: October 28 - November 3, 2026", "October 28 - November 3, 2026"],
     ["Travel dates: 28 October 2026 - 3 November 2026", "28 October 2026 - 3 November 2026"],
+    ["Travel dates: October 28, 2026 - November 3, 2026", "October 28, 2026 - November 3, 2026"],
     ["التاريخ: من 8/11/2026 إلى 15/11/2026", "من 8/11/2026 إلى 15/11/2026"],
   ])("reads the range in %s", (text, evidence) => {
     expect(travelDatesRule.apply(text).facts.travelDates).toEqual({

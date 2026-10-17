@@ -18,6 +18,8 @@ type NightObservation = NonNullable<OfferObservations["nights"]>[number];
  * where it is spent («4 ليالٍ في دبي», "3 nights in Rome").
  */
 const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|\bstay\b|\bhotel\b|\bresort\b)/iu;
+/** A line that states the trip's overall length ("المدة: 7 ليالٍ", "Total: 7 nights"). */
+const TOTAL_LINE = /(?:إجمالي|الإجمالي|مجموع|المجموع|المدة|مدة|\btotal\b|\bduration\b|\boverall\b)/iu;
 const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
 
 function lineAround(text: string, index: number): string {
@@ -28,7 +30,11 @@ function lineAround(text: string, index: number): string {
 
 export function extractNightObservations(text: string): NightObservation[] {
   const normalizedText = toWesternDigits(text);
-  const occurrences: (NightObservation & { isStay: boolean; onStayLine: boolean; index: number })[] = [];
+  const occurrences: (NightObservation & {
+    isStay: boolean;
+    onStayLine: boolean;
+    onTotalLine: boolean;
+  })[] = [];
 
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
@@ -42,12 +48,13 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
-    const onStayLine = STAY_LINE.test(lineAround(normalizedText, match.index));
+    const line = lineAround(normalizedText, match.index);
+    const onStayLine = STAY_LINE.test(line);
     occurrences.push({
       value,
       evidence: text.slice(match.index, end),
-      index: match.index,
       onStayLine,
+      onTotalLine: TOTAL_LINE.test(line),
       isStay: onStayLine || STAY_AFTER.test(normalizedText.slice(end)),
     });
   }
@@ -55,27 +62,26 @@ export function extractNightObservations(text: string): NightObservation[] {
   // A stay split across hotels ("7 ليالٍ" … "الإقامة الأولى | 4 ليالٍ" …
   // "الإقامة الثانية | 3 ليالٍ", or the parts first and "Total: 7 nights"
   // last) states its parts beside the total. They are its parts, not rival
-  // values, only when every count other than the total (however often it is
-  // restated) is marked as a stay and together they add up to it; the sum
-  // alone proves nothing.
+  // values, only when the total is positively a total — the offer's first
+  // count and not itself a stay, or a count on a total/duration line — and
+  // every other count is a stay, together adding up to it exactly. The sum
+  // alone proves nothing, so stays that happen to add up stay separate.
   const toObservation = ({ value, evidence }: NightObservation) => ({ value, evidence });
+  const first = occurrences[0];
   const total = occurrences.find((candidate) => {
-    // The total may be restated ("7 nights in …" … "Total: 7 nights"): every
-    // count equal to it is the same total, never one of its parts.
+    const isTotal = occurrences.some(
+      (n) =>
+        n.value === candidate.value &&
+        ((n === first && !n.isStay) || (n.onTotalLine && !n.onStayLine))
+    );
+    // The total may be restated ("7 ليالٍ" … "Total: 7 nights"): every count
+    // equal to it is the same total, never one of its parts.
     const parts = occurrences.filter((n) => n.value !== candidate.value);
-    // The total must be stated off any stay line at least once, so stays that
-    // happen to add up ("Stay 1: 4 / Stay 2: 3 / Stay 3: 1") never become one.
-    const statedAsTotal = occurrences.some((n) => n.value === candidate.value && !n.onStayLine);
-    // A stay may be named twice (a heading and its details), so the parts may
-    // add up with each distinct count once ("4 + 3") or with every count
-    // ("3 + 3" for two stays of three nights).
-    const sumOf = (values: number[]) => values.reduce((sum, value) => sum + value, 0);
-    const values = parts.map((n) => n.value);
     return (
-      statedAsTotal &&
+      isTotal &&
       parts.length >= 2 &&
       parts.every((n) => n.isStay) &&
-      (sumOf(values) === candidate.value || sumOf([...new Set(values)]) === candidate.value)
+      parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
     );
   });
   if (total) return [toObservation(total)];
