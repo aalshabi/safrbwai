@@ -59,6 +59,16 @@ export const metadata: Metadata = {
       "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
   },
   robots: SITE_ROBOTS,
+  // iPhone "Add to Home Screen": opens full screen with this name; the icon
+  // comes from src/app/apple-icon.png.
+  appleWebApp: {
+    capable: true,
+    title: "سافر بوعي",
+    statusBarStyle: "default",
+  },
+  // Next emits only mobile-web-app-capable; iOS before 16.4 still needs the
+  // Apple tag to open the home-screen icon full screen.
+  other: { "apple-mobile-web-app-capable": "yes" },
   alternates: {
     canonical: "/",
     languages: {
