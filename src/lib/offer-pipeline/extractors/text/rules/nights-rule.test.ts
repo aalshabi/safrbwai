@@ -57,4 +57,10 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("رحلة 7 ليالٍ: 4 ليالٍ في دبي و3 ليالٍ في أبوظبي");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
   });
+
+  it("reads stays listed before their total as one stay", () => {
+    const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nTotal: 7 nights");
+    expect(r.facts.nights?.value).toBe(7);
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

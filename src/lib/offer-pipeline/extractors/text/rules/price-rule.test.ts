@@ -294,6 +294,8 @@ describe("Arabic trip totals and subtotals", () => {
     ["إجمالي مبلغ الرحلة: 16,400 ريال", 16400],
     ["إجمالي الباقة 9,000 ريال", 9000],
     ["المبلغ الإجمالي: 7,250 ريال", 7250],
+    ["الإجمالي الكلي: 5,000 ريال", 5000],
+    ["الإجمالي النهائي: 5,000 ريال", 5000],
     ["*إجمالي الرحلة لشخصين: 5,000 ريال*", 5000],
   ])("reads %s as the trip total", (text, amount) => {
     expect(priceRule.apply(text).facts.totalPrice?.value.amount).toBe(amount);

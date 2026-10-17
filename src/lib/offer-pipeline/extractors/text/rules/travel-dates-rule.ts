@@ -5,7 +5,10 @@
  * ("العرض حتى 30 نوفمبر") rather than when the traveller goes. A range on a
  * line about one stay ("الإقامة الأولى: 8–12 نوفمبر", "Hotel 1 check-in") is
  * that hotel's dates, not the trip's, and a booking-validity range ("العرض
- * ساري من 8 إلى 15 نوفمبر") is not a trip at all; both are skipped.
+ * ساري من 8 إلى 15 نوفمبر") is not a trip at all; both are skipped. Any other
+ * range must show it is the trip's: its line names travel or dates ("تواريخ
+ * السفر", "📅", "Travel dates") or holds nothing but the range, so a
+ * cancellation window or other period is never taken for the trip.
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
@@ -38,6 +41,14 @@ const STAY_LINE =
 const VALIDITY_LINE =
   /(?:ساري|سارية|صالح|صالحة|صلاحية|العرض\s+(?:من|حتى|لغاية)|الحجز|احجز|\bvalid\b|\bvalidity\b|\bbook(?:ing)?\b|\boffer\s+(?:ends|expires|runs)\b|\bexpires?\b)/iu;
 
+const TRAVEL_LINE =
+  /(?:السفر|الرحلة|تاريخ|تواريخ|المغادرة|الذهاب|العودة|📅|🗓|\btravel\b|\btrip\b|\bdates?\b|\bdepart(?:ure|ing)?\b|\breturn\b)/iu;
+
+/** A line that is only the range, perhaps with an emoji, bullet or «من». */
+function onlyRange(line: string, range: string): boolean {
+  return line.replace(range, "").replace(/[^\p{L}\p{N}]/gu, "").replace(/^(?:من|from)$/iu, "") === "";
+}
+
 function lineAround(text: string, index: number): string {
   const start = text.lastIndexOf("\n", index) + 1;
   const end = text.indexOf("\n", index);
@@ -51,7 +62,8 @@ export const travelDatesRule: ExtractionRule = {
     const m = [...normalized.matchAll(RANGE)].find(
       (match) => {
         const line = lineAround(normalized, match.index ?? 0);
-        return !STAY_LINE.test(line) && !VALIDITY_LINE.test(line);
+        if (STAY_LINE.test(line) || VALIDITY_LINE.test(line)) return false;
+        return TRAVEL_LINE.test(line) || onlyRange(line, match[0]);
       }
     );
     if (!m || m.index === undefined) return { facts: {}, warnings: [] };

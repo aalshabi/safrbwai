@@ -105,7 +105,7 @@ const COMPONENT_TOTAL_LABEL = new RegExp(
  * starts with the subtotal word; anything but a trip word makes it a part.
  */
 const ARABIC_COMPONENT_TOTAL_LABEL = new RegExp(
-  `(?:^|[^\\p{L}])(?:و?ال)?(?:إجمالي|مجموع)\\s+(?!(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}(?![\\p{L}]))(?!السعر)(?!(?:${PARTY_ALT}))(?:ال)?\\p{L}+[^:：\\n]*?[:：\\-–—]?\\s*$`,
+  `(?:^|[^\\p{L}])(?:و?ال)?(?:إجمالي|مجموع)\\s+(?!(?:(?:مبلغ|سعر|تكلفة)\\s+)?${TRIP_WORD}(?![\\p{L}]))(?!السعر)(?!(?:ال)?(?:كلي|نهائي|عام|إجمالي)(?![\\p{L}]))(?!(?:${PARTY_ALT}))(?:ال)?\\p{L}+[^:：\\n]*?[:：\\-–—]?\\s*$`,
   "u"
 );
 /**

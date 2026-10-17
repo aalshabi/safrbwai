@@ -53,19 +53,22 @@ export function extractNightObservations(text: string): NightObservation[] {
   }
 
   // A stay split across hotels ("7 ليالٍ" … "الإقامة الأولى | 4 ليالٍ" …
-  // "الإقامة الثانية | 3 ليالٍ") states its parts after the total. They are its
-  // parts, not rival values, only when every later count is marked as a stay
-  // and together they add up to the first count; the sum alone proves nothing.
-  const [total, ...parts] = occurrences;
+  // "الإقامة الثانية | 3 ليالٍ", or the parts first and "Total: 7 nights"
+  // last) states its parts beside the total. They are its parts, not rival
+  // values, only when one count that is not itself a stay equals the sum of
+  // all the others and every other count is marked as a stay; the sum alone
+  // proves nothing.
   const toObservation = ({ value, evidence }: NightObservation) => ({ value, evidence });
-  if (
-    total &&
-    parts.length >= 2 &&
-    parts.every((n) => n.isStay && n.value < total.value) &&
-    parts.reduce((sum, n) => sum + n.value, 0) === total.value
-  ) {
-    return [toObservation(total)];
-  }
+  const total = occurrences.find((candidate) => {
+    const parts = occurrences.filter((n) => n !== candidate);
+    return (
+      !candidate.isStay &&
+      parts.length >= 2 &&
+      parts.every((n) => n.isStay) &&
+      parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
+    );
+  });
+  if (total) return [toObservation(total)];
 
   const seen = new Set<number>();
   return occurrences
