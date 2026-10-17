@@ -70,7 +70,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "الملاحظات والتحليلات",
-        p: "جمع الملاحظات غير مفعّل. يحتوي التطبيق على واجهة قياس محايدة للمزوّد تسجل أسماء أحداث محددة فقط: بدء التحليل واكتماله وفشله ونسخ المخرجات، مع لغة الواجهة ومصدر حملة منقّح فقط. الإرسال الخارجي معطّل حاليًا، ولا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
+        p: "جمع الملاحظات غير مفعّل. نقيس عدد الزيارات بشكل مجمّع عبر Vercel Web Analytics دون ملفات تعريف الارتباط (cookies): الصفحة المزارة، والموقع الذي جئت منه، والبلد، ونوع الجهاز والمتصفح ونظام التشغيل، ومعاملات الحملة (utm). نحذف بقية معاملات الرابط قبل الإرسال، فلا يدخل في هذا القياس نص العرض أو الرابط الذي تطلب قراءته أو النتيجة أو أي بيانات تُدخلها. ويحتوي التطبيق أيضًا على واجهة قياس لأحداث محددة (بدء التحليل واكتماله وفشله ونسخ المخرجات) إرسالها الخارجي معطّل حاليًا، ولا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
       },
       {
         h: "تفضيلات المتصفح",
@@ -135,7 +135,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Feedback and analytics",
-        p: "Feedback collection is disabled. The application includes a provider-neutral measurement interface for four allowlisted events: analysis start, completion, failure, and useful-output copy. Only interface locale and a sanitized campaign source are allowed. External transmission is currently disabled; offer text, evidence, results, names, contact information, and payment details cannot enter the analytics payload.",
+        p: "Feedback collection is disabled. We count visits in aggregate with Vercel Web Analytics, without cookies: the page visited, the site you came from, country, device type, browser and operating system, and campaign (utm) parameters. All other link parameters are removed before sending, so offer text, a link you ask us to read, results and anything you enter never reach this measurement. The application also includes a measurement interface for four allowlisted events (analysis start, completion, failure, and useful-output copy) whose external transmission is currently disabled; offer text, evidence, results, names, contact information, and payment details cannot enter that payload.",
       },
       {
         h: "Browser preferences",

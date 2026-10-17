@@ -44,7 +44,7 @@ describe("installable web app (home-screen icon)", () => {
 
   it("serves the manifest and icons without running the auth middleware", () => {
     const matches = (path: string) => new RegExp(`^${config.matcher[0]}$`).test(path);
-    for (const path of ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/maskable-512.png", "/apple-icon.png"]) {
+    for (const path of ["/manifest.webmanifest", "/icons/icon-192.png", "/icons/maskable-512.png", "/apple-icon.png", "/_vercel/insights/view"]) {
       expect(matches(path), path).toBe(false);
     }
     for (const path of ["/", "/admin", "/dashboard/x", "/analyze-offer"]) {
