@@ -40,7 +40,7 @@ const CATEGORY_ICONS: Record<KnowledgeCategory, LucideIcon> = {
 
 function relevanceColor(r: number) {
   if (r >= 70) return "border-emerald-500/30 bg-emerald-500/10 text-emerald-600";
-  if (r >= 40) return "border-teal/30 bg-teal/10 text-teal-600";
+  if (r >= 40) return "border-teal/30 bg-teal/10 text-teal-700 dark:text-teal-300";
   return "border-amber-500/30 bg-amber-500/10 text-amber-600";
 }
 

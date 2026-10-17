@@ -9,7 +9,10 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-teal text-white shadow-lg shadow-teal-500/20 hover:bg-teal-600",
+          "bg-teal-700 text-white shadow-lg shadow-teal-500/20 hover:bg-teal-800 dark:bg-teal-500 dark:text-navy-950 dark:hover:bg-teal-400",
+        // CTA placed on a navy surface (hero, CTA band, guide panel) in both themes.
+        bright:
+          "bg-teal-500 text-navy-950 shadow-lg shadow-teal-500/20 hover:bg-teal-400",
         navy: "bg-navy text-white hover:bg-navy-950 shadow-lg shadow-navy/20",
         outline:
           "border border-border bg-transparent hover:bg-muted hover:text-foreground",

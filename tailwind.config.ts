@@ -64,12 +64,16 @@ const config: Config = {
           950: "#081026",
         },
         teal: {
-          DEFAULT: "#00A7B6",
+          // Theme-aware: #007A85 in light, #00A7B6 in dark (see globals.css --teal).
+          DEFAULT: "rgb(var(--teal) / <alpha-value>)",
           50: "#e0f7f9",
           100: "#b3ecf0",
+          300: "#67D9E3",
           400: "#22c4d1",
           500: "#00A7B6",
           600: "#008795",
+          700: "#006B74",
+          800: "#005A62",
         },
       },
       borderRadius: {

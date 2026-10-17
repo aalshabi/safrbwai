@@ -35,7 +35,7 @@ export function GuideArticle({ guide }: { guide: TravelGuide }) {
       <div className="mt-10 rounded-2xl bg-navy p-7 text-white">
         <h2 className="font-display text-2xl font-bold">{copy.ctaTitle}</h2>
         <p className="mt-2 text-white/70">{copy.ctaBody}</p>
-        <Button asChild className="mt-5"><Link href="/analyze-offer">{copy.cta}<ArrowLeft className="size-4 ltr:rotate-180" aria-hidden /></Link></Button>
+        <Button asChild variant="bright" className="mt-5"><Link href="/analyze-offer">{copy.cta}<ArrowLeft className="size-4 ltr:rotate-180" aria-hidden /></Link></Button>
       </div>
     </div>
   );

@@ -55,7 +55,7 @@ export function Hero() {
             className="enter-up mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
             style={{ animationDelay: "240ms" }}
           >
-            <Button asChild size="lg" className="w-full sm:w-auto">
+            <Button asChild size="lg" variant="bright" className="w-full sm:w-auto">
               <Link href="/analyze-offer">
                 {t.hero.ctaPrimary}
                 <ArrowLeft className="size-4 ltr:rotate-180" />

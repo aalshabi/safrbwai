@@ -70,7 +70,7 @@ export function CompareHotels() {
             <form onSubmit={onCompare} className="space-y-4">
               {names.map((name, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal/10 font-display text-sm font-bold text-teal ltr-nums">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-teal/10 font-display text-sm font-bold text-teal-700 dark:text-teal-300 ltr-nums">
                     {i + 1}
                   </span>
                   <Input

@@ -44,7 +44,7 @@ export function Features() {
               <Link href={f.route} className="group block h-full">
                 <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:border-teal/40 hover:shadow-xl hover:shadow-teal/5">
                   <CardContent className="p-7">
-                    <div className="mb-5 grid size-12 place-items-center rounded-xl bg-teal/10 text-teal transition-colors group-hover:bg-teal group-hover:text-white">
+                    <div className="mb-5 grid size-12 place-items-center rounded-xl bg-teal/10 text-teal transition-colors group-hover:bg-teal-700 group-hover:text-white dark:group-hover:bg-teal-500 dark:group-hover:text-navy-950">
                       <f.icon className="size-6" />
                     </div>
                     <div className="flex flex-wrap items-center gap-2">

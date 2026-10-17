@@ -13,8 +13,11 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 48% 14%;
 
-    /* teal #00A7B6 */
-    --primary: 186 100% 36%;
+    /* brand teal as RGB channels: #007A85 on light (AA on white) */
+    --teal: 0 122 133;
+
+    /* teal-700 #006B74 — white text passes AA */
+    --primary: 185 100% 23%;
     --primary-foreground: 0 0% 100%;
 
     /* navy #0D1B3A */
@@ -32,12 +35,15 @@
 
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 186 100% 36%;
+    --ring: 185 100% 26%;
 
     --radius: 0.85rem;
   }
 
   .dark {
+    /* brand teal #00A7B6 on dark surfaces */
+    --teal: 0 167 182;
+
     --background: 222 55% 8%;
     --foreground: 210 40% 96%;
 

@@ -19,7 +19,7 @@ export function InsightCard({ insight, index }: { insight: TravelInsight; index:
     <Card className="group h-full overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-teal/40 hover:shadow-xl hover:shadow-teal/5">
       <CardContent className="flex h-full flex-col p-0">
         <div className="flex items-start justify-between gap-4 border-b border-border bg-gradient-to-bl from-teal/12 via-teal/5 to-transparent p-6">
-          <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-teal text-white shadow-lg shadow-teal/20">
+          <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-teal-700 text-white shadow-lg dark:bg-teal-500 dark:text-navy-950 shadow-teal/20">
             <Icon className="size-6" aria-hidden />
           </div>
           <span className="rounded-full bg-background/80 px-3 py-1 text-xs font-bold text-teal backdrop-blur">

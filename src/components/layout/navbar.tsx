@@ -58,7 +58,7 @@ export function Navbar() {
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
                     link.key === "textOfferAnalysis"
-                      ? "bg-teal text-white hover:bg-teal/90"
+                      ? "bg-teal-700 text-white hover:bg-teal-800 dark:bg-teal-500 dark:text-navy-950 dark:hover:bg-teal-400"
                       : active
                         ? "text-teal"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"

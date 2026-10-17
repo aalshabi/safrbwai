@@ -39,7 +39,7 @@ export function InsightArticle({ insight }: { insight: TravelInsight }) {
 
       <header className="mt-8 border-b border-border pb-9">
         <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="rounded-full bg-teal/10 px-3 py-1 font-bold text-teal">
+          <span className="rounded-full bg-teal/10 px-3 py-1 font-bold text-teal-700 dark:text-teal-300">
             {insight.category[locale]}
           </span>
           <span className="text-muted-foreground">
