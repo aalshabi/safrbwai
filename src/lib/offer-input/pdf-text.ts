@@ -94,11 +94,16 @@ function attachMarks(runs: PdfTextRun[]): PdfTextRun[] {
   return result;
 }
 
-/** Rebuild one visual line into logical reading order. */
-export function rebuildLine(runs: PdfTextRun[]): string {
+/**
+ * Rebuild one visual line into logical reading order. The line's direction is
+ * inferred from its letters unless the caller knows it (OCR of a mostly Arabic
+ * image reads every line with Arabic in it right to left).
+ */
+export function rebuildLine(runs: PdfTextRun[], direction?: "rtl" | "ltr"): string {
   const visual = attachMarks(runs).sort((a, b) => a.x - b.x);
   const text = visual.map((r) => r.str).join("");
-  if (countMatching(text, RTL_CHAR) <= countMatching(text, LTR_STRONG)) return text;
+  const rtl = direction ? direction === "rtl" : countMatching(text, RTL_CHAR) > countMatching(text, LTR_STRONG);
+  if (!rtl) return text;
 
   const order = [...visual].reverse();
   const out: string[] = [];

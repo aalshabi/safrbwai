@@ -368,7 +368,7 @@ export const dictionaries = {
       v1: {
         title: "حلّل عرض سفرك",
         subtitle:
-          "ألصق نص عرض السفر. سنرتب المعلومات ونوضح لك النقاط التي تحتاج إلى مراجعتها قبل الحجز.",
+          "ألصق نص عرض السفر أو اختر ملف PDF أو صورة. سنرتب المعلومات ونوضح لك النقاط التي تحتاج إلى مراجعتها قبل الحجز.",
         methods: {
           text: "نص",
           pdf: "ملف PDF",
@@ -410,6 +410,17 @@ export const dictionaries = {
           selected: "الصورة المحددة",
           remove: "إزالة الصورة",
           previewAlt: "معاينة صورة العرض",
+          reading: "جارٍ قراءة النص من الصورة على جهازك…",
+          loadingModels: "جارٍ تجهيز قارئ الصور على جهازك (مرة أولى قد تستغرق وقتًا)…",
+          reviewNotice:
+            "نص مقروء آليًا من الصورة — قد يحتوي أخطاء. قارنه بالصورة وصحّحه قبل التحليل، خصوصًا الأرقام والأسعار وكلمات النفي مثل «لا يشمل» و«غير شامل». لم تُرسل الصورة إلى أي مكان.",
+          refusals: {
+            too_large: "أبعاد الصورة كبيرة جدًا. قص جزء العرض أو صغّر الصورة ثم أعد المحاولة.",
+            no_text: "لم نجد في الصورة نصًا كافيًا للقراءة. الصق نص العرض بدلًا من ذلك.",
+            unclear: "الصورة غير واضحة بما يكفي لقراءة النص بدقة. جرّب لقطة شاشة أوضح أو الصق النص.",
+            too_long: "نص الصورة أطول من الحد المسموح. قص جزء العرض فقط أو الصق النص.",
+            failed: "تعذّرت قراءة الصورة. جرّب صورة أخرى أو الصق نص العرض.",
+          },
         },
         url: {
           label: "رابط العرض",
@@ -453,12 +464,12 @@ export const dictionaries = {
         },
       },
       v2: {
-        comingSoon: "قريبًا — هذا المصدر غير مفعّل بعد. المتاح الآن هو تحليل النص فقط.",
+        comingSoon: "قريبًا — هذا المصدر غير مفعّل بعد.",
         unsupportedInputLabel: "قريبًا",
         releaseScope: {
           title: "الإصدار الأول",
           supportedSources:
-            "تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد.",
+            "يمكنك لصق النص أو اختيار ملف PDF أو صورة؛ يُقرأ الملف والصورة على جهازك ولا يُرفعان. تحليل الروابط غير مدعوم بعد.",
           safetyNotice:
             "سافر بوعي يساعدك على مراجعة المعلومات المذكورة في العرض، لكنه لا يتحقق من هوية البائع ولا يضمن صحة العرض. لا تُدخل بيانات شخصية أو معلومات دفع.",
           privacyLink: "سياسة الخصوصية",
@@ -1040,7 +1051,7 @@ export const dictionaries = {
       v1: {
         title: "Analyze your travel offer",
         subtitle:
-          "Paste the travel offer text. We'll organize the information and show you the points to review before booking.",
+          "Paste the travel offer text, or choose a PDF or an image. We'll organize the information and show you the points to review before booking.",
         methods: {
           text: "Text",
           pdf: "PDF file",
@@ -1082,6 +1093,17 @@ export const dictionaries = {
           selected: "Selected image",
           remove: "Remove image",
           previewAlt: "Offer image preview",
+          reading: "Reading the image's text on your device…",
+          loadingModels: "Preparing the image reader on your device (the first time can take a while)…",
+          reviewNotice:
+            "Text read automatically from the image — it may contain errors. Compare it with the image and correct it before analysis, especially numbers, prices and negations such as \"not included\". The image was not sent anywhere.",
+          refusals: {
+            too_large: "The image dimensions are too large. Crop the offer part or resize the image and try again.",
+            no_text: "Not enough readable text was found in the image. Paste the offer text instead.",
+            unclear: "The image is not clear enough to read the text accurately. Try a sharper screenshot or paste the text.",
+            too_long: "The image's text is longer than the allowed limit. Crop to the offer part or paste the text.",
+            failed: "The image could not be read. Try another image or paste the offer text.",
+          },
         },
         url: {
           label: "Offer link",
@@ -1124,12 +1146,12 @@ export const dictionaries = {
         },
       },
       v2: {
-        comingSoon: "Coming soon — this source is not enabled yet. Only text analysis is available now.",
+        comingSoon: "Coming soon — this source is not enabled yet.",
         unsupportedInputLabel: "Coming soon",
         releaseScope: {
           title: "First release",
           supportedSources:
-            "Text analysis is currently available. PDF files, images, and links are not supported yet.",
+            "Paste text or choose a PDF or an image; files and images are read on your device and not uploaded. Link analysis is not supported yet.",
           safetyNotice:
             "SafrBwai helps you review the information stated in an offer. It does not verify the seller or guarantee the offer’s accuracy. Do not enter personal or payment information.",
           privacyLink: "Privacy Policy",

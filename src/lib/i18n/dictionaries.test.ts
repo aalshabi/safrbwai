@@ -122,11 +122,11 @@ describe("product dictionary", () => {
 
     expect(ar.title).toBe("الإصدار الأول");
     expect(ar.supportedSources).toBe(
-      "تحليل النص متاح حاليًا. ملفات PDF والصور والروابط غير مدعومة بعد."
+      "يمكنك لصق النص أو اختيار ملف PDF أو صورة؛ يُقرأ الملف والصورة على جهازك ولا يُرفعان. تحليل الروابط غير مدعوم بعد."
     );
     expect(en.title).toBe("First release");
     expect(en.supportedSources).toBe(
-      "Text analysis is currently available. PDF files, images, and links are not supported yet."
+      "Paste text or choose a PDF or an image; files and images are read on your device and not uploaded. Link analysis is not supported yet."
     );
   });
 });

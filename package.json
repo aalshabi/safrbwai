@@ -7,7 +7,9 @@
   },
   "description": "SafrBwai — tools that help travelers review travel offers before booking.",
   "scripts": {
+    "predev": "node scripts/copy-ocr-assets.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-ocr-assets.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -28,6 +30,8 @@
     "@radix-ui/react-tooltip": "^1.1.6",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "@tesseract.js-data/ara": "1.0.0",
+    "@tesseract.js-data/eng": "1.0.0",
     "@vercel/functions": "^3.7.5",
     "@vercel/oidc": "^3.8.5",
     "class-variance-authority": "^0.7.1",
@@ -42,6 +46,8 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
+    "tesseract.js": "7.0.0",
+    "tesseract.js-core": "7.0.0",
     "unpdf": "1.8.1"
   },
   "overrides": {

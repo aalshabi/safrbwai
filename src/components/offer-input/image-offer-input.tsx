@@ -1,21 +1,18 @@
 "use client";
 
-import { useLanguage } from "@/lib/i18n/provider";
-import { Label } from "@/components/ui/label";
-import { OfferFileField } from "@/components/offer-input/offer-file-field";
+import { FileOfferInput, type ReadFileText } from "@/components/offer-input/file-offer-input";
 
+/** Image tab: the image's text is read on the device (OCR) and handed back for review. */
 export function ImageOfferInput({
   file,
   onFile,
+  onExtracted,
+  readText,
 }: {
   file: File | null;
   onFile: (file: File | null) => void;
+  onExtracted?: (text: string) => void;
+  readText?: ReadFileText;
 }) {
-  const { t } = useLanguage();
-  return (
-    <div className="space-y-2">
-      <Label>{t.analyzeOffer.v1.image.label}</Label>
-      <OfferFileField kind="image" file={file} onFile={onFile} />
-    </div>
-  );
+  return <FileOfferInput kind="image" file={file} onFile={onFile} onExtracted={onExtracted} readText={readText} />;
 }

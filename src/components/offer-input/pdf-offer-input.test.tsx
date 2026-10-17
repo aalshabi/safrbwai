@@ -31,19 +31,19 @@ afterEach(() => {
 });
 
 describe("PDF tab availability", () => {
-  it("stays unavailable in Production while the pdfInput capability is disabled", () => {
+  it("is offered in Production now that the pdfInput capability is enabled", () => {
     vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "production");
-    render(<LanguageProvider><TravelOfferInputSelector method="text" onSelect={vi.fn()} /></LanguageProvider>);
-    expect(screen.getByRole("tab", { name: /ملف PDF/ }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("is offered on a Preview deployment, while image and link stay unavailable", () => {
-    vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "preview");
     const onSelect = vi.fn();
     render(<LanguageProvider><TravelOfferInputSelector method="text" onSelect={onSelect} /></LanguageProvider>);
     fireEvent.click(screen.getByRole("tab", { name: /ملف PDF/ }));
     expect(onSelect).toHaveBeenCalledWith("pdf");
-    expect(screen.getByRole("tab", { name: /صورة/ }).hasAttribute("disabled")).toBe(true);
+  });
+
+  it("is offered on a Preview deployment, with the image tab, while the link stays unavailable", () => {
+    vi.stubEnv("NEXT_PUBLIC_VERCEL_ENV", "preview");
+    render(<LanguageProvider><TravelOfferInputSelector method="text" onSelect={vi.fn()} /></LanguageProvider>);
+    expect(screen.getByRole("tab", { name: /ملف PDF/ }).hasAttribute("disabled")).toBe(false);
+    expect(screen.getByRole("tab", { name: /صورة/ }).hasAttribute("disabled")).toBe(false);
     expect(screen.getByRole("tab", { name: /رابط/ }).hasAttribute("disabled")).toBe(true);
   });
 });
