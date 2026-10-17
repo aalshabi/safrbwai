@@ -42,8 +42,13 @@ function labelBefore(text: string, index: number, previousEnd: number): string {
  */
 const GENERIC_STAY_WORDS =
   /(?:^|\s)(?:الإقامة|إقامة|اقامة|مدة|لمدة|stay|accommodation|the|for|of)(?=\s|$)/giu;
-/** Where a stay is spent, right after its count ("4 nights in Dubai", «في دبي», «بدبي»). */
-const PLACE_AFTER = /^\s*(?:(?:في|in|at)\s+|ب\s*)([^\d,،؛;\n|.]+)/iu;
+/**
+ * Where a stay is spent, right after its count ("4 nights in Dubai", «في دبي»,
+ * «بدبي»). It ends at «و»/"and" or a colon, so a label that follows ("… in
+ * Rome and Total: 7 nights") stays with the next count.
+ */
+const PLACE_AFTER =
+  /^\s*(?:(?:في|in|at)\s+|ب\s*)([^\d,،؛;\n|.:]+?)(?=\s+(?:and\b|و(?=\s|\d))|\s*[\d,،؛;\n|.:]|\s*$)/iu;
 
 /**
  * Which stay a count names — "hotel a" for "Hotel A: 4 nights" and "Hotel A

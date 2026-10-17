@@ -178,4 +178,9 @@ describe("nightsRule", () => {
     expect(nightsRule.apply("4 nights in Dubai, 4 nights in Dubai").facts.nights?.value).toBe(4);
     expect(nightsRule.apply("Hotel A: 4 nights in Dubai\nHotel B: 4 nights in Dubai").facts.nights).toBeUndefined();
   });
+
+  it("leaves a following total label to the next count", () => {
+    const r = nightsRule.apply("4 nights in Dubai and 3 nights in Rome and Total: 7 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });
