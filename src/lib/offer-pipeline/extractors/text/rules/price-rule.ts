@@ -100,12 +100,22 @@ const COMPONENT_PRICE_LABEL = new RegExp(
 const WHOLE_TRIP_TOTAL_WORD =
   `trip|package|grand|overall|final|offer|holiday|vacation|booking|order|price|cost|amount|sum` +
   `|nights?|days?|weeks?|${PARTY_NOUN_EN}|the|your|our|this|its|a|an|in|is`;
+/** The parts an English offer commonly itemizes as "<part> total". */
+const KNOWN_COMPONENT_ALT =
+  "accommodations?|stays?|resorts?|lodging|activit(?:y|ies)|hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?|sims?|cards?|rental|car|cars|pickup|spa|sub";
+/** "Hotel total", "Transfers total": a known part, always a subtotal. */
+const KNOWN_COMPONENT_TOTAL_LABEL = new RegExp(
+  `\\b(?:${KNOWN_COMPONENT_ALT})(?:['’]s|['’])?(?:\\s+|\\s*[\\-–]\\s*)total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
+  "i"
+);
 /**
- * A component subtotal ("Hotel total", "SIM cards total", "Car rental total")
- * is not the trip total. Like «إجمالي الإقامة» in Arabic, any word before
- * "total" but a whole-trip word makes it a part, so it needs no list of parts.
+ * Any other qualified total ("SIM cards total", "Estimated total", "Net
+ * total"). Whether the qualifier names a part or describes the whole trip
+ * cannot be told from the word alone, so the offer decides: beside an
+ * unqualified trip total ("Trip total", "Total") it is a part; with no such
+ * total it is the trip's total.
  */
-const COMPONENT_TOTAL_LABEL = new RegExp(
+const QUALIFIED_TOTAL_LABEL = new RegExp(
   `\\b(?!(?:${WHOLE_TRIP_TOTAL_WORD})\\b)[a-z]+(?:['’]s|['’])?(?:\\s+|\\s*[\\-–]\\s*)total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
   "i"
 );
@@ -212,7 +222,12 @@ function partyOf(
   return { size, evidence: originalText.slice(start, start + trimmed.length) };
 }
 
-function classifyMatch(normalizedText: string, originalText: string, match: RawPriceMatch): PriceMatch {
+function classifyMatch(
+  normalizedText: string,
+  originalText: string,
+  match: RawPriceMatch,
+  qualifiedIsTotal = false
+): PriceMatch {
   const prefix = clausePrefix(normalizedText, match.index);
   const suffixStart = match.index + match.length;
   const suffix = normalizedText.slice(suffixStart);
@@ -226,8 +241,12 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     (partyRaw !== null || labelParty !== null) &&
     !perNightSuffix &&
     OTHER_PER_UNIT_QUALIFIER.test(afterParty);
+  const qualified =
+    !KNOWN_COMPONENT_TOTAL_LABEL.test(prefix) && QUALIFIED_TOTAL_LABEL.test(prefix);
   const component =
-    COMPONENT_TOTAL_LABEL.test(prefix) || ARABIC_COMPONENT_TOTAL_LABEL.test(prefix);
+    KNOWN_COMPONENT_TOTAL_LABEL.test(prefix) ||
+    ARABIC_COMPONENT_TOTAL_LABEL.test(prefix) ||
+    (qualified && !qualifiedIsTotal);
   const totalLabel =
     (TOTAL_PRICE_LABEL.test(prefix) && !component) ||
     (PARTY_PRICE_LABEL.test(prefix) && !COMPONENT_PRICE_LABEL.test(prefix));
@@ -366,12 +385,17 @@ type PriceComponent = NonNullable<OfferObservations["priceComponents"]>[number];
 
 function extractPrices(text: string): { observations: PriceObservation[]; components: PriceComponent[] } {
   const normalizedText = normalizeForPrices(text);
-  const allMatches = [
+  const rawMatches = [
     ...collectMatches(normalizedText, text, AMOUNT_THEN_CURRENCY, 1, 2),
     ...collectMatches(normalizedText, text, CURRENCY_THEN_AMOUNT, 2, 1),
   ]
-    .sort((left, right) => left.index - right.index)
-    .map((match) => classifyMatch(normalizedText, text, match));
+    .sort((left, right) => left.index - right.index);
+  // A qualified total ("Estimated total") is a part only beside an unqualified
+  // trip total; with none, it is read again as the trip's total.
+  let allMatches = rawMatches.map((match) => classifyMatch(normalizedText, text, match));
+  if (!allMatches.some((match) => match.basis === "total")) {
+    allMatches = rawMatches.map((match) => classifyMatch(normalizedText, text, match, true));
+  }
 
   const contextual = allMatches.filter((match) => {
     if (match.partyUnitRate || match.component) return false;

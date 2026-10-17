@@ -144,4 +144,19 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("Total: 7 nights | Hotel A: 4 nights | Hotel B: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("keeps the length when one stay is mentioned twice", () => {
+    const r = nightsRule.apply("Hotel A: 4 nights\nHotel A stay: 4 nights");
+    expect(r.facts.nights?.value).toBe(4);
+  });
+
+  it("still leaves the length unknown for two different stays of the same length", () => {
+    for (const text of [
+      "Hotel A: 4 nights\nHotel B: 4 nights",
+      "4 nights in Dubai, 4 nights in Abu Dhabi",
+      "الإقامة الأولى | 4 ليالٍ\nالإقامة الثانية | 4 ليالٍ",
+    ]) {
+      expect(nightsRule.apply(text).facts.nights, text).toBeUndefined();
+    }
+  });
 });
