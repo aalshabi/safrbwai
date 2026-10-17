@@ -4,7 +4,8 @@
  * 15 November"). A single date is not enough: it may be an offer deadline
  * ("العرض حتى 30 نوفمبر") rather than when the traveller goes. A range on a
  * line about one stay ("الإقامة الأولى: 8–12 نوفمبر", "Hotel 1 check-in") is
- * that hotel's dates, not the trip's, so it is skipped.
+ * that hotel's dates, not the trip's, and a booking-validity range ("العرض
+ * ساري من 8 إلى 15 نوفمبر") is not a trip at all; both are skipped.
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
@@ -33,6 +34,10 @@ const RANGE = new RegExp(
 const STAY_LINE =
   /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|الدخول|الخروج|\bstay\b|\bhotel\b|\bresort\b|check[-\s]?(?:in|out))/iu;
 
+/** When the offer can be booked, not when the traveller goes. */
+const VALIDITY_LINE =
+  /(?:ساري|سارية|صالح|صالحة|صلاحية|العرض\s+(?:من|حتى|لغاية)|الحجز|احجز|\bvalid\b|\bvalidity\b|\bbook(?:ing)?\b|\boffer\s+(?:ends|expires|runs)\b|\bexpires?\b)/iu;
+
 function lineAround(text: string, index: number): string {
   const start = text.lastIndexOf("\n", index) + 1;
   const end = text.indexOf("\n", index);
@@ -44,7 +49,10 @@ export const travelDatesRule: ExtractionRule = {
   apply(text: string): RuleResult {
     const normalized = toWesternDigits(text);
     const m = [...normalized.matchAll(RANGE)].find(
-      (match) => !STAY_LINE.test(lineAround(normalized, match.index ?? 0))
+      (match) => {
+        const line = lineAround(normalized, match.index ?? 0);
+        return !STAY_LINE.test(line) && !VALIDITY_LINE.test(line);
+      }
     );
     if (!m || m.index === undefined) return { facts: {}, warnings: [] };
     const evidence = text.slice(m.index, m.index + m[0].length).trim();

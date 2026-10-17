@@ -17,7 +17,7 @@ describe("travelDatesRule", () => {
     });
   });
 
-  it.each(["العرض ساري حتى 30 نوفمبر", "Book by 15 November", "7 ليالٍ – 8 أيام", "السعر 1,200 - 1,500 ريال"])(
+  it.each(["العرض ساري من 8 إلى 15 نوفمبر", "Offer valid from 8 to 15 November", "الحجز من 1 إلى 10 أكتوبر", "العرض ساري حتى 30 نوفمبر", "Book by 15 November", "7 ليالٍ – 8 أيام", "السعر 1,200 - 1,500 ريال"])(
     "does not take %s as travel dates",
     (text) => {
       expect(travelDatesRule.apply(text).facts.travelDates).toBeUndefined();

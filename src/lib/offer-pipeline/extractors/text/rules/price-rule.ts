@@ -296,16 +296,33 @@ function normalizeForPrices(text: string): string {
 }
 
 /**
- * The trip's itemized subtotals ("إجمالي الإقامة 14,400 ريال"), in order, each
- * once. They are kept apart from the offer's price so they never rival it. A
- * subtotal restated in a summary (same label, same amount) counts once; the
- * same label with a different amount makes the breakdown unclear, so none is
- * returned and nothing is summed.
+ * The trip's itemized subtotals ("إجمالي الإقامة 14,400 ريال"), kept apart from
+ * the offer's price so they never rival it. Only the summary block that ends
+ * at the trip total counts — the subtotal lines right above it, with nothing
+ * but blank lines between them — since subtotals elsewhere in the offer do not
+ * show that the breakdown is complete. A subtotal restated in that block (same
+ * label, same amount) counts once; the same label with another amount makes
+ * the breakdown unclear, so none is returned and nothing is summed.
  */
 function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
+  const total = matches.find((match) => match.basis === "total");
+  if (!total) return [];
+
+  const lineStart = (index: number) => normalizedText.lastIndexOf("\n", index - 1) + 1;
+  const block: PriceMatch[] = [];
+  let cursor = lineStart(total.index);
+  while (cursor > 0) {
+    const start = lineStart(cursor - 1);
+    const line = normalizedText.slice(start, cursor - 1);
+    cursor = start;
+    if (line.trim() === "") continue;
+    const parts = matches.filter((match) => match.component && match.index >= start && match.index < start + line.length);
+    if (parts.length === 0) break;
+    block.unshift(...parts);
+  }
+
   const byLabel = new Map<string, PriceMatch>();
-  for (const match of matches) {
-    if (!match.component) continue;
+  for (const match of block) {
     const label = clausePrefix(normalizedText, match.index)
       .replace(/[^\p{L}\s]/gu, " ")
       .replace(/\s+/g, " ")

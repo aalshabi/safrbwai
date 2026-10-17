@@ -149,9 +149,9 @@ export function detectContradictions(
     });
   }
 
-  // The stated trip total must equal its itemized subtotals ("إجمالي الإقامة"
-  // + "إجمالي المواصلات"). Compared only with one total and at least two
-  // subtotals, all in the total's currency.
+  // The stated trip total should equal the itemized subtotals listed right
+  // above it ("إجمالي الإقامة" + "إجمالي المواصلات"). Compared only with one
+  // total and at least two subtotals, all in the total's currency.
   const components = obs.priceComponents ?? [];
   if (
     uniqueTotals.length === 1 &&
@@ -165,8 +165,8 @@ export function detectContradictions(
       out.push({
         code: "price_components_mismatch",
         message: {
-          ar: `مجموع بنود السعر ${amount(sum)} لا يساوي الإجمالي المذكور ${amount(total.amount)}.`,
-          en: `The itemized prices add up to ${amount(sum)}, not the stated total of ${amount(total.amount)}.`,
+          ar: `مجموع بنود السعر ${amount(sum)} لا يساوي الإجمالي المذكور ${amount(total.amount)}؛ تأكد هل يشمل الإجمالي بنودًا أخرى.`,
+          en: `The itemized prices add up to ${amount(sum)}, not the stated total of ${amount(total.amount)}; check whether the total covers other items.`,
         },
         evidence: [...components.map((part) => part.evidence), total.evidence],
         severity: "warning",

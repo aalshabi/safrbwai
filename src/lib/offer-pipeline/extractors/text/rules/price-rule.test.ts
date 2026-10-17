@@ -312,11 +312,25 @@ describe("Arabic trip totals and subtotals", () => {
     expect(priceRule.apply("إجمالي الإقامة: 14,400 ريال").facts.totalPrice).toBeUndefined();
   });
 
-  it("counts a subtotal restated in the summary once", () => {
+  it("uses only the summary block right above the total", () => {
     const r = priceRule.apply(
-      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nالملخص:\nإجمالي الإقامة: 5,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+      "إجمالي الإقامة: 5,000 ريال\nجولة بحرية مشمولة\n\nالملخص:\nإجمالي الإقامة: 5,000 ريال\n\nإجمالي المواصلات: 1,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
     );
     expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+  });
+
+  it("counts a subtotal restated inside the summary block once", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nإجمالي الإقامة: 5,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+    );
+    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+  });
+
+  it("returns no breakdown when the subtotals are not next to the total", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"
+    );
+    expect(r.observations?.priceComponents).toBeUndefined();
   });
 
   it("returns no breakdown when one subtotal is stated with two amounts", () => {
