@@ -429,4 +429,9 @@ describe("qualified English totals", () => {
     const r = priceRule.apply("Tour guide total: SAR 1,000\nHotel total: SAR 5,000");
     expect(r.facts.totalPrice).toBeUndefined();
   });
+
+  it("reads a package total that lists its parts as the trip total", () => {
+    const r = priceRule.apply("Hotel and flight package total: SAR 6,000");
+    expect(r.facts.totalPrice?.value.amount).toBe(6000);
+  });
 });
