@@ -103,9 +103,12 @@ const WHOLE_TRIP_TOTAL_WORD =
 /** The parts an English offer commonly itemizes as "<part> total". */
 const KNOWN_COMPONENT_ALT =
   "accommodations?|stays?|resorts?|lodging|activit(?:y|ies)|hotels?|flights?|airfare|tickets?|rooms?|visas?|insurance|transfers?|transport(?:ation)?|baggage|luggage|fees?|tax(?:es)?|meals?|tours?|excursions?|seats?|sims?|cards?|rental|car|cars|pickup|spa|sub";
-/** "Hotel total", "Transfers total": a known part, always a subtotal. */
+/**
+ * "Hotel total", "Transfers total", "Tour guide total": a known part, maybe
+ * followed by a few more words, is always a subtotal.
+ */
 const KNOWN_COMPONENT_TOTAL_LABEL = new RegExp(
-  `\\b(?:${KNOWN_COMPONENT_ALT})(?:['’]s|['’])?(?:\\s+|\\s*[\\-–]\\s*)total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
+  `\\b(?:${KNOWN_COMPONENT_ALT})(?:['’]s|['’])?(?:\\s+[a-z]+(?:['’]s|['’])?){0,3}(?:\\s+|\\s*[\\-–]\\s*)total(?:\\s+(?:price|cost))?(?:\\s+(?:${PARTY_ALT}))?${LABEL_END}`,
   "i"
 );
 /**

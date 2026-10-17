@@ -424,4 +424,9 @@ describe("qualified English totals", () => {
   it("never promotes a qualified per-unit amount to the trip total", () => {
     expect(priceRule.apply("Estimated total: SAR 6,000 per adult").facts.totalPrice).toBeUndefined();
   });
+
+  it("reads a known part followed by more words as a subtotal", () => {
+    const r = priceRule.apply("Tour guide total: SAR 1,000\nHotel total: SAR 5,000");
+    expect(r.facts.totalPrice).toBeUndefined();
+  });
 });

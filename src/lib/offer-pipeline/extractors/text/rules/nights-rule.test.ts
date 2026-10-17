@@ -173,4 +173,9 @@ describe("nightsRule", () => {
   it("reads a place attached to «ب» as the stay's name", () => {
     expect(nightsRule.apply("4 ليالٍ بدبي\n4 ليالٍ بدبي").facts.nights?.value).toBe(4);
   });
+
+  it("counts an inline stay repeated in one clause once", () => {
+    expect(nightsRule.apply("4 nights in Dubai, 4 nights in Dubai").facts.nights?.value).toBe(4);
+    expect(nightsRule.apply("Hotel A: 4 nights in Dubai\nHotel B: 4 nights in Dubai").facts.nights).toBeUndefined();
+  });
 });

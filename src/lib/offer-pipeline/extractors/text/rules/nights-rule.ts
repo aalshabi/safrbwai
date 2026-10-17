@@ -102,7 +102,9 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
 
     const end = match.index + match[0].length;
     const label = labelBefore(normalizedText, match.index, previousEnd);
-    previousEnd = end;
+    // The place after a count ("in Dubai") belongs to it, never to the next
+    // count's label ("4 nights in Dubai, 4 nights in Dubai").
+    previousEnd = end + (PLACE_AFTER.exec(normalizedText.slice(end))?.[0].length ?? 0);
     const onStayLine = STAY_LINE.test(label);
     const after = normalizedText.slice(end);
     occurrences.push({
