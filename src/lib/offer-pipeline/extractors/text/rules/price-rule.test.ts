@@ -321,11 +321,11 @@ describe("Arabic trip totals and subtotals", () => {
     expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
   });
 
-  it("counts a subtotal restated inside the summary block once", () => {
+  it("returns no breakdown when a label repeats inside the summary block", () => {
     const r = priceRule.apply(
-      "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nإجمالي الإقامة: 5,000 ريال\nإجمالي مبلغ الرحلة: 6,000 ريال"
+      "Hotel total: SAR 5,000\nHotel total: SAR 5,000\nTransfers total: SAR 1,000\nTrip total: SAR 11,000"
     );
-    expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1000]);
+    expect(r.observations?.priceComponents).toBeUndefined();
   });
 
   it("finds the summary block under a total repeated later in the offer", () => {

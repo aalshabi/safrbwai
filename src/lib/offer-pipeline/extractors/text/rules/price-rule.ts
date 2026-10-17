@@ -303,9 +303,9 @@ function normalizeForPrices(text: string): string {
  * the offer's price so they never rival it. Only the summary block that ends
  * at the trip total counts — the subtotal lines right above it, with nothing
  * but blank lines between them — since subtotals elsewhere in the offer do not
- * show that the breakdown is complete. A subtotal restated in that block (same
- * label, same amount) counts once; the same label with another amount makes
- * the breakdown unclear, so none is returned and nothing is summed.
+ * show that the breakdown is complete. A label repeated in that block may be a
+ * restatement or a second charge, so the breakdown is then unclear and none
+ * is returned.
  */
 function extractComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
   // A total may be stated more than once; the summary block (two or more
@@ -344,9 +344,10 @@ function uniqueComponents(normalizedText: string, block: PriceMatch[]): PriceCom
       .replace(/\s+/g, " ")
       .trim()
       .toLowerCase();
-    const previous = byLabel.get(label);
-    if (!previous) byLabel.set(label, match);
-    else if (previous.amount !== match.amount || previous.currency !== match.currency) return [];
+    // Two lines with one label may be a restatement or two separate charges
+    // ("Hotel total" for two hotels); the breakdown is then unclear.
+    if (byLabel.has(label)) return [];
+    byLabel.set(label, match);
   }
   return [...byLabel.values()].map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
 }

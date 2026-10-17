@@ -13,27 +13,26 @@ const NIGHTS = /(\d{1,3})[\s-]*(?:ليال(?:ٍ|ي)?|ليلة|nights?)/gi;
 type NightObservation = NonNullable<OfferObservations["nights"]>[number];
 
 /**
- * What marks a count as one stay of a split trip: its line names a stay
+ * What marks a count as one stay of a split trip: its label names a stay
  * («الإقامة الأولى | 4 ليالٍ», "Hotel 2: 3 nights") or the count is followed by
  * where it is spent («4 ليالٍ في دبي», "3 nights in Rome").
  */
 const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع|المنتجع|\bstay\b|\bhotel\b|\bresort\b)/iu;
-/** A line that states the trip's overall length ("المدة: 7 ليالٍ", "Total: 7 nights"). */
+/** A label that states the trip's overall length ("المدة: 7 ليالٍ", "Total: 7 nights"). */
 const TOTAL_LINE = /(?:إجمالي|الإجمالي|مجموع|المجموع|المدة|مدة|\btotal\b|\bduration\b|\boverall\b)/iu;
 const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
 
 /**
- * The clause holding `index`: a line, or one part of a line split by «؛»/";"
- * ("Total: 7 nights; Stay 1: 4 nights"), so each count is read in its own
- * context rather than by every label on its line.
+ * The label in front of a count: the text since the previous count or the
+ * start of its clause (a line, or part of one after «؛»/";"), whichever is
+ * later. Labels precede what they name, so "Total: 7 nights | Hotel A: 4
+ * nights" gives "Total: " to the 7 and " | Hotel A: " to the 4, while
+ * «الإقامة الأولى | 4 ليالٍ» keeps its label across the pipe.
  */
-function clauseAround(text: string, index: number): string {
-  const boundary = /[\n;؛]/;
+function labelBefore(text: string, index: number, previousEnd: number): string {
   let start = index;
-  while (start > 0 && !boundary.test(text[start - 1])) start--;
-  let end = index;
-  while (end < text.length && !boundary.test(text[end])) end++;
-  return text.slice(start, end);
+  while (start > previousEnd && !/[\n;؛]/.test(text[start - 1])) start--;
+  return text.slice(start, index);
 }
 
 export function extractNightObservations(text: string): NightObservation[] {
@@ -44,6 +43,7 @@ export function extractNightObservations(text: string): NightObservation[] {
     onTotalLine: boolean;
   })[] = [];
 
+  let previousEnd = 0;
   for (const match of normalizedText.matchAll(NIGHTS)) {
     if (match.index === undefined) continue;
 
@@ -56,13 +56,14 @@ export function extractNightObservations(text: string): NightObservation[] {
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
-    const line = clauseAround(normalizedText, match.index);
-    const onStayLine = STAY_LINE.test(line);
+    const label = labelBefore(normalizedText, match.index, previousEnd);
+    previousEnd = end;
+    const onStayLine = STAY_LINE.test(label);
     occurrences.push({
       value,
       evidence: text.slice(match.index, end),
       onStayLine,
-      onTotalLine: TOTAL_LINE.test(line),
+      onTotalLine: TOTAL_LINE.test(label),
       isStay: onStayLine || STAY_AFTER.test(normalizedText.slice(end)),
     });
   }

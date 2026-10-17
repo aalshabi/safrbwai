@@ -103,4 +103,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("Total: 7 nights; Stay 1: 4 nights; Stay 2: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("reads each count's own label across pipes", () => {
+    const r = nightsRule.apply("Total: 7 nights | Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });
