@@ -73,4 +73,14 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("Stay 1: 4 nights\nStay 2: 3 nights\nStay 3: 1 night");
     expect(r.observations?.nights?.map((n) => n.value)).toEqual([4, 3, 1]);
   });
+
+  it("counts a stay named twice once", () => {
+    const r = nightsRule.apply("Total: 7 nights\nStay 1: 4 nights\nHotel A — 4 nights\nStay 2: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("adds two stays of the same length", () => {
+    const r = nightsRule.apply("Total: 6 nights\nStay 1: 3 nights\nStay 2: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 6, evidence: "6 nights" }]);
+  });
 });

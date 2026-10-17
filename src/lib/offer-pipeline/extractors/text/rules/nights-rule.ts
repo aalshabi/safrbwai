@@ -66,11 +66,16 @@ export function extractNightObservations(text: string): NightObservation[] {
     // The total must be stated off any stay line at least once, so stays that
     // happen to add up ("Stay 1: 4 / Stay 2: 3 / Stay 3: 1") never become one.
     const statedAsTotal = occurrences.some((n) => n.value === candidate.value && !n.onStayLine);
+    // A stay may be named twice (a heading and its details), so the parts may
+    // add up with each distinct count once ("4 + 3") or with every count
+    // ("3 + 3" for two stays of three nights).
+    const sumOf = (values: number[]) => values.reduce((sum, value) => sum + value, 0);
+    const values = parts.map((n) => n.value);
     return (
       statedAsTotal &&
       parts.length >= 2 &&
       parts.every((n) => n.isStay) &&
-      parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
+      (sumOf(values) === candidate.value || sumOf([...new Set(values)]) === candidate.value)
     );
   });
   if (total) return [toObservation(total)];

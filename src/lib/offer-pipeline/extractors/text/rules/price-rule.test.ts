@@ -335,6 +335,15 @@ describe("Arabic trip totals and subtotals", () => {
     expect(r.observations?.priceComponents?.map((p) => p.amount)).toEqual([5000, 1500]);
   });
 
+  it("keeps a per-person subtotal out of the package prices and the sum check", () => {
+    const r = priceRule.apply(
+      "إجمالي الإقامة: 2,000 ريال للشخص\nإجمالي المواصلات: 1,000 ريال\nإجمالي مبلغ الرحلة: 5,000 ريال"
+    );
+    expect(r.facts.perPersonPrice).toBeUndefined();
+    expect(r.facts.totalPrice?.value.amount).toBe(5000);
+    expect(r.observations?.priceComponents).toBeUndefined();
+  });
+
   it("returns no breakdown when the subtotals are not next to the total", () => {
     const r = priceRule.apply(
       "إجمالي الإقامة: 5,000 ريال\nإجمالي المواصلات: 1,000 ريال\nتشمل الباقة جولة بحرية\nإجمالي مبلغ الرحلة: 6,500 ريال"

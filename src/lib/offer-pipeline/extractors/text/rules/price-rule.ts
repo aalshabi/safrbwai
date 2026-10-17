@@ -130,7 +130,10 @@ interface PriceMatch extends PriceObservation {
   length: number;
   /** A party's per-room or per-child rate ("للشخصين للغرفة"): never a total. */
   partyUnitRate?: boolean;
-  /** A subtotal of one part of the trip ("إجمالي الإقامة", "Hotel total"). */
+  /**
+   * A subtotal of one part of the trip ("إجمالي الإقامة", "Hotel total"),
+   * whatever its basis: a per-person subtotal is still not the package price.
+   */
   component?: boolean;
 }
 
@@ -264,7 +267,7 @@ function classifyMatch(normalizedText: string, originalText: string, match: RawP
     evidence: originalText.slice(match.index, suffixStart + suffixLength).trim(),
     ...(party ? { party } : {}),
     ...(partyUnitRate ? { partyUnitRate } : {}),
-    ...(component && basis === "unspecified" ? { component } : {}),
+    ...(component ? { component } : {}),
   };
 }
 
@@ -308,7 +311,10 @@ function extractComponents(normalizedText: string, matches: PriceMatch[]): Price
   // A total may be stated more than once; the summary block sits above one of them.
   for (const total of matches.filter((match) => match.basis === "total")) {
     const block = summaryBlock(normalizedText, matches, total);
-    if (block.length > 0) return uniqueComponents(normalizedText, block);
+    if (block.length === 0) continue;
+    // A per-person or per-night subtotal cannot be added to a trip total.
+    if (block.some((part) => part.basis !== "unspecified")) return [];
+    return uniqueComponents(normalizedText, block);
   }
   return [];
 }

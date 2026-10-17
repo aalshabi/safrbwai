@@ -18,15 +18,16 @@ import { exact, toWesternDigits } from "../utils";
 const MONTH =
   "(?:يناير|فبراير|مارس|أبريل|ابريل|إبريل|مايو|يونيو|يونيه|يوليو|يوليه|أغسطس|اغسطس|سبتمبر|أكتوبر|اكتوبر|نوفمبر|ديسمبر|" +
   "jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)";
-const DAY = "(?:[12]\\d|3[01]|0?[1-9])";
+/** A day of the month, never part of a longer number ("2026" holds "26"). */
+const DAY = "(?<!\\d)(?:[12]\\d|3[01]|0?[1-9])(?!\\d)";
 const YEAR = "(?:20\\d{2})";
 const TO = "\\s*(?:-|–|—|إلى|الى|حتى|لغاية|to|until|till)\\s*";
-const NUMERIC_DATE = `${DAY}[/.-](?:1[0-2]|0?[1-9])(?:[/.-]${YEAR})?`;
+const NUMERIC_DATE = `${DAY}[/.-](?:1[0-2]|0?[1-9])(?:[/.-]${YEAR})?(?!\\d)`;
 
 const RANGE = new RegExp(
   [
-    // "من 8 إلى 15 نوفمبر 2026", "8 - 15 November", "from 8 to 15 Nov 2026"
-    `(?:(?:من|from)\\s+)?${DAY}(?:\\s+${MONTH})?${TO}${DAY}\\s+${MONTH}(?:,?\\s+${YEAR})?`,
+    // "من 8 إلى 15 نوفمبر 2026", "8 - 15 November", "28 October 2026 - 3 November 2026"
+    `(?:(?:من|from)\\s+)?${DAY}(?:\\s+${MONTH}(?:,?\\s+${YEAR})?)?${TO}${DAY}\\s+${MONTH}(?:,?\\s+${YEAR})?`,
     // "November 8 - 15, 2026", "October 28 - November 3, 2026"
     `${MONTH}\\s+${DAY}${TO}(?:${MONTH}\\s+)?${DAY}(?:,?\\s+${YEAR})?`,
     // "من 8/11/2026 إلى 15/11/2026"
