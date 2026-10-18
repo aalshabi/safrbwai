@@ -19,17 +19,24 @@ const BOARD_SIGNALS: BoardSignal[] = [
   { code: "HB", re: /half[-\s]?board|نصف\s*إقامة|إفطار\s*و?عشاء|\bHB\b/i },
   {
     code: "BB",
-    re: /bed\s*(?:and|&|\+)?\s*breakfast|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
+    re: /bed\s*(?:and|&|\+)?\s*breakfast|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
   },
   { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*إفطار|\bRO\b/i },
 ];
+
+const UPGRADE_FROM = /(?:ترقية|upgrade)[^\n.]{0,40}?(?:من|from)\s*([^\n.]{1,40}?)\s*(?:إلى|الى|to)\s/giu;
 
 export const boardRule: ExtractionRule = {
   key: "board",
   apply(text: string): RuleResult {
     const found: { code: string; evidence: string; index: number }[] = [];
+    // An upgrade names the plan the traveller no longer gets: in «ترقية مجانية
+    // من نصف إقامة HB إلى إقامة كاملة FB» only FB is the offer's board.
+    const scanned = text.replace(UPGRADE_FROM, (match, from: string) =>
+      match.replace(from, " ".repeat(from.length))
+    );
     for (const { code, re } of BOARD_SIGNALS) {
-      const m = re.exec(text);
+      const m = re.exec(scanned);
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 

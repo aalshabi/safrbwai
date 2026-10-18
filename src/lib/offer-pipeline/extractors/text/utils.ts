@@ -28,6 +28,14 @@ export function parseAmount(rawWestern: string): number | null {
   if (/^\d{1,3}([.,٬']\d{3})+$/.test(token)) {
     return toNumber(token.replace(/[.,٬']/g, ""));
   }
+  // Grouped thousands with decimals: 6,617.60 (comma groups, dot decimal) or
+  // 6.617,60 (dot groups, comma decimal) — the last separator is the decimal.
+  if (/^\d{1,3}(,\d{3})+\.\d{1,2}$/.test(token)) {
+    return toNumber(token.replace(/,/g, ""));
+  }
+  if (/^\d{1,3}(\.\d{3})+,\d{1,2}$/.test(token)) {
+    return toNumber(token.replace(/\./g, "").replace(",", "."));
+  }
   // Decimal: 3200.50  3200,5
   if (/^\d+[.,]\d{1,2}$/.test(token)) {
     return toNumber(token.replace(",", "."));
@@ -87,8 +95,12 @@ export function tokenToCurrencyCode(token: string): string | null {
   return null;
 }
 
-/** A raw amount token pattern (Western digits): grouped thousands or plain/decimal. */
-export const AMOUNT_PATTERN = String.raw`\d{1,3}(?:[.,٬']\d{3})+|\d+(?:\.\d{1,2})?`;
+/**
+ * A raw amount token pattern (Western digits): grouped thousands with or
+ * without decimals ("6,617.60", "6.617,60"), or plain/decimal. Longest forms
+ * first, so "6,617.60" is never read as "617.60".
+ */
+export const AMOUNT_PATTERN = String.raw`\d{1,3}(?:,\d{3})+\.\d{1,2}(?!\d)|\d{1,3}(?:\.\d{3})+,\d{1,2}(?!\d)|\d{1,3}(?:[.,٬']\d{3})+|\d+(?:\.\d{1,2})?`;
 
 /** Alternation of every currency token, for adjacency matching in PriceRule. */
 export const CURRENCY_ALT = String.raw`ريال|﷼|ر\s?\.\s?س\.?|درهم|د\s?\.\s?إ|دولار|يورو|€|\$|(?<![A-Za-z])(?:SAR|SR|USD|AED|EUR)(?![A-Za-z])`;

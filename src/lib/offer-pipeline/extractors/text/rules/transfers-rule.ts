@@ -5,7 +5,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { detectInclusion } from "../signals";
+import { detectInclusion, listedAsIncluded } from "../signals";
 import { exact } from "../utils";
 
 /** The words an Arabic offer uses for ground transport. */
@@ -27,6 +27,12 @@ const INCLUDE = new RegExp(
     // "توصيل من وإلى المطار"، "استقبال من المطار"
     `|(?:${TRANSFER_WORD})\\s*(?:خاص|مشترك)` +
     `|(?:${TRANSFER_WORD})\\s*(?:من\\s*و?\\s*)?(?:إلى\\s*|الى\\s*)?المطار` +
+    // "الاستقبال والمساعدة في المطار"
+    `|(?:الاستقبال|استقبال)[^.،\\n]{0,25}?(?:في|من|إلى|الى)\\s*المطار` +
+    // "نقل ذهابًا وإيابًا بالطائرة المائية"، "نقل بالقارب السريع"
+    `|(?:${TRANSFER_WORD})\\s*ذهاب[ًا]*\\s*و\\s*إياب[ًا]*` +
+    `|(?:${TRANSFER_WORD})[^.،\\n]{0,30}?(?:بالطائرة\\s*المائية|بالقارب\\s*السريع)` +
+    `|(?:seaplane|speedboat)\\s*transfers?` +
     `|(?:airport\\s*)?transfers?[^.\\n]{0,20}?included` +
     `|includes?\\s*(?:airport\\s*)?transfers?` +
     `|includes?[^.\\n]{0,40}?(?:airport\\s*)?transfers?` +
@@ -40,7 +46,7 @@ const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 export const transfersRule: ExtractionRule = {
   key: "transfer",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE) ?? listedAsIncluded(text, MENTION);
     if (hit) return { facts: { transfer: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

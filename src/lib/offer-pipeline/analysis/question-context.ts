@@ -17,6 +17,8 @@ export interface QuestionContext {
   hasFlight: boolean;
   /** The offer states flights are NOT included ("الطيران غير مشمول"). */
   flightExcluded: boolean;
+  /** The offer states a flight IS included ("الطيران مشمول", "شامل تذاكر الطيران"). */
+  flightIncluded: boolean;
   /** A stay/accommodation is part of the offer (fact or explicit mention). */
   hasAccommodation: boolean;
   /** Ground transport / transfers are confirmed as an extracted fact. */
@@ -90,6 +92,7 @@ export function deriveQuestionContext(facts: ExtractedOfferFacts, text?: string)
   return {
     hasFlight: flightFact || has(KEYWORDS.flight),
     flightExcluded: facts.flight?.value.included === false,
+    flightIncluded: flightFact,
     hasAccommodation: facts.board !== undefined || has(KEYWORDS.accommodation),
     transferConfirmed,
     transportMentionedInText,

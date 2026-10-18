@@ -86,7 +86,7 @@ const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 export const flightRule: ExtractionRule = {
   key: "flight",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION);
     if (hit) return { facts: { flight: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

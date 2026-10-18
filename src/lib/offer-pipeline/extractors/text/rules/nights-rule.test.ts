@@ -183,4 +183,41 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("4 nights in Dubai and 3 nights in Rome and Total: 7 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("reads nights written as words", () => {
+    expect(nightsRule.apply("إقامة ليلة واحدة").facts.nights?.value).toBe(1);
+    expect(nightsRule.apply("لمدة ليلتين").facts.nights?.value).toBe(2);
+    expect(nightsRule.apply("one night in Rome").facts.nights?.value).toBe(1);
+  });
+
+  it("reads a city-by-city hotel list as one stay", () => {
+    const text = [
+      "- المدة: 9 ليالٍ / 10 أيام.",
+      "- تبليسي، ليلة واحدة: Marjan Hotel 4★، شامل الإفطار.",
+      "- جوداوري، ليلتان: Gudauri Inn 4★، شامل الإفطار.",
+      "- باكورياني، ليلة واحدة: Crystal Hotel & Spa 4★، شامل الإفطار.",
+      "- باتومي، 3 ليالٍ: New Wave Hotel 4★، شامل الإفطار.",
+      "- تبليسي، ليلتان: Marjan Hotel 4★، شامل الإفطار.",
+    ].join("\n");
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 9, evidence: "9 ليالٍ" }]);
+  });
+
+  it("counts each named stay once across the options of one offer", () => {
+    const text = [
+      "- المدة: 6 ليالٍ / 7 أيام.",
+      "الخيار الأول",
+      "- موسكو، 3 ليالٍ: DoubleTree Moscow 4★، شامل الإفطار.",
+      "- سانت بطرسبرغ، 3 ليالٍ: Muse of City 4★، شامل الإفطار.",
+      "الخيار الثاني",
+      "- موسكو، 3 ليالٍ: Radisson Blu 5★، شامل الإفطار.",
+      "- سانت بطرسبرغ، 3 ليالٍ: Cosmos 5★، شامل الإفطار.",
+      "- الإقامة 6 ليالٍ مع الإفطار اليومي.",
+    ].join("\n");
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 6, evidence: "6 ليالٍ" }]);
+  });
+
+  it("treats «6 ليالٍ في الفنادق المذكورة» as a restatement of the total", () => {
+    const text = "المدة: 6 ليالٍ\n- كاندي، ليلتان: Royal Hotel\n- نواراليا، ليلتان: Fort Hotel\n- بنتوتة، ليلتان: Beach Hotel\n- 6 ليالٍ في الفنادق المذكورة أو ما يماثلها.";
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 6, evidence: "6 ليالٍ" }]);
+  });
 });

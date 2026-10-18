@@ -46,7 +46,9 @@ export const DESTINATIONS: DestinationEntry[] = [
   { canonical: "Riyadh", countryCode: "SA", aliases: ["الرياض", "riyadh"] },
   { canonical: "Jeddah", countryCode: "SA", aliases: ["جدة", "jeddah"] },
   { canonical: "Makkah", countryCode: "SA", aliases: ["مكة", "مكة المكرمة", "makkah", "mecca"] },
-  { canonical: "Madinah", countryCode: "SA", aliases: ["المدينة المنورة", "المدينة", "madinah", "medina"] },
+  // Bare «المدينة» is usually "the city" («وسط المدينة», «إطلالة على المدينة»),
+  // so it names Madinah only after a destination marker («إلى المدينة»).
+  { canonical: "Madinah", countryCode: "SA", aliases: ["المدينة المنورة", "المدينة", "madinah", "medina"], markerOnlyAliases: ["المدينة"] },
   { canonical: "AlUla", countryCode: "SA", aliases: ["العلا", "alula", "al ula"] },
   { canonical: "Abha", countryCode: "SA", aliases: ["أبها", "ابها", "abha"] },
   { canonical: "Taif", countryCode: "SA", aliases: ["الطائف", "taif"] },

@@ -69,4 +69,16 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("بدون مواصلات")).toEqual({ included: false });
     expect(included("شامل الإفطار، النقل غير مشمول")).toEqual({ included: false });
   });
+
+  it("meet-and-assist and seaplane wordings", () => {
+    expect(included("الاستقبال والمساعدة في المطار.")).toEqual({ included: true });
+    expect(included("نقل ذهابًا وإيابًا بالطائرة المائية.")).toEqual({ included: true });
+    expect(included("Seaplane transfers")).toEqual({ included: true });
+  });
+
+  it("an item listed under «الخدمات المشمولة» is included; under «غير مشمول» it is not", () => {
+    expect(included("### الخدمات المشمولة\n\n- سيارة خاصة.\n- التنقلات بين المدن.")).toEqual({ included: true });
+    expect(included("### الإقامة\n\n- التنقلات بين المدن.")).toBeUndefined();
+    expect(included("الخدمات المشمولة:\n- التنقلات غير مشمولة.")).toEqual({ included: false });
+  });
 });

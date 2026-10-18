@@ -33,3 +33,14 @@ describe("boardRule", () => {
     expect(boardRule.apply("جو رائع وخدمة ممتازة").facts).toEqual({});
   });
 });
+
+describe("board upgrades and buffet breakfast", () => {
+  it("takes the plan an upgrade leads to, not the one it leaves", () => {
+    const r = boardRule.apply("إقامة كاملة Full Board تشمل الوجبات\nترقية مجانية من نصف إقامة HB إلى إقامة كاملة FB.");
+    expect(r.facts.board?.value).toBe("FB");
+  });
+
+  it("reads a buffet breakfast as bed and breakfast", () => {
+    expect(boardRule.apply("غرفة بإطلالة بحرية وإفطار بوفيه مفتوح").facts.board?.value).toBe("BB");
+  });
+});

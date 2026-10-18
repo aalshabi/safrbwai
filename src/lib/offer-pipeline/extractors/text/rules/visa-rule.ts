@@ -15,7 +15,7 @@ const MENTION = /تأشيرة|visa/i;
 export const visaRule: ExtractionRule = {
   key: "visa",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION);
     if (hit) return { facts: { visa: exact(hit.value, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

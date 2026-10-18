@@ -7,8 +7,14 @@ import type { OfferObservations } from "@/lib/offer-pipeline/analysis/types";
 import type { ExtractionRule, RuleResult } from "../rule";
 import { exact, toWesternDigits } from "../utils";
 
-// e.g. "5 ليالٍ", "٥ ليال", "لمدة 5 ليالي", "5 nights", "5-night"
-const NIGHTS = /(\d{1,3})[\s-]*(?:ليال(?:ٍ|ي)?|ليلة|nights?)/gi;
+// e.g. "5 ليالٍ", "٥ ليال", "لمدة 5 ليالي", "5 nights", "5-night" — or a count
+// written as words: «ليلة واحدة» (1), «ليلتان/ليلتين» (2), "one night", "two nights".
+const NIGHTS =
+  /(\d{1,3})[\s-]*(?:ليال(?:ٍ|ي)?|ليلة|nights?)|(ليلة\s+واحدة|ليلتان|ليلتين|\bone\s+night\b|\btwo\s+nights\b)/gi;
+
+function wordCount(word: string): number {
+  return /ليلة\s+واحدة|one/i.test(word) ? 1 : 2;
+}
 
 type NightObservation = NonNullable<OfferObservations["nights"]>[number];
 
@@ -21,6 +27,12 @@ const STAY_LINE = /(?:إقامة|الإقامة|فندق|الفندق|منتجع
 /** A label that states the trip's overall length ("المدة: 7 ليالٍ", "Total: 7 nights"). */
 const TOTAL_LINE = /(?:إجمالي|الإجمالي|مجموع|المجموع|المدة|مدة|\btotal\b|\bduration\b|\boverall\b)/iu;
 const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
+/**
+ * The rest of a list line naming where the nights are spent — a hotel, its
+ * stars or its board ("- باتومي، 3 ليالٍ: New Wave Hotel 4★، شامل الإفطار").
+ */
+const HOTEL_AFTER =
+  /^[^\n]*(?:★|نجوم|نجمة|فندق|منتجع|فيلا|شامل\s+الإفطار|\bhotel\b|\bresort\b|\binn\b|\blodge\b|\bvilla\b)/iu;
 
 /**
  * The label in front of a count: the text since the previous count or the
@@ -64,7 +76,9 @@ function stayName(label: string, after: string): string {
     .replace(/(^|\s)ال(فندق|منتجع)(?=\s|$)/gu, "$1$2")
     .replace(/\s+/g, " ")
     .trim();
-  const place = (PLACE_AFTER.exec(after)?.[1] ?? "")
+  const rawPlace = (PLACE_AFTER.exec(after)?.[1] ?? "").trim();
+  // «في الفنادق المذكورة» names no particular stay.
+  const place = (/^(?:ال)?(?:فنادق|فندق)|^(?:the\s+)?hotels?\b/iu.test(rawPlace) ? "" : rawPlace)
     .toLowerCase()
     .replace(/\s+(?:و|and)\s*$/u, "")
     .replace(/\s+و$/u, "")
@@ -102,7 +116,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
     const preceding = normalizedText[match.index - 1];
     if (preceding === "-" || preceding === "−") continue;
 
-    const value = Number(match[1]);
+    const value = match[1] !== undefined ? Number(match[1]) : wordCount(match[2] ?? "");
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
@@ -117,7 +131,8 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       evidence: text.slice(match.index, end),
       onStayLine,
       onTotalLine: TOTAL_LINE.test(label),
-      isStay: onStayLine || STAY_AFTER.test(after),
+      // Only the rest of this item: "| Hotel A: …" belongs to the next count.
+      isStay: onStayLine || STAY_AFTER.test(after) || HOTEL_AFTER.test(after.split(/[|;؛]/)[0]),
       stay: stayName(label, after),
     });
   }
@@ -137,15 +152,29 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
         n.value === candidate.value &&
         ((n === first && !n.isStay) || (n.onTotalLine && !n.onStayLine))
     );
-    // The total may be restated ("7 ليالٍ" … "Total: 7 nights"); an equal
-    // count that is not a stay is that restatement, while one marked as a
-    // stay ("Stay 1: 7 nights", "7 nights in Dubai") is a part.
-    const parts = occurrences.filter((n) => n.value !== candidate.value || n.isStay);
+    // The total may be restated ("7 ليالٍ" … "Total: 7 nights", «الإقامة 6
+    // ليالٍ مع الإفطار»); an equal count that names no particular stay is that
+    // restatement, while one naming a stay ("Stay 1: 7 nights", "7 nights in
+    // Dubai") is a part.
+    const parts = occurrences.filter(
+      (n) => n.value !== candidate.value || (n.isStay && n.stay !== "")
+    );
+    const sum = (list: typeof parts) => list.reduce((acc, n) => acc + n.value, 0);
+    // An offer with options repeats the same named stays per option (موسكو 3،
+    // سانت بطرسبرغ 3 … موسكو 3، سانت بطرسبرغ 3): each named stay counts once.
+    const seenStays = new Set<string>();
+    const distinctStays = parts.filter((n) => {
+      if (!n.stay) return true;
+      const key = `${n.stay}\u0000${n.value}`;
+      if (seenStays.has(key)) return false;
+      seenStays.add(key);
+      return true;
+    });
     return (
       isTotal &&
       parts.length >= 2 &&
       parts.every((n) => n.isStay) &&
-      parts.reduce((sum, n) => sum + n.value, 0) === candidate.value
+      (sum(parts) === candidate.value || sum(distinctStays) === candidate.value)
     );
   });
   if (total) return { observations: [toObservation(total)], length: toObservation(total) };
