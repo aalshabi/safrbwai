@@ -418,3 +418,15 @@ describe("seventeenth review follow-ups", () => {
     expect(facts.airportChange?.value).toBe(true);
   });
 });
+
+describe("eighteenth review follow-ups", () => {
+  it("ties a country to a transit city named with its airport", async () => {
+    const { facts } = await run("Flight via Istanbul International Airport, Turkey, layover 2 hours, SAR 3,000.");
+    expect(facts.destination?.value.canonicalValue).not.toBe("Turkey");
+  });
+
+  it("reads a dotted initial as the same airport name", async () => {
+    const { facts } = await run("New York 4 nights: arrive at John F. Kennedy International Airport and depart from John F Kennedy Airport, SAR 9,000 total.");
+    expect(facts.airportChange?.value).not.toBe(true);
+  });
+});

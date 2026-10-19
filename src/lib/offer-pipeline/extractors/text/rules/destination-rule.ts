@@ -178,7 +178,7 @@ function findCanonical(text: string): Match | null {
   );
   const qualifiesATransitCity = (entry: (typeof DESTINATIONS)[number], index: number) =>
     transitCities.some(
-      (city) => city.countryCode === entry.countryCode && city.end <= index && /^[ \t]*[,،(\-–]?[ \t]*$/u.test(haystack.slice(city.end, index))
+      (city) => city.countryCode === entry.countryCode && city.end <= index && TRANSIT_COUNTRY_GAP.test(haystack.slice(city.end, index))
     );
 
   for (const entry of DESTINATIONS) {
@@ -225,6 +225,9 @@ function findCanonical(text: string): Match | null {
 /** «مطار إسطنبول», "Istanbul airport". */
 /** "Istanbul Airport", "Istanbul International Airport", "Istanbul New Airport". */
 const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,2}airport\b/iu;
+
+/** Between a transit city and its country: nothing, a comma, or the city's airport ("Istanbul International Airport, Turkey"). */
+const TRANSIT_COUNTRY_GAP = /^[ \t]*(?:(?:[\p{L}.]+[ \t]+){0,2}airport|الدولي)?[ \t]*[,،(\-–]?[ \t]*$/iu;
 
 function namesAnAirport(haystack: string, index: number, length: number): boolean {
   return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || AIRPORT_AFTER.test(haystack.slice(index + length));

@@ -189,6 +189,7 @@ const EN_ARRIVE_DEPART =
 const airportKey = (name: string) =>
   name
     .replace(/\p{M}/gu, "")
+    .replace(/[.'’\-]/g, " ")
     .toLowerCase()
     .replace(/(?:^|\s)(?:الدولي|الدولية|international|intl)(?=\s|$)/gu, " ")
     .replace(/(?:^|\s)ال/gu, " ")
