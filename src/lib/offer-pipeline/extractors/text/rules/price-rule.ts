@@ -151,11 +151,12 @@ const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i
 /**
  * A booking for more than one room: the dual «غرفتين», any count tied to
  * booking wording ("for 2 rooms", "book six rooms", «حجز 3 غرف», «لخمس غرف», "2 x rooms"),
+ * a room-count label ("Rooms: 2", «عدد الغرف: ٢»),
  * or 2–9 rooms standing as their own item in the offer («…، 3 غرف، …»). A count inside a description of the
  * hotel ("offers 5 rooms") is not a booking multiplier.
  */
 const MULTIPLE_ROOMS =
-  /غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/i;
+  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2})(?!\d)|غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/i;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;

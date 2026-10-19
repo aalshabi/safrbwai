@@ -473,3 +473,24 @@ describe("twenty-first review follow-ups", () => {
     expect(facts.airportChange?.value).not.toBe(true);
   });
 });
+
+describe("twenty-second review follow-ups", () => {
+  it("does not read a breakfast exclusion for some guests or days as room only", async () => {
+    for (const text of ["Dubai 4 nights, breakfast not included for children, SAR 3,000 total.", "Dubai 4 nights, breakfast not included on departure day, SAR 3,000 total."]) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).not.toBe("RO");
+    }
+  });
+
+  it("still reads a plain breakfast exclusion as room only", async () => {
+    const { facts } = await run("Dubai 4 nights, breakfast not included, SAR 3,000 total.");
+    expect(facts.board?.value).toBe("RO");
+  });
+
+  it("reads a label-first room count", async () => {
+    for (const text of ["Dubai. Rooms: 2; 4 nights; nightly price SAR 400; total SAR 3,200.", "دبي، عدد الغرف: ٢، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 3,200 ريال."]) {
+      const { analysis } = await run(text);
+      expect(codes(analysis), text).not.toContain("price_nightly_mismatch");
+    }
+  });
+});

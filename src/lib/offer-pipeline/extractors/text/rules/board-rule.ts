@@ -29,6 +29,8 @@ const BOARD_SIGNALS: BoardSignal[] = [
 const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
+/** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
+const QUALIFIED_EXCLUSION = /^\s*(?:for\s|on\s|during\s|except|unless|لل|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
 /** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */
 const MEAL_WORD = "(?:lunch|dinner|meals?|(?:ال)?غداء|(?:ال)?عشاء|(?:ال)?وجبات)";
 const MEAL_LIST = `${MEAL_WORD}(?:\\s*(?:,|،|and|or|&|أو|و)\\s*${MEAL_WORD})*`;
@@ -92,7 +94,8 @@ export const boardRule: ExtractionRule = {
     if (found.length === 0) {
       // An offer whose only meal statement excludes breakfast sells the room only.
       const excluded = BREAKFAST_EXCLUDED.exec(text);
-      if (excluded && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
+      const scoped = excluded && QUALIFIED_EXCLUSION.test(text.slice(excluded.index + excluded[0].length));
+      if (excluded && !scoped && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };
     }
 
