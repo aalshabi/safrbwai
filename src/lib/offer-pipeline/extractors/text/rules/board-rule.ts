@@ -25,6 +25,8 @@ const BOARD_SIGNALS: BoardSignal[] = [
   { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*إفطار|\bRO\b/i },
 ];
 
+const PLAN_COMPONENT_GAP = /^\s*(?:[:(]|تشمل|يشمل|شامل[ةه]?|مع|includ\w*|with)?\s*$/iu;
+
 const UPGRADE_FROM = /(?:ترقية|upgrade)[^\n.]{0,40}?(?:من|from)\s*([^\n.]{1,40}?)\s*(?:إلى|الى|to)\s/giu;
 
 /** An exclusion opening the clause a signal sits in ("غير مشمول: إفطار بوفيه"). */
@@ -82,7 +84,8 @@ export const boardRule: ExtractionRule = {
     const breakfast = found.findIndex((f) => f.code === "BB");
     if (plan && breakfast >= 0) {
       const gap = text.slice(plan.index + plan.evidence.length, found[breakfast].index);
-      if (found[breakfast].index > plan.index && gap.length <= 15 && !/[.،,;؛\n]/.test(gap)) found.splice(breakfast, 1);
+      // Only inclusion wording ties the breakfast to the plan; "Full Board or bed and breakfast" offers two.
+      if (found[breakfast].index > plan.index && PLAN_COMPONENT_GAP.test(gap)) found.splice(breakfast, 1);
     }
     const codes = new Set(found.map((f) => f.code));
     if (codes.size > 1) {

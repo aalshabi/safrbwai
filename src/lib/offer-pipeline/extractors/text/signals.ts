@@ -113,13 +113,19 @@ export function inIncludedSection(text: string, index: number): boolean {
 }
 
 /** The item text (list marker stripped) of the first `mentionRe` match that `inSection` accepts. */
-function listedMention(text: string, mentionRe: RegExp, inSection: (text: string, index: number) => boolean): string | null {
+function listedMention(
+  text: string,
+  mentionRe: RegExp,
+  inSection: (text: string, index: number) => boolean,
+  accept: (item: string) => boolean = () => true
+): string | null {
   const mentions = new RegExp(mentionRe.source, mentionRe.flags.includes("g") ? mentionRe.flags : mentionRe.flags + "g");
   for (const m of text.matchAll(mentions)) {
     if (m.index !== undefined && inSection(text, m.index)) {
       const start = text.lastIndexOf("\n", m.index - 1) + 1;
       const end = text.indexOf("\n", m.index);
-      return text.slice(start, end < 0 ? undefined : end).replace(LIST_ITEM, "").trim();
+      const item = text.slice(start, end < 0 ? undefined : end).replace(LIST_ITEM, "").trim();
+      if (accept(item)) return item;
     }
   }
   return null;
@@ -131,8 +137,14 @@ function listedMention(text: string, mentionRe: RegExp, inSection: (text: string
  * (taxes, transfers); null when no such item exists.
  */
 export function listedAsIncluded(text: string, mentionRe: RegExp): InclusionMatch | null {
-  const item = listedMention(text, mentionRe, inIncludedSection);
-  if (item === null || NEGATIVE_STATUS.test(item) || OPTIONAL_STATUS.test(item) || pricedSeparately(item)) return null;
+  // An optional or separately priced item is skipped, not final: a later item may still include it.
+  const item = listedMention(
+    text,
+    mentionRe,
+    inIncludedSection,
+    (candidate) => !NEGATIVE_STATUS.test(candidate) && !OPTIONAL_STATUS.test(candidate) && !pricedSeparately(candidate)
+  );
+  if (item === null) return null;
   return { value: true, evidence: item };
 }
 

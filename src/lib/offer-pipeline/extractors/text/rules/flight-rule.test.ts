@@ -111,4 +111,8 @@ describe("flightRule", () => {
     expect(included("### Included\n- International flights\n\n### Not included\n- Local flights")).toEqual({ included: true });
     expect(included("### الخدمات المشمولة\n- تذاكر الطيران الدولية.\n\n### غير مشمول\n- الطيران المحلي.")).toEqual({ included: true });
   });
+
+  it("an optional listed flight does not hide a later included one", () => {
+    expect(included("### Included\n- Flights available on request\n- International flights")).toEqual({ included: true });
+  });
 });

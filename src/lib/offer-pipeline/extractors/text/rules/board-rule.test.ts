@@ -79,4 +79,8 @@ describe("board upgrades and buffet breakfast", () => {
   it("a buffet breakfast inside a full-board plan keeps FB", () => {
     expect(boardRule.apply("إقامة كاملة تشمل إفطار بوفيه وغداء وعشاء").facts.board?.value).toBe("FB");
   });
+
+  it("alternative board plans stay ambiguous", () => {
+    expect(boardRule.apply("Full Board or bed and breakfast").facts.board).toBeUndefined();
+  });
 });
