@@ -653,3 +653,17 @@ describe("thirtieth review follow-ups", () => {
     expect(facts.board?.value).not.toBe("BB");
   });
 });
+
+describe("thirty-first review follow-ups", () => {
+  it("drops a transit city's airport even after 'to'", async () => {
+    const { facts } = await run("Flight to Paris via Istanbul, transfer to Istanbul Airport, 5 nights, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Paris");
+  });
+
+  it("reads a breakfast exclusion for all guests as room only", async () => {
+    for (const text of ["Dubai 4 nights, breakfast not included for all guests, SAR 3,000 total.", "Dubai 4 nights, breakfast not included for the entire stay, SAR 3,000 total."]) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).toBe("RO");
+    }
+  });
+});

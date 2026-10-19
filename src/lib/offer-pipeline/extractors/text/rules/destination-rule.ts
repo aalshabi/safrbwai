@@ -190,10 +190,15 @@ function findCanonical(text: string): Match | null {
     // («مطار إسطنبول» after «عبر إسطنبول»); "Dubai 5 nights … through Dubai old
     // town" keeps Dubai.
     const ranked = entry.aliases.flatMap((alias) =>
-      occurrences(haystack, alias.toLowerCase()).map((i) => ({ index: i, rank: markerRank(haystack, i, alias.length, entry.countryCode === "SA") }))
+      occurrences(haystack, alias.toLowerCase()).map((i) => ({
+        index: i,
+        rank: markerRank(haystack, i, alias.length, entry.countryCode === "SA"),
+        airport: namesAnAirport(haystack, i, alias.length),
+      }))
     );
     // Airport mentions after the place is first passed through are that transit; one before it may be the stay.
-    const firstTransit = ranked.some(({ rank }) => rank === 2)
+    // "Transfer to Istanbul Airport" is not a destination marker for Istanbul.
+    const firstTransit = ranked.some(({ rank, airport }) => rank === 2 && !airport)
       ? Infinity
       : Math.min(...ranked.filter(({ rank }) => rank === -1).map(({ index }) => index));
     for (const alias of entry.aliases) {
