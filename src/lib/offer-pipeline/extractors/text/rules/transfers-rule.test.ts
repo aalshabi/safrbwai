@@ -110,4 +110,14 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("لا تشمل الباقة خدمة الاستقبال والمساعدة في المطار")).toBeUndefined();
     expect(included("The package does not include seaplane transfers")).toEqual({ included: false });
   });
+
+  it("a separately priced transfer is not an inclusion", () => {
+    expect(included("Seaplane transfers available for USD 100")).toBeUndefined();
+    expect(included("نقل بالقارب السريع بسعر 300 ريال")).toBeUndefined();
+  });
+
+  it("a package total in the same clause does not make the transfer a paid extra", () => {
+    expect(included("والإجمالي 2,000 ريال شامل الضرائب والإفطار والنقل من وإلى المطار.")).toEqual({ included: true });
+    expect(included("Private airport transfers for 2 persons")).toEqual({ included: true });
+  });
 });

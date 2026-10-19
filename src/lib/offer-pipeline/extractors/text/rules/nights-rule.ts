@@ -92,6 +92,8 @@ export function extractNightObservations(text: string): NightObservation[] {
 
 /** Words that make a count a deadline rather than a duration. */
 const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/iu;
+/** A deadline anchor right before the count in its clause ("before arrival", «قبل الوصول ب»). */
+const DEADLINE_BEFORE = /(?:قبل|before|prior\s+to)[^.،,;؛\n\d]{0,25}$/iu;
 /** A cancellation/refund clause the count sits in. */
 const PENALTY_BEFORE = /(?:penalty|cancel\w*|refund\w*|no[-\s]?show|غرامة|إلغاء|الإلغاء|استرداد|عدم\s+الحضور)[^.،,;؛\n]*$/iu;
 
@@ -153,6 +155,8 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
     if (DEADLINE_AFTER.test(normalizedText.slice(end))) continue;
     // A penalty ("Late cancellation penalty: one night", «غرامة الإلغاء: ليلة واحدة») is not one either.
     if (PENALTY_BEFORE.test(normalizedText.slice(0, match.index))) continue;
+    // A deadline that names its anchor first («قبل الوصول بليلة واحدة»).
+    if (DEADLINE_BEFORE.test(normalizedText.slice(0, match.index))) continue;
     const label = labelBefore(normalizedText, match.index, previousEnd);
     // The place after a count ("in Dubai") belongs to it, never to the next
     // count's label ("4 nights in Dubai, 4 nights in Dubai").

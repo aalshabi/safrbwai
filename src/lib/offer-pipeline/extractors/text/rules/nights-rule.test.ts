@@ -267,4 +267,10 @@ describe("nightsRule", () => {
   it("a Latin comma ends a cancellation clause", () => {
     expect(nightsRule.apply("Cancellation policy, duration: 7 nights").facts.nights?.value).toBe(7);
   });
+
+  it("an Arabic deadline before the count is not a stay length", () => {
+    expect(nightsRule.apply("المدة 7 ليالٍ\nيمكن التعديل قبل الوصول بليلة واحدة").observations?.nights).toEqual([
+      { value: 7, evidence: "7 ليالٍ" },
+    ]);
+  });
 });

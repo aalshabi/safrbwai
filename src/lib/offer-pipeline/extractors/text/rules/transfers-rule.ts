@@ -48,22 +48,31 @@ const LISTED_TRANSFER = new RegExp(`(?:${TRANSFER_WORD})(?!\\s*(?:ال)?جوي)|
 
 /**
  * A transfer its own clause offers for a fee, on request, says is unavailable,
- * or says the package does not include («لا تشمل الباقة خدمة الاستقبال …»)
+ * says the package does not include («لا تشمل الباقة خدمة الاستقبال …»), or
+ * prices separately ("Seaplane transfers available for USD 100")
  * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
  * الاستقبال في المطار») is not a package inclusion.
  */
 const NOT_PROVIDED =
-  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include/i;
+  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include|(?:\bfor|\bat)\s*(?:(?:usd|sar|aed|eur|\$)\s*\d|\d[\d,.]*\s*(?:usd|sar|aed|eur))|(?:بسعر|بقيمة|بمبلغ)\s*\d/i;
+
+/** A clause boundary; a comma or dot between digits ("2,000", "1.5") is part of a number. */
+const CLAUSE_BREAK = /[،;؛!?؟\n]|(?<!\d)[.,]|[.,](?!\d)/g;
 
 /** The span of the clause holding `evidence`: "Airport transfers included; excursions optional" → "Airport transfers included". */
 function clauseOf(text: string, evidence: string): { start: number; end: number } | null {
   const at = text.indexOf(evidence);
   if (at < 0) return null;
-  const before = text.slice(0, at);
-  const after = text.slice(at + evidence.length);
-  const start = Math.max(...[...".،,;؛!?؟\n"].map((c) => before.lastIndexOf(c))) + 1;
-  const end = after.search(/[.،,;؛!?؟\n]/);
-  return { start, end: at + evidence.length + (end < 0 ? after.length : end) };
+  let start = 0;
+  let end = text.length;
+  for (const m of text.matchAll(CLAUSE_BREAK)) {
+    if (m.index < at) start = m.index + 1;
+    else if (m.index >= at + evidence.length) {
+      end = m.index;
+      break;
+    }
+  }
+  return { start, end };
 }
 
 /**
