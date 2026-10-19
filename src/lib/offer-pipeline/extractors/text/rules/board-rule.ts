@@ -22,7 +22,8 @@ const BOARD_SIGNALS: BoardSignal[] = [
     code: "BB",
     re: /bed\s*(?:and|&|\+)?\s*breakfast|breakfast\s+(?:is\s+)?included|(?:ال)?إفطار\s*(?:مشمول|شامل|مجاني)(?![\u0600-\u06FF])|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
   },
-  { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار|\bRO\b/i },
+  // «بدون الإفطار للأطفال» excludes it for some guests only (see QUALIFIED_EXCLUSION).
+  { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار(?!\s*(?:لل|في\s+يوم|يوم|عدا|ما\s+عدا|إلا))|\bRO\b/i },
 ];
 
 /** «الإفطار غير شامل» / "breakfast not included": no breakfast, but not yet proof of room only. */

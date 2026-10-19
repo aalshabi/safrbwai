@@ -494,3 +494,20 @@ describe("twenty-second review follow-ups", () => {
     }
   });
 });
+
+describe("twenty-third review follow-ups", () => {
+  it("does not read «بدون الإفطار للأطفال» as room only", async () => {
+    const { facts } = await run("دبي 4 ليالٍ، بدون الإفطار للأطفال، السعر 3,000 ريال.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("still reads «بدون إفطار» alone as room only", async () => {
+    const { facts } = await run("دبي 4 ليالٍ، بدون إفطار، السعر 3,000 ريال.");
+    expect(facts.board?.value).toBe("RO");
+  });
+
+  it("reads a spelled-out count after a room label", async () => {
+    const { analysis } = await run("Dubai. Rooms: two; 4 nights; nightly price SAR 400; total SAR 3,200.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});
