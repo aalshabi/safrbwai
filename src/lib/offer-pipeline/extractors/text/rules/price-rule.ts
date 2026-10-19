@@ -450,7 +450,12 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   // Several stays («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
   // The nights rule decides what a stay is, so deadlines and penalties never count.
   const severalStays = hasSeveralStays(text);
-  const discountStated = DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
+  // A discount counts only in a clause that prices something ("discount SAR 200", "after discount total …");
+  // "a 20% spa discount" elsewhere does not change the package total.
+  const discountStated = normalizedText
+    .replace(NO_DISCOUNT, " ")
+    .split(/[.;؛\n]/)
+    .some((clause) => DISCOUNT_STATED.test(clause) && PRICED_CLAUSE.test(clause));
   // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
   const surchargeStated = SURCHARGE_STATED.test(normalizedText);
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
@@ -460,7 +465,9 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       !matches.includes(match) &&
       !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency) &&
       // A charge due only on cancellation, no-show or as a deposit is not in the total.
-      !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index))
+      !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index)) &&
+      // An optional or excluded extra ("Optional tour SAR 500, not included") is outside the total.
+      !OPTIONAL_CHARGE.test(clauseAround(normalizedText, match.index))
   );
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
@@ -511,6 +518,14 @@ const CONDITIONAL_CHARGE_BEFORE =
   /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.,;؛،\n]{0,30}$/iu;
 const PARTY_IN_LABEL =
   /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
+const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;
+const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
+/** The clause around an amount: up to the nearest , ; . or line break on either side. */
+function clauseAround(text: string, index: number): string {
+  const start = text.slice(0, index).search(/[^.,;؛،\n]*$/);
+  const rest = text.slice(index).search(/[.;؛\n]/);
+  return text.slice(start, rest === -1 ? text.length : index + rest);
+}
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {

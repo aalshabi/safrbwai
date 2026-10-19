@@ -132,7 +132,7 @@ export const boardRule: ExtractionRule = {
       // A meal excluded for everyone says nothing more; one excluded only for some guests still may be served.
       const withoutExcludedMeals = text.replace(NEGATED_MEALS, (meal: string, ...rest: unknown[]) => {
         const offset = rest[rest.length - 2] as number;
-        return QUALIFIED_EXCLUSION.test(text.slice(offset + meal.length)) ? meal : " ";
+        return QUALIFIED_EXCLUSION.test(text.slice(offset + meal.length)) || scopedBefore(text, offset) ? meal : " ";
       });
       if (excluded && !OTHER_MEAL.test(withoutExcludedMeals)) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };

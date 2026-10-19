@@ -824,3 +824,20 @@ describe("fortieth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_components_mismatch");
   });
 });
+
+describe("forty-first review follow-ups", () => {
+  it("keeps a prefix-scoped other-meal exclusion", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast not included. For children only, dinner is not included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("still compares a nightly rate beside an optional extra", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000. Optional tour SAR 500, not included.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still compares a nightly rate beside an unrelated discount", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000; guests receive a 20% spa discount.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});
