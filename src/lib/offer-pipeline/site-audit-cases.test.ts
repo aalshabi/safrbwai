@@ -703,3 +703,20 @@ describe("thirty-third review follow-ups", () => {
     expect(facts.board?.value).not.toBe("RO");
   });
 });
+
+describe("thirty-fourth review follow-ups", () => {
+  it("ends an unlisted destination before a connecting-flight clause", async () => {
+    const { facts } = await run("Flight to Nuuk connecting flight in Istanbul, 5 nights, SAR 9,000.");
+    expect(facts.destination?.value.value).toBe("Nuuk");
+  });
+
+  it("does not read a breakfast inclusion with an exception as the whole booking's plan", async () => {
+    const { facts } = await run("Dubai 4 nights, breakfast included for all guests except children, SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("marks the total price as conflicting when the nightly rate does not add up", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000.");
+    expect(analysis.checklist.find((item) => item.key === "totalPrice")?.status).toBe("conflicting");
+  });
+});

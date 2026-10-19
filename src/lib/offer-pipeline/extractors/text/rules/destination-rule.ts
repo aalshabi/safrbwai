@@ -41,7 +41,7 @@ const STOP_WORDS = [
   "for", "from", "includes", "including", "price", "nights", "night", "days", "with", "at",
   "starting", "per", "hotel", "stay", "on",
   // A transit point is not part of the destination's name ("Nuuk via Istanbul").
-  "via", "عبر", "ترانزيت", "transit", "layover", "stopover",
+  "via", "عبر", "ترانزيت", "transit", "layover", "stopover", "connecting", "connection", "stop", "stopping",
 ];
 
 /** Phrases where a following "إلى/to" is NOT introducing a destination. */

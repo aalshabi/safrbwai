@@ -42,7 +42,7 @@ export const FIELDS: FieldDef[] = [
     label: { ar: "السعر النهائي", en: "Total price" },
     requirement: "required",
     inChecklist: true,
-    conflictCodes: ["multiple_prices", "price_total_mismatch", "price_components_mismatch"],
+    conflictCodes: ["multiple_prices", "price_total_mismatch", "price_components_mismatch", "price_nightly_mismatch"],
     fact: (f) => f.totalPrice,
     question: {
       ar: "ما إجمالي الرحلة الصحيح، وهل يطابق تفاصيل السعر المذكورة؟",
