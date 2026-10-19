@@ -148,3 +148,20 @@ describe("guards around the audit fixes", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("review follow-ups", () => {
+  it("does not call the board room-only when another meal is mentioned", async () => {
+    const { facts } = await run("Istanbul 4 nights, breakfast not included, dinner included, SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("keeps a 14-hour stop when ground transport is mentioned in another clause", async () => {
+    const { facts } = await run("رحلة عبر إسطنبول، توقف 14 ساعة، تشمل المواصلات من المطار، السعر 3,000 ريال.");
+    expect(facts.transitDuration?.value).toEqual({ minutes: 840 });
+  });
+
+  it("reads a time after the airport name as the same airport", async () => {
+    const { facts } = await run("رحلة عبر دبي، الوصول إلى مطار دبي والمغادرة من مطار دبي مساءً في اليوم التالي، السعر 2,000 ريال.");
+    expect(facts.airportChange).toBeUndefined();
+  });
+});

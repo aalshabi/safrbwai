@@ -122,3 +122,20 @@ describe("OfferAnalysisResult — text that is not a travel offer", () => {
     expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
   });
 });
+
+describe("OfferAnalysisResult — a bare stated price", () => {
+  it("counts as an offer signal", () => {
+    render(
+      <LanguageProvider>
+        <OfferAnalysisResult
+          analysis={{
+            ...analysis,
+            contradictions: [],
+            confirmedFacts: [{ key: "statedPrice", label: { ar: "السعر", en: "Price" }, value: { amount: 5000, currency: "SAR" }, evidence: "5,000 ريال", confidenceType: "exact" }],
+          }}
+        />
+      </LanguageProvider>
+    );
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+});

@@ -72,13 +72,8 @@ const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|lay
 
 function hasAviationContext(text: string, index: number): boolean {
   const clause = clauseAt(text, index);
-  if (
-    ROUTED_VIA.test(text) &&
-    !GROUND_STOP_CONTEXT.test(clause.text) &&
-    !GROUND_STOP_CONTEXT.test(text)
-  ) {
-    return true;
-  }
+  // Only ground transport in the stop's own clause marks it as a tour stop.
+  if (ROUTED_VIA.test(text) && !GROUND_STOP_CONTEXT.test(clause.text)) return true;
   const aviationDistance = Math.min(
     nearestContextDistance(clause.text, clause.matchIndex, EXPLICIT_TRANSIT_CONTEXT),
     nearestContextDistance(clause.text, clause.matchIndex, FLIGHT_CONTEXT)
@@ -142,7 +137,10 @@ function stopCountFact(original: string, normalized: string) {
 }
 
 /** An airport name after «مطار»: up to three words, stopping at a clause break or «و». */
-const AR_AIRPORT_NAME = "مطار\\s+((?:(?!و?(?:المغادرة|الإقلاع|مغادرة))[\\p{L}\\-']+\\s*){1,3})";
+/** Words that follow an airport name without being part of it: times, days, the next leg. */
+const AFTER_AIRPORT_NAME =
+  "و?(?:المغادرة|الإقلاع|مغادرة)|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة";
+const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\-']+\\s*){1,3})`;
 /** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
 const AR_ARRIVE_DEPART = new RegExp(
   `(?:الوصول|وصول|الهبوط)\\s*(?:إلى|الى|في)\\s*${AR_AIRPORT_NAME}[^.\\n]{0,40}?(?:المغادرة|مغادرة|الإقلاع)\\s*(?:من)\\s*${AR_AIRPORT_NAME}`,
@@ -160,6 +158,12 @@ const airportKey = (name: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+/** One name extending the other word by word («دبي» / «دبي الجديد») is read as the same airport. */
+function sameAirport(a: string, b: string): boolean {
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  return long === short || long.startsWith(`${short} `);
+}
+
 function airportChangeFact(original: string) {
   if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
@@ -168,7 +172,7 @@ function airportChangeFact(original: string) {
   if (change?.index !== undefined) return exact(true, change[0].trim());
   // Two different named airports for arrival and departure: the change is stated by the names themselves.
   const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
-  if (pair && airportKey(pair[1]) !== airportKey(pair[2])) return exact(true, pair[0].trim());
+  if (pair && !sameAirport(airportKey(pair[1]), airportKey(pair[2]))) return exact(true, pair[0].trim());
   return undefined;
 }
 

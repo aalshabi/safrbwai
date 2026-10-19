@@ -22,12 +22,14 @@ const BOARD_SIGNALS: BoardSignal[] = [
     code: "BB",
     re: /bed\s*(?:and|&|\+)?\s*breakfast|breakfast\s+(?:is\s+)?included|(?:ال)?إفطار\s*(?:مشمول|شامل|مجاني)(?![\u0600-\u06FF])|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
   },
-  {
-    code: "RO",
-    // A stated exclusion is a fact: «الإفطار غير شامل» means the price buys the room only.
-    re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار|(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast|\bRO\b/iu,
-  },
+  { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار|\bRO\b/i },
 ];
+
+/** «الإفطار غير شامل» / "breakfast not included": no breakfast, but not yet proof of room only. */
+const BREAKFAST_EXCLUDED =
+  /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
+/** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
+const OTHER_MEAL = /غداء|عشاء|الوجبات|وجبات|نصف\s*إقامة|إقامة\s*كاملة|lunch|dinner|meals?\b|half[-\s]?board|full[-\s]?board|all[-\s]?inclusive/i;
 
 const PLAN_COMPONENT_GAP = /^\s*(?:[:(]|تشمل|يشمل|شامل[ةه]?|مع|includ\w*|with)?\s*$/iu;
 
@@ -80,7 +82,12 @@ export const boardRule: ExtractionRule = {
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 
-    if (found.length === 0) return { facts: {}, warnings: [] };
+    if (found.length === 0) {
+      // An offer whose only meal statement excludes breakfast sells the room only.
+      const excluded = BREAKFAST_EXCLUDED.exec(text);
+      if (excluded && !OTHER_MEAL.test(text)) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
+      return { facts: {}, warnings: [] };
+    }
 
     // A buffet or daily breakfast listed inside a stated FB/HB/AI plan («إقامة
     // كاملة تشمل إفطار بوفيه وغداء وعشاء») is one of its meals, not a rival plan.

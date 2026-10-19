@@ -99,7 +99,7 @@ const CHECK_STATUS: Record<ChecklistStatus, { icon: LucideIcon; className: strin
 /** Facts only a travel offer states; with none of them the text is probably something else. */
 const OFFER_SIGNALS = new Set([
   "destination", "nights", "travelDates", "travellers", "accommodation", "board", "flight",
-  "totalPrice", "perPersonPrice", "perNightPrice",
+  "totalPrice", "perPersonPrice", "perNightPrice", "statedPrice",
 ]);
 
 export function looksLikeTravelOffer(analysis: OfferAnalysis): boolean {
