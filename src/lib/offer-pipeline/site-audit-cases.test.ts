@@ -351,3 +351,20 @@ describe("twelfth review follow-ups", () => {
     expect(facts.destination?.value.canonicalValue).toBe("Paris");
   });
 });
+
+describe("thirteenth review follow-ups", () => {
+  it("does not read an airport named once by code as a change", async () => {
+    const { facts } = await run("Riyadh 4 nights: arrive at King Khalid International Airport and depart from RUH Airport, SAR 4,000 total.");
+    expect(facts.airportChange?.value).not.toBe(true);
+  });
+
+  it("still reads two different named airports as a change", async () => {
+    const { facts } = await run("الوصول إلى مطار صبيحة والمغادرة من مطار إسطنبول، 4 ليالٍ، السعر 4,000 ريال.");
+    expect(facts.airportChange?.value).toBe(true);
+  });
+
+  it("does not add a negative discount to a plus-joined breakdown", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000 + Discount -SAR 1,000, total SAR 4,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+});

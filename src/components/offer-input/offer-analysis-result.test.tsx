@@ -117,6 +117,15 @@ describe("OfferAnalysisResult — text that is not a travel offer", () => {
     expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
   });
 
+  it("counts flight details as offer facts", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [{ key: "transitDuration", label: { ar: "مدة الترانزيت", en: "Transit duration" }, value: { minutes: 840 }, evidence: "layover 14 hours", confidenceType: "exact" }],
+    });
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+
   it("stays quiet for an offer with a price or nights", () => {
     renderResult(analysis);
     expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();

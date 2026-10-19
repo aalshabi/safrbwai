@@ -100,6 +100,7 @@ const CHECK_STATUS: Record<ChecklistStatus, { icon: LucideIcon; className: strin
 const OFFER_SIGNALS = new Set([
   "destination", "nights", "travelDates", "travellers", "accommodation", "board", "flight",
   "totalPrice", "perPersonPrice", "perNightPrice", "statedPrice",
+  "baggage", "transfers", "transitDuration", "stopCount", "airportChange",
 ]);
 
 export function looksLikeTravelOffer(analysis: OfferAnalysis): boolean {

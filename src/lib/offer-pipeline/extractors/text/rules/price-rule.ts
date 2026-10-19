@@ -472,6 +472,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
  * sentence: «الطيران 2,000 ريال + الفندق 3,000 ريال، الإجمالي 4,000 ريال».
  * The plus sign is the offer's own statement that these are parts of the total.
  */
+const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
+
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
   for (const total of matches.filter((match) => match.basis === "total")) {
     const before = matches.filter((match) => match.index < total.index && match.basis === "unspecified");
@@ -484,6 +486,11 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
       // The last part reaches the total through a label; every other link is a "+".
       if (chain.length > 0 && !gap.includes("+")) break;
+      // A discount ("+ Discount -SAR 1,000", «خصم 500») is subtracted, not added.
+      if (DISCOUNT_BEFORE.test(normalizedText.slice(Math.max(0, part.index - 20), part.index))) {
+        chain.length = 0;
+        break;
+      }
       // A unit rate ("SAR 2,000 per adult + SAR 1,000 per child") counts once
       // per traveller, so the plain sum says nothing about the total.
       if (OTHER_PER_UNIT_QUALIFIER.test(normalizedText.slice(part.index + part.length))) {

@@ -4,6 +4,7 @@
  * the analysis layer can then ask for clarification without inventing facts.
  */
 
+import { SAUDI_AIRPORTS } from "@/lib/airport-status/config";
 import type { ExtractedOfferFacts } from "@/lib/offer-pipeline/types";
 import type { ExtractionRule, RuleResult } from "../rule";
 import { exact, toWesternDigits } from "../utils";
@@ -194,6 +195,27 @@ const airportKey = (name: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
+/** Saudi airports by code, city and official name, so «مطار الرياض» and "RUH" are «مطار الملك خالد». */
+const KNOWN_AIRPORTS = new Map(
+  SAUDI_AIRPORTS.flatMap(({ airportCode, cityAr, airportNameAr }) =>
+    [airportCode, cityAr, airportNameAr.replace(/^مطار\s+/u, "")].map((name) => [airportKey(name), airportCode] as const)
+  )
+);
+const IATA_CODE = /^[a-z]{3}$/;
+
+/**
+ * Whether two airport names are different airports: undefined when that
+ * cannot be told from the names alone, as with a code beside a name
+ * ("King Khalid" and "RUH") that no known alias links.
+ */
+function differentAirports(first: string, second: string): boolean | undefined {
+  const [a, b] = [airportKey(first), airportKey(second)];
+  const [knownA, knownB] = [KNOWN_AIRPORTS.get(a), KNOWN_AIRPORTS.get(b)];
+  if (knownA && knownB) return knownA !== knownB;
+  if (IATA_CODE.test(a) || IATA_CODE.test(b)) return a === b ? false : undefined;
+  return a !== b;
+}
+
 function airportChangeFact(original: string) {
   if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
@@ -203,7 +225,7 @@ function airportChangeFact(original: string) {
   // Two different named airports for arrival and departure: the change is stated by the names themselves.
   const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
   // Only the generic words airportKey drops are ignored: «مطار دبي آل مكتوم» is another airport.
-  if (pair && airportKey(pair[1]) !== airportKey(pair[2])) return exact(true, pair[0].trim());
+  if (pair && differentAirports(pair[1], pair[2])) return exact(true, pair[0].trim());
   return undefined;
 }
 
