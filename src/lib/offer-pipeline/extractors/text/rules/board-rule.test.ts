@@ -49,4 +49,10 @@ describe("board upgrades and buffet breakfast", () => {
     expect(boardRule.apply("### غير مشمول\n- إفطار بوفيه يومي.").facts.board).toBeUndefined();
     expect(boardRule.apply("السعر غير شامل الإفطار").facts.board).toBeUndefined();
   });
+
+  it("never reads a breakfast excluded after the signal as the board", () => {
+    expect(boardRule.apply("إفطار بوفيه غير مشمول").facts.board).toBeUndefined();
+    expect(boardRule.apply("buffet: إفطار يومي not included").facts.board).toBeUndefined();
+    expect(boardRule.apply("مع الإفطار، النقل غير مشمول").facts.board?.value).toBe("BB");
+  });
 });

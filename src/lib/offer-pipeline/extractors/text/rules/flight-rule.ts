@@ -83,12 +83,18 @@ const INCLUDE = new RegExp(
 // it yields the "inclusion not stated" warning instead of silence.
 const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
+/** Add-ons sold with a flight: an item about one ("Flight upgrades", «ترقية مقعد الطيران») is not the ticket. */
+const FLIGHT_ADDON = "upgrades?|ترقية|seats?|مقعد|مقاعد|meals?|وجبة|وجبات|baggage|luggage|أمتعة|حقائب|lounge|صالة";
+
 /**
  * The trip's ticket as an item of an included or excluded list ("### Included\n-
  * Flights"). A domestic leg is not it either way: excluding «الطيران الداخلي»
  * says nothing about the international ticket.
  */
-const LISTED_FLIGHT = new RegExp(`${FLIGHT_WORD}|${EN_FLIGHT}`, "iu");
+const LISTED_FLIGHT = new RegExp(
+  `(?<!(?:${FLIGHT_ADDON})[^\\n]*)(?:${FLIGHT_WORD}|${EN_FLIGHT})(?![^\\n]*(?:${FLIGHT_ADDON}))`,
+  "iu"
+);
 
 export const flightRule: ExtractionRule = {
   key: "flight",

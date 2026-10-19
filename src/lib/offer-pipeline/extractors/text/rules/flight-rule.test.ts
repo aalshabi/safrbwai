@@ -78,4 +78,9 @@ describe("flightRule", () => {
     expect(included("### غير مشمول\n- الطيران الداخلي.")).toBeUndefined();
     expect(included("### غير مشمول\n- تذاكر الطيران الدولية.")).toEqual({ included: false });
   });
+
+  it("an excluded flight add-on is not the ticket", () => {
+    expect(included("### Included\n- Flights\n\n### Not included\n- Flight upgrades")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران.\n\n### غير مشمول\n- ترقية مقعد الطيران.")).toEqual({ included: true });
+  });
 });

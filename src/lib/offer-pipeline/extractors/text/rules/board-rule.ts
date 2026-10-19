@@ -31,12 +31,16 @@ const UPGRADE_FROM = /(?:ترقية|upgrade)[^\n.]{0,40}?(?:من|from)\s*([^\n.]
 const EXCLUDED_PREFIX =
   /(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|لا\s*(?:يشمل|تشمل)|not\s+included|excluding|excludes?)[^.،,;؛\n]*$|(?:^|\s)(?:غير|لا|not)\s+$/i;
 
+/** An exclusion closing the clause right after a signal ("إفطار بوفيه غير مشمول"). */
+const EXCLUDED_SUFFIX = /^[^.،,;؛\n]{0,25}?(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|not\s+included|excluded)/i;
+
 /** The first match of `re` that the offer does not state as excluded. */
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
   for (const m of scanned.matchAll(all)) {
     const lineStart = text.lastIndexOf("\n", m.index - 1) + 1;
     if (EXCLUDED_PREFIX.test(text.slice(lineStart, m.index))) continue;
+    if (EXCLUDED_SUFFIX.test(text.slice(m.index + m[0].length))) continue;
     if (inExcludedSection(text, m.index)) continue;
     return m as RegExpExecArray;
   }
