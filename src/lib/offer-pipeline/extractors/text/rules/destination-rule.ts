@@ -167,8 +167,8 @@ function findCanonical(text: string): Match | null {
   const haystack = text.toLowerCase();
   let city: Match | null = null;
   let country: Match | null = null;
-  // Where each transit city ends, so its country right after it
-  // ("via Istanbul, Turkey", «عبر إسطنبول، تركيا») is read as part of it.
+  // Where each transit city ends, so its country right after it on the same
+  // line ("via Istanbul, Turkey", «عبر إسطنبول، تركيا») is read as part of it.
   const transitCities = DESTINATIONS.filter((entry) => entry.kind !== "country").flatMap((entry) =>
     entry.aliases.flatMap((alias) =>
       occurrences(haystack, alias.toLowerCase())
@@ -178,7 +178,7 @@ function findCanonical(text: string): Match | null {
   );
   const qualifiesATransitCity = (entry: (typeof DESTINATIONS)[number], index: number) =>
     transitCities.some(
-      (city) => city.countryCode === entry.countryCode && city.end <= index && /^\s*[,،(\-–]?\s*$/u.test(haystack.slice(city.end, index))
+      (city) => city.countryCode === entry.countryCode && city.end <= index && /^[ \t]*[,،(\-–]?[ \t]*$/u.test(haystack.slice(city.end, index))
     );
 
   for (const entry of DESTINATIONS) {

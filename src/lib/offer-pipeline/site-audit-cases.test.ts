@@ -399,3 +399,10 @@ describe("fifteenth review follow-ups", () => {
     expect(facts.airportChange?.value).toBe(false);
   });
 });
+
+describe("sixteenth review follow-ups", () => {
+  it("keeps a destination that starts the next line after a transit city", async () => {
+    const { facts } = await run("Flight via Istanbul\nTurkey — 5 nights, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Turkey");
+  });
+});

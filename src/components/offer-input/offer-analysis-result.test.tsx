@@ -135,6 +135,18 @@ describe("OfferAnalysisResult — text that is not a travel offer", () => {
     expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
   });
 
+  it("takes several weaker travel facts together as an offer", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [
+        { key: "visa", label: { ar: "التأشيرة", en: "Visa" }, value: { included: true }, evidence: "Visa included", confidenceType: "exact" },
+        { key: "insurance", label: { ar: "التأمين", en: "Insurance" }, value: { included: true }, evidence: "travel insurance included", confidenceType: "exact" },
+      ],
+    });
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+
   it("stays quiet for an offer with a price or nights", () => {
     renderResult(analysis);
     expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
