@@ -509,6 +509,8 @@ const SURCHARGE_STATED =
   /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
 const CONDITIONAL_CHARGE_BEFORE =
   /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.,;؛،\n]{0,30}$/iu;
+const PARTY_IN_LABEL =
+  /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -531,7 +533,8 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       // A total "after discount" is not the sum of the parts before it.
       if (chain.length === 0 && DISCOUNT_STATED.test(gap)) break;
       // A number the parser skipped ("+ SAR -1,000", "+ VAT 15% +") is a part we cannot add up.
-      if (/[\d٠-٩]/.test(gap)) {
+      // A party count in the total's own label ("total for 2 people") is not a skipped amount.
+      if (/[\d٠-٩]/.test(gap.replace(PARTY_IN_LABEL, " "))) {
         chain.length = 0;
         break;
       }
@@ -555,7 +558,7 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
     // An item added before the first amount ("Taxes + Flight SAR 2,000 + …") is unpriced too.
     if (chain.length > 0) {
       const before = normalizedText.slice(0, chain[0].index);
-      if (before.slice(before.search(/[^.\n!?؟;؛،,]*$/)).includes("+")) continue;
+      if (before.slice(before.search(/[^.\n!?؟;؛،,:：]*$/)).includes("+")) continue;
       // Another priced item earlier in the sentence without a "+" ("Flight SAR 2,000, Hotel … + Tour …")
       // means the chain is only part of the breakdown.
       const sentenceStart = before.search(/[^.\n!?؟;؛]*$/);

@@ -76,7 +76,7 @@ const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|lay
  * «14 ساعة توقف», "layover 7 hours", "7 hours layover".
  */
 const UNNAMED_STOP =
-  /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit))/i;
+  /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit|stop)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit|stop))/i;
 const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
 /**
  * A stop placed somewhere after its duration («توقف 3 ساعات في الفندق», «… في

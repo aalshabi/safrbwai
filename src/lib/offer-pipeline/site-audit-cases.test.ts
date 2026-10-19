@@ -802,3 +802,25 @@ describe("thirty-ninth review follow-ups", () => {
     expect(facts.board?.value).not.toBe("RO");
   });
 });
+
+describe("fortieth review follow-ups", () => {
+  it("does not let a party heading's plus sign before a colon reject a breakdown", async () => {
+    const { analysis } = await run("2 adults + 1 child: Flight SAR 2,000 + Hotel SAR 3,000, total SAR 6,000.");
+    expect(codes(analysis)).toContain("price_components_mismatch");
+  });
+
+  it("reads a counted guest scope before the meal statement", async () => {
+    const { facts } = await run("Dubai 4 nights. For one child only, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("reads an English 'stop' duration on a routed flight", async () => {
+    const { facts } = await run("Flight to Paris via Doha, stop 3 hours, 5 nights, SAR 6,000.");
+    expect(facts.transitDuration?.value).toEqual({ minutes: 180 });
+  });
+
+  it("keeps a party count in the total's label from rejecting a breakdown", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, total for 2 people SAR 6,000.");
+    expect(codes(analysis)).toContain("price_components_mismatch");
+  });
+});
