@@ -235,4 +235,9 @@ describe("nightsRule", () => {
     const text = "Duration: 3 nights\nOption 1\n- Hotel A: one night\n- Hotel B: two nights\nOption 2\n- Hotel C: one night\n- Hotel D: two nights";
     expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 3, evidence: "3 nights" }]);
   });
+
+  it("generic hotel wording after the total does not make it a stay", () => {
+    const r = nightsRule.apply("7 nights with hotel accommodation | Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

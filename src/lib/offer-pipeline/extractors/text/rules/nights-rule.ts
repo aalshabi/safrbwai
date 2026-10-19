@@ -98,6 +98,10 @@ function optionIndex(text: string, index: number): number {
   return [...text.slice(0, index).matchAll(OPTION_HEADING)].length;
 }
 
+/** Hotel wording that names no particular property ("with hotel accommodation", «في الفنادق المذكورة»). */
+const GENERIC_HOTEL =
+  /\b(?:with\s+)?hotels?\s+(?:accommodation|stay)\b|\bin\s+(?:the\s+)?(?:listed|mentioned|selected)\s+hotels?\b|(?:إقامة|سكن)\s+فندقية|في\s+(?:ال)?فنادق(?:\s+(?:ال)?مذكورة)?|(?:ال)?فندق\s+(?:ال)?مذكور/giu;
+
 /**
  * Whether this count's own item names a hotel ("ليلتان: `Royal Kandyan Hotel`").
  * Only the rest of this item counts ("| Hotel A: …" belongs to the next
@@ -105,7 +109,7 @@ function optionIndex(text: string, index: number): number {
  * gives that hotel to the later count, whose label it is.
  */
 function hotelAfter(after: string): boolean {
-  const item = after.split(/[\n|;؛]/)[0];
+  const item = after.split(/[\n|;؛]/)[0].replace(GENERIC_HOTEL, " ");
   return HOTEL_AFTER.test(item) && !new RegExp(NIGHTS.source, NIGHTS.flags.replace("g", "")).test(item);
 }
 

@@ -32,7 +32,8 @@ const FLIGHT_NOUN =
  * included" — reading it that way would overstate what the price covers.
  */
 const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?داخلي)`;
-const EN_FLIGHT = "(?<!(?:domestic|internal)\\s)(?:flights?|airfare|air\\s*tickets?)";
+// A route qualifier may sit between ("domestic connecting flights").
+const EN_FLIGHT = "(?<!(?:domestic|internal)(?:\\s+[a-z-]+){0,2}\\s)(?:flights?|airfare|air\\s*tickets?)";
 
 /**
  * After «مع» only a definite flight noun is an inclusion ("مع الطيران",

@@ -88,4 +88,8 @@ describe("flightRule", () => {
     expect(included("### Included\n- Flights with 20 kg baggage")).toEqual({ included: true });
     expect(included("### الخدمات المشمولة\n- تذاكر الطيران مع أمتعة 20 كجم.")).toEqual({ included: true });
   });
+
+  it("a domestic leg with a route qualifier is still a domestic leg", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Domestic connecting flights")).toEqual({ included: true });
+  });
 });

@@ -43,6 +43,9 @@ const INCLUDE = new RegExp(
 
 const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 
+/** A ground transfer as a list item; «النقل الجوي» (air transport) is a flight, not a transfer. */
+const LISTED_TRANSFER = new RegExp(`(?:${TRANSFER_WORD})(?!\\s*(?:ال)?جوي)|transfers?`, "i");
+
 /**
  * A transfer its own clause offers for a fee, on request, or says is unavailable
  * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
@@ -71,7 +74,7 @@ function clauseOf(text: string, evidence: string): { start: number; end: number 
 function providedInclusion(text: string): InclusionMatch | null {
   let scanned = text;
   for (let i = 0; i < 10; i++) {
-    const found = detectInclusion(scanned, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(scanned, MENTION);
+    const found = detectInclusion(scanned, INCLUDE, EXCLUDE, LISTED_TRANSFER) ?? listedAsIncluded(scanned, LISTED_TRANSFER);
     if (!found?.value) return found;
     const clause = clauseOf(scanned, found.evidence);
     if (!clause || !NOT_PROVIDED.test(scanned.slice(clause.start, clause.end))) return found;
