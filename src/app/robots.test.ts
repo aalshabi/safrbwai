@@ -6,17 +6,19 @@ import { metadata as knowledgeMetadata } from "./knowledge/page";
 import { metadata as destinationMetadata } from "./analyze-destination/page";
 import { metadata as authMetadata } from "./auth/page";
 import { isIndexable } from "@/lib/seo";
+import { getReviewedGuides } from "@/lib/guides";
+import { getPublishedInsights } from "@/lib/travel-insights";
 
 afterEach(() => {
   vi.unstubAllEnvs();
 });
 
 describe("public indexing", () => {
-  it("allows crawling of public pages and keeps private pages and APIs out", () => {
+  it("blocks only APIs, so crawlers can read the private pages' noindex", () => {
     const result = robots();
     const rules = Array.isArray(result.rules) ? result.rules[0] : result.rules;
     expect(rules.allow).toBe("/");
-    expect(rules.disallow).toEqual(["/api/", "/admin", "/auth", "/dashboard"]);
+    expect(rules.disallow).toEqual(["/api/"]);
     expect(result.sitemap).toMatch(/^https:\/\/.+\/sitemap\.xml$/);
   });
 
@@ -33,6 +35,19 @@ describe("public indexing", () => {
     for (const hidden of ["/admin", "/auth", "/dashboard", "/compare-hotels", "/analyze-destination", "/knowledge"]) {
       expect(paths).not.toContain(hidden);
     }
+  });
+
+  it("dates guides and insights by their last review and leaves the homepage entry as before", () => {
+    const entries = new Map(sitemap().map((entry) => [new URL(entry.url).pathname, entry]));
+    for (const guide of getReviewedGuides()) {
+      expect(entries.get(`/guides/${guide.slug}`)?.lastModified).toBe(guide.reviewedAt);
+    }
+    for (const insight of getPublishedInsights()) {
+      expect(entries.get(`/insights/${insight.slug}`)?.lastModified).toBe(insight.reviewedAt);
+    }
+    const home = entries.get("/");
+    expect(home?.lastModified).toBeInstanceOf(Date);
+    expect(home).toMatchObject({ changeFrequency: "weekly", priority: 1 });
   });
 
   it("disallows everything and lists nothing on a Preview deployment", () => {

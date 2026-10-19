@@ -4,7 +4,7 @@ import { INSIGHT_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
 import { InsightArticle } from "@/components/insights/insight-article";
 import { getInsight, getPublishedInsights } from "@/lib/travel-insights";
-import { SITE_URL } from "@/lib/site-url";
+import { articleJsonLd, breadcrumbJsonLd, jsonLdHtml, SECTION_NAMES } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -29,21 +29,27 @@ export default async function InsightPage({ params }: Props) {
   const insight = getInsight((await params).slug);
   if (!insight || insight.status !== "published") notFound();
 
-  const articleJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    headline: insight.title.ar,
-    description: insight.description.ar,
-    datePublished: insight.publishedAt,
-    dateModified: insight.reviewedAt,
-    inLanguage: ["ar", "en"],
-    mainEntityOfPage: `${SITE_URL}/insights/${insight.slug}`,
-    publisher: { "@type": "Organization", name: "سافر بوعي — SafrBwai" },
-  };
+  const path = `/insights/${insight.slug}`;
+  const jsonLd = [
+    articleJsonLd({
+      headline: insight.title.ar,
+      description: insight.description.ar,
+      path,
+      image: "insights",
+      datePublished: insight.publishedAt,
+      dateModified: insight.reviewedAt,
+      inLanguage: ["ar", "en"],
+    }),
+    breadcrumbJsonLd([
+      { name: SECTION_NAMES.home, path: "/" },
+      { name: SECTION_NAMES.insights, path: "/insights" },
+      { name: insight.title.ar, path },
+    ]),
+  ];
 
   return (
     <article className="container py-14 md:py-20">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(jsonLd)} />
       <InsightArticle insight={insight} />
     </article>
   );
