@@ -511,3 +511,15 @@ describe("twenty-third review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("twenty-fourth review follow-ups", () => {
+  it("does not carry a transit point into an unlisted destination's name", async () => {
+    const { facts } = await run("Flight to Nuuk via Istanbul, 5 nights, SAR 9,000 total.");
+    expect(facts.destination?.value.value).toBe("Nuuk");
+  });
+
+  it("does not compare a nightly rate when a discount is stated", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 500; discount SAR 200; total SAR 1,800.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});

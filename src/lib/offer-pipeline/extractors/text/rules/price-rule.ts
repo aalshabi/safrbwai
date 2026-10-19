@@ -462,7 +462,16 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     const roomScoped =
       basis === "per_night" &&
       (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
-    observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}), ...(roomScoped ? { roomScoped } : {}) });
+    const discounted = basis === "per_night" && DISCOUNT_STATED.test(normalizedText);
+    observations.push({
+      amount,
+      currency,
+      basis,
+      evidence,
+      ...(party ? { party } : {}),
+      ...(roomScoped ? { roomScoped } : {}),
+      ...(discounted ? { discounted } : {}),
+    });
   }
   const components = extractComponents(normalizedText, allMatches);
   return { observations, components: components.length > 0 ? components : plusComponents(normalizedText, allMatches) };
@@ -475,6 +484,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
  */
 /** A traveller-type label right before an amount ("Adult SAR 2,000", "Child fare SAR 1,000", «الطفل: 1,000») marks a unit rate. */
 const UNIT_LABEL_BEFORE = /(?:adults?|child(?:ren)?|infants?|(?:ال)?بالغ|(?:ال)?طفل|(?:ال)?رضيع|للبالغ|للطفل)(?:\s+(?:fare|price|rate|ticket)s?)?\s*[:：]?\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
+/** A discount or promo code anywhere in the offer ("discount SAR 200", «خصم 10%»). */
+const DISCOUNT_STATED = /\b(?:discount|promo(?:tion)?\s+code|coupon)\b|خصم|تخفيض|حسم/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
