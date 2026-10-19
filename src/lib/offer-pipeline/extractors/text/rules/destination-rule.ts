@@ -123,7 +123,7 @@ const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
  * through Dubai old town" is sightseeing.
  */
 const TRANSIT_MARKER =
-  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+(?:in|at|through|via))?))(?:\s+(?:the|airport|of)\b|\s*(?:ال)?مطار)*\s*$/iu;
+  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+flights?)?(?:\s+(?:in|at|through|via))?))(?:\s+(?:the|airport|of)\b|\s*(?:ال)?مطار)*\s*$/iu;
 
 /**
  * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul",

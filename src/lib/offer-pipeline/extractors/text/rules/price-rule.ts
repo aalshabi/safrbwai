@@ -498,6 +498,8 @@ const DISCOUNT_STATED = /\b(?:discount|promo(?:tion)?\s+code|coupon)\b|خصم|ت
 /** "No discount", «بدون خصم», «الخصم غير متاح»: the offer rules a discount out. */
 const NO_DISCOUNT =
   /\b(?:no|without)\s+(?:discounts?|promo(?:tion)?\s+codes?|coupons?)\b|\bdiscounts?\s+(?:(?:is|are)\s+)?not\s+(?:applicable|available|included|applied)|(?:لا\s+(?:يوجد|يشمل|تشمل)\s+(?:أي\s+)?|بدون\s+)(?:ال)?(?:خصم|تخفيض)|(?:ال)?(?:خصم|تخفيض)\s+غير\s+(?:متاح|متوفر|مشمول|مطبق)/giu;
+/** "SAR 2,000 each", "per ticket", «للواحد»: a rate multiplied by a count the chain does not see. */
+const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|traveller|traveler|seat)|للواحد|لكل\s+(?:واحد|تذكرة|مسافر))/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -528,6 +530,7 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       // per traveller, so the plain sum says nothing about the total.
       if (
         OTHER_PER_UNIT_QUALIFIER.test(normalizedText.slice(part.index + part.length)) ||
+        UNIT_RATE_AFTER.test(normalizedText.slice(part.index + part.length)) ||
         UNIT_LABEL_BEFORE.test(normalizedText.slice(Math.max(0, part.index - 20), part.index))
       ) {
         chain.length = 0;

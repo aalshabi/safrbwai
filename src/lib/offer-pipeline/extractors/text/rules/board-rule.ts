@@ -31,7 +31,7 @@ const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
 const SCOPED_PLAN =
-  /^\s*(?:for\s+(?:children|kids|infants|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|للأطفال|للطفل|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
+  /^\s*(?:for\s+(?:children|kids|infants|adults?|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|للأطفال|للطفل|للبالغين|للكبار|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
 /** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
 const QUALIFIED_EXCLUSION = /^\s*(?:for\s|on\s|during\s|except|unless|لل|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
 /** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */

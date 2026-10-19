@@ -636,3 +636,20 @@ describe("twenty-ninth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("thirtieth review follow-ups", () => {
+  it("reads a connecting flight's city as transit", async () => {
+    const { facts } = await run("Paris 5 nights, connecting flight in Istanbul, SAR 9,000.");
+    expect(facts.destination?.value.canonicalValue).toBe("Paris");
+  });
+
+  it("does not add an each-priced rate as one part of the total", async () => {
+    const { analysis } = await run("2 tickets at SAR 2,000 each + Hotel SAR 3,000, total SAR 7,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("does not read breakfast for adults only as the whole booking's plan", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults and 1 child; breakfast included for adults, SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+});
