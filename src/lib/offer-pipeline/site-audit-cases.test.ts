@@ -720,3 +720,20 @@ describe("thirty-fourth review follow-ups", () => {
     expect(analysis.checklist.find((item) => item.key === "totalPrice")?.status).toBe("conflicting");
   });
 });
+
+describe("thirty-fifth review follow-ups", () => {
+  it("does not compare a nightly rate when a percentage surcharge is added", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400 plus VAT 15%; total SAR 1,840.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not sum a breakdown with an unpriced added item", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000 + taxes, total SAR 5,750.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("still flags a plain itemised breakdown that does not add up", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, total SAR 6,000.");
+    expect(codes(analysis)).toContain("price_components_mismatch");
+  });
+});

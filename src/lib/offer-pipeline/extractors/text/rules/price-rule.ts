@@ -451,6 +451,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   // The nights rule decides what a stay is, so deadlines and penalties never count.
   const severalStays = hasSeveralStays(text);
   const discountStated = DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
+  // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
+  const surchargeStated = SURCHARGE_STATED.test(normalizedText);
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
   // An amount the offer states again as its total is the same total, not another charge.
   const otherCharge = allMatches.some(
@@ -471,7 +473,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     const roomScoped =
       basis === "per_night" &&
       (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
-    const totalAdjusted = basis === "per_night" && (discountStated || otherCharge);
+    const totalAdjusted = basis === "per_night" && (discountStated || otherCharge || surchargeStated);
     observations.push({
       amount,
       currency,
@@ -500,6 +502,8 @@ const NO_DISCOUNT =
   /\b(?:no|without)\s+(?:discounts?|promo(?:tion)?\s+codes?|coupons?)\b|\bdiscounts?\s+(?:(?:is|are)\s+)?not\s+(?:applicable|available|included|applied)|\bdiscounts?\s+(?:(?:does|do|will)\s+not|doesn'?t|don'?t|won'?t)\s+apply|\bnot\s+eligible\s+for\s+(?:a\s+|any\s+)?discounts?|(?:لا\s+(?:يوجد|يشمل|تشمل)\s+(?:أي\s+)?|بدون\s+)(?:ال)?(?:خصم|تخفيض)|(?:ال)?(?:خصم|تخفيض)\s+غير\s+(?:متاح|متوفر|مشمول|مطبق)/giu;
 /** "SAR 2,000 each", "per ticket", «للواحد»: a rate multiplied by a count the chain does not see. */
 const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|traveller|traveler|seat)|للواحد|لكل\s+(?:واحد|تذكرة|مسافر))/iu;
+const SURCHARGE_STATED =
+  /\d\s*[%٪]|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -514,6 +518,11 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
       // The last part reaches the total through a label; every other link is a "+".
       if (chain.length > 0 && !gap.includes("+")) break;
+      // An item added with no amount ("+ taxes") is a part the chain cannot price.
+      if ((gap.match(/\+/g)?.length ?? 0) > (chain.length > 0 ? 1 : 0)) {
+        chain.length = 0;
+        break;
+      }
       // A total "after discount" is not the sum of the parts before it.
       if (chain.length === 0 && DISCOUNT_STATED.test(gap)) break;
       // A number the parser skipped ("+ SAR -1,000", "+ VAT 15% +") is a part we cannot add up.
