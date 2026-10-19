@@ -130,6 +130,41 @@ describe("detectContradictions", () => {
     ]);
   });
 
+  it("returns one component mismatch when unit rates and explicit subtotals describe it", () => {
+    const contradictions = detectContradictions(
+      {
+        travelers: fact({ adults: 2 }, "2 adults"),
+        nights: fact(4, "4 nights"),
+      },
+      {
+        prices: [
+          { amount: 4000, currency: "SAR", basis: "total", evidence: "total SAR 4,000" },
+          {
+            amount: 500,
+            currency: "SAR",
+            basis: "per_night",
+            componentScope: "hotel",
+            evidence: "hotel SAR 500 per night",
+          },
+          {
+            amount: 1200,
+            currency: "SAR",
+            basis: "per_person",
+            componentScope: "flight",
+            evidence: "flight SAR 1,200 per person",
+          },
+        ],
+        nights: [{ value: 4, evidence: "4 nights" }],
+        priceComponents: [
+          { amount: 2000, currency: "SAR", evidence: "hotel subtotal SAR 2,000" },
+          { amount: 2400, currency: "SAR", evidence: "flight subtotal SAR 2,400" },
+        ],
+      }
+    );
+
+    expect(contradictions.filter(({ code }) => code === "price_components_mismatch")).toHaveLength(1);
+  });
+
   it("flags conflicting currency from facts alone (price vs currency)", () => {
     const facts: ExtractedOfferFacts = {
       price: fact({ amount: 3200, currency: "SAR" }, "3200 SAR"),

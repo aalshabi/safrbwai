@@ -123,6 +123,113 @@ describe("audit case 13 — English exclusions", () => {
   });
 });
 
+describe("audit P0 — component unit prices versus the package total", () => {
+  const BASE = [
+    "Travelers: 2 adults",
+    "Stay: 4 nights, Deluxe room, breakfast included",
+    "Hotel: SAR 500 per night",
+    "Flights: SAR 1,200 per person, nonstop",
+  ];
+
+  it("does not compare a flight-only per-person rate with the whole package total", async () => {
+    const { analysis } = await run([...BASE, "Stated total: SAR 4,400"].join("\n"));
+    expect(codes(analysis)).not.toContain("price_total_mismatch");
+    expect(analysis.contradictions).toEqual([]);
+  });
+
+  it("flags a total that disagrees with the stated hotel and flight components", async () => {
+    const { analysis } = await run([...BASE, "Stated total: SAR 4,000"].join("\n"));
+    expect(codes(analysis)).toContain("price_components_mismatch");
+  });
+
+  it.each([
+    ["4,400", false],
+    ["4,000", true],
+  ])("applies the same component arithmetic to Arabic totals (%s)", async (total, mismatches) => {
+    const { analysis } = await run(
+      `العدد 2 بالغين. الإقامة 4 ليالٍ. الفندق: 500 ريال لليلة. الطيران: 1,200 ريال للشخص. السعر الإجمالي: ${total} ريال.`
+    );
+    expect(codes(analysis).includes("price_components_mismatch")).toBe(mismatches);
+    expect(codes(analysis)).not.toContain("price_total_mismatch");
+  });
+
+  const COMPONENT_LABEL_VARIANTS = [
+    ["Hotel price", "Flight price"],
+    ["Hotel rate", "Flight fare"],
+    ["Hotel cost", "Airfare price"],
+    ["سعر الفندق", "سعر الطيران"],
+    ["تكلفة الفندق", "تكلفة الطيران"],
+    ["سعر الإقامة", "سعر التذاكر"],
+  ] as const;
+
+  it.each(
+    COMPONENT_LABEL_VARIANTS.flatMap(([hotelLabel, flightLabel]) => [
+      [hotelLabel, flightLabel, "4,400", false] as const,
+      [hotelLabel, flightLabel, "4,000", true] as const,
+    ])
+  )(
+    "classifies %s and %s as component rates (total %s)",
+    async (hotelLabel, flightLabel, total, mismatches) => {
+      const english = /^[A-Z]/.test(hotelLabel);
+      const text = english
+        ? [
+            "Travelers: 2 adults",
+            "Stay: 4 nights",
+            `${hotelLabel}: SAR 500 per night`,
+            `${flightLabel}: SAR 1,200 per person`,
+            `Stated total: SAR ${total}`,
+          ].join("\n")
+        : [
+            "العدد: 2 بالغين",
+            "الإقامة: 4 ليالٍ",
+            `${hotelLabel}: 500 ريال لليلة`,
+            `${flightLabel}: 1,200 ريال للشخص`,
+            `السعر الإجمالي: ${total} ريال`,
+          ].join("\n");
+      const { analysis } = await run(text);
+      expect(codes(analysis).includes("price_components_mismatch")).toBe(mismatches);
+      expect(codes(analysis)).not.toContain("price_total_mismatch");
+    }
+  );
+});
+
+describe("audit P0 — an explicitly absent cancellation policy", () => {
+  it.each([
+    "سياسة الإلغاء غير مذكورة",
+    "سياسة الإلغاء: غير مذكورة",
+    "سياسة الإلغاء لم يتم ذكرها",
+    "سياسة الإلغاء غير متاحة",
+    "سياسة الإلغاء غير معروفة",
+    "لم يتم ذكر سياسة الإلغاء",
+    "Cancellation policy is not stated",
+    "Cancellation policy isn't stated",
+    "Cancellation policy was not provided",
+    "Cancellation policy has not been provided",
+    "Cancellation policy is missing",
+    "Cancellation policy: none",
+    "Cancellation policy: not applicable",
+    "Cancellation policy: not given",
+    "Cancellation policy: not provided",
+  ])("keeps the policy missing and does not count it toward completeness: %s", async (absence) => {
+    const { facts, analysis } = await run(`عرض دبي 4 ليالٍ، السعر الإجمالي 4,000 ريال. ${absence}.`);
+    expect(facts.cancellationPolicy).toBeUndefined();
+    expect(analysis.missingFields.map(({ key }) => key)).toContain("cancellationPolicy");
+    expect(analysis.completeness.fields.find(({ key }) => key === "cancellationPolicy")?.present).toBe(false);
+  });
+
+  it.each([
+    ["free cancellation", "free cancellation"],
+    ["This booking is non-refundable", "non-refundable"],
+    ["Cancellation policy: none are refundable", "none are refundable"],
+    ["Cancellation policy: refundable until 7 days before arrival", "refundable until 7 days before arrival"],
+    ["Cancellation fee: SAR 200", "Cancellation fee"],
+    ["سياسة الإلغاء: مجاني قبل 7 أيام", "مجاني قبل 7 أيام"],
+  ])("continues to extract a genuine stated policy: %s", async (text, evidence) => {
+    const { facts } = await run(`عرض دبي 4 ليالٍ. ${text}.`);
+    expect(facts.cancellationPolicy?.value).toContain(evidence);
+  });
+});
+
 describe("guards around the audit fixes", () => {
   it("reads a dashed route only from a Saudi departure city", async () => {
     expect((await run("جدة - إسطنبول، 4 ليالٍ، السعر 2,900 ريال.")).facts.destination?.value.canonicalValue).toBe("Istanbul");

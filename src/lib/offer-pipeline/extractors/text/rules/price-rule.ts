@@ -90,9 +90,13 @@ const COMPONENT_ALT =
  * the component last, where the anchor already excludes it.
  */
 const COMPONENT_PRICE_LABEL = new RegExp(
-  `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost)(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
+  `\\b(?:${COMPONENT_ALT})(?:['’]s)?[\\s\\-–]+(?:price|cost|rate|fare)(?:\\s+(?:${PARTY_ALT}))?\\s*[:：\\-–—]?\\s*$`,
   "i"
 );
+const HOTEL_UNIT_SCOPE =
+  /(?:\bhotels?\b(?:['’]s)?(?:[\s\-–]+(?:price|cost|rate))?|(?:ال)?فندق|(?:ال)?إقامة)\s*[:：\-–—]?\s*$/iu;
+const FLIGHT_UNIT_SCOPE =
+  /(?:\bflights?\b(?:['’]s)?(?:[\s\-–]+(?:price|cost|rate|fare))?|\bairfare\b(?:[\s\-–]+(?:price|cost|rate))?|\btickets?\b(?:['’]s)?(?:[\s\-–]+(?:price|cost|rate|fare))?|(?:ال)?طيران|تذاكر?)\s*[:：\-–—]?\s*$/iu;
 /**
  * Words that, right before "total", still name the whole trip: a trip word
  * ("Trip total", "Grand total"), its length or party ("7 nights total",
@@ -291,6 +295,12 @@ function classifyMatch(
           : totalLabel || partySuffix
             ? "total"
             : "unspecified";
+  const componentScope =
+    basis === "per_night" && HOTEL_UNIT_SCOPE.test(prefix)
+      ? "hotel"
+      : basis === "per_person" && FLIGHT_UNIT_SCOPE.test(prefix)
+        ? "flight"
+        : undefined;
 
   const suffixLength =
     perPersonSuffix?.[0].length ??
@@ -317,6 +327,7 @@ function classifyMatch(
     ...(party ? { party } : {}),
     ...(partyUnitRate ? { partyUnitRate } : {}),
     ...(component ? { component } : {}),
+    ...(componentScope ? { componentScope } : {}),
   };
 }
 
@@ -477,8 +488,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       // An optional or excluded extra ("Optional tour SAR 500, not included") is outside the total.
       !OPTIONAL_CHARGE.test(clauseAround(normalizedText, match.index))
   );
-  for (const { amount, currency, basis, evidence, party, index, length } of matches) {
-    const key = `${amount}\u0000${currency}\u0000${basis}`;
+  for (const { amount, currency, basis, evidence, party, index, length, componentScope } of matches) {
+    const key = `${amount}\u0000${currency}\u0000${basis}\u0000${componentScope ?? "package"}`;
     if (seen.has(key)) continue;
     if (
       basis === "unspecified" &&
@@ -499,6 +510,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       ...(party ? { party } : {}),
       ...(roomScoped ? { roomScoped } : {}),
       ...(totalAdjusted ? { totalAdjusted } : {}),
+      ...(componentScope ? { componentScope } : {}),
     });
   }
   const components = extractComponents(normalizedText, allMatches);
@@ -633,7 +645,9 @@ export const priceRule: ExtractionRule = {
     const fact = exact(value, first.evidence);
     const facts: Partial<ExtractedOfferFacts> = { price: fact };
     const basisFact = (basis: OfferPriceBasis) => {
-      const observation = prices.find((price) => price.basis === basis);
+      const observation = prices.find(
+        (price) => price.basis === basis && price.componentScope === undefined
+      );
       return observation
         ? exact(
             { amount: observation.amount, currency: observation.currency },

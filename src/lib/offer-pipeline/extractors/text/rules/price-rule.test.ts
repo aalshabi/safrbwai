@@ -435,3 +435,33 @@ describe("qualified English totals", () => {
     expect(r.facts.totalPrice?.value.amount).toBe(6000);
   });
 });
+
+describe("component-scoped rate deduplication", () => {
+  it("preserves identical package and hotel nightly rates in either order", () => {
+    const lines = ["Nightly price: SAR 500", "Hotel rate: SAR 500 per night"];
+
+    for (const text of [lines.join("\n"), [...lines].reverse().join("\n")]) {
+      const result = priceRule.apply(text);
+      const nightly = result.observations?.prices?.filter(({ basis }) => basis === "per_night");
+      expect(result.facts.perNightPrice?.value.amount).toBe(500);
+      expect(nightly).toHaveLength(2);
+      expect(nightly?.map(({ componentScope }) => componentScope)).toEqual(
+        expect.arrayContaining([undefined, "hotel"])
+      );
+    }
+  });
+
+  it("preserves identical package and flight per-person rates in either order", () => {
+    const lines = ["Price per person: SAR 1,200", "Flight fare: SAR 1,200 per person"];
+
+    for (const text of [lines.join("\n"), [...lines].reverse().join("\n")]) {
+      const result = priceRule.apply(text);
+      const perPerson = result.observations?.prices?.filter(({ basis }) => basis === "per_person");
+      expect(result.facts.perPersonPrice?.value.amount).toBe(1200);
+      expect(perPerson).toHaveLength(2);
+      expect(perPerson?.map(({ componentScope }) => componentScope)).toEqual(
+        expect.arrayContaining([undefined, "flight"])
+      );
+    }
+  });
+});

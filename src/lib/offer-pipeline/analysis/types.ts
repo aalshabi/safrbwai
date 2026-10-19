@@ -116,6 +116,8 @@ export interface OfferObservations {
     roomScoped?: boolean;
     /** A nightly rate in an offer that also states a discount or another charge: the total is not rate × nights. */
     totalAdjusted?: boolean;
+    /** A unit rate explicitly belongs to one package component, not to the whole offer. */
+    componentScope?: "hotel" | "flight";
   }[];
   currencies?: { code: string; evidence: string }[];
   /** Itemized subtotals of the trip ("إجمالي الإقامة"), never rival totals. */

@@ -111,7 +111,9 @@ export function detectContradictions(
   // total is synthesized.
   const uniqueTotals = uniquePrices(totalPrices);
   const uniquePerPerson = uniquePrices(
-    obs.prices.filter((price) => price.basis === "per_person")
+    obs.prices.filter(
+      (price) => price.basis === "per_person" && price.componentScope === undefined
+    )
   );
   const travellerCount =
     (facts.travelers?.value.adults ?? 0) + (facts.travelers?.value.children ?? 0);
@@ -149,11 +151,60 @@ export function detectContradictions(
     });
   }
 
+  // A hotel nightly rate and a flight per-person rate describe separate parts
+  // of the package. Compare their combined arithmetic with the trip total;
+  // never compare the airfare alone with the whole package total.
+  const hotelRates = uniquePrices(
+    obs.prices.filter(
+      (price) => price.basis === "per_night" && price.componentScope === "hotel"
+    )
+  );
+  const flightRates = uniquePrices(
+    obs.prices.filter(
+      (price) => price.basis === "per_person" && price.componentScope === "flight"
+    )
+  );
+  const statedNights = obs.nights.length === 1 ? obs.nights[0] : undefined;
+  if (
+    uniqueTotals.length === 1 &&
+    hotelRates.length === 1 &&
+    flightRates.length === 1 &&
+    statedNights &&
+    travellerCount > 0 &&
+    !hotelRates[0].roomScoped &&
+    !hotelRates[0].totalAdjusted &&
+    hotelRates[0].currency === uniqueTotals[0].currency &&
+    flightRates[0].currency === uniqueTotals[0].currency
+  ) {
+    const expected =
+      hotelRates[0].amount * statedNights.value + flightRates[0].amount * travellerCount;
+    if (Math.abs(expected - uniqueTotals[0].amount) > 0.01) {
+      const amount = (value: number) =>
+        `${value.toLocaleString("en-US")} ${uniqueTotals[0].currency}`;
+      out.push({
+        code: "price_components_mismatch",
+        message: {
+          ar: `سعر الفندق × الليالي مع سعر الطيران × المسافرين يساوي ${amount(expected)}، وليس الإجمالي المذكور ${amount(uniqueTotals[0].amount)}.`,
+          en: `The hotel rate × nights plus the flight rate × travellers is ${amount(expected)}, not the stated total of ${amount(uniqueTotals[0].amount)}.`,
+        },
+        evidence: [
+          hotelRates[0].evidence,
+          statedNights.evidence,
+          flightRates[0].evidence,
+          facts.travelers?.evidence ?? String(travellerCount),
+          uniqueTotals[0].evidence,
+        ],
+        severity: "warning",
+      });
+    }
+  }
+
   // The stated trip total should equal the itemized subtotals listed right
   // above it ("إجمالي الإقامة" + "إجمالي المواصلات"). Compared only with one
   // total and at least two subtotals, all in the total's currency.
   const components = obs.priceComponents ?? [];
   if (
+    !out.some(({ code }) => code === "price_components_mismatch") &&
     uniqueTotals.length === 1 &&
     components.length >= 2 &&
     components.every((part) => part.currency === uniqueTotals[0].currency)
