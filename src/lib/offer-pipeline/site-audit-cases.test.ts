@@ -619,3 +619,20 @@ describe("twenty-eighth review follow-ups", () => {
     expect(facts.board?.value).toBe("RO");
   });
 });
+
+describe("twenty-ninth review follow-ups", () => {
+  it("counts another charge equal to the nightly rate", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; cleaning fee SAR 400; total SAR 2,000.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("keeps a destination named through its airport before a transit through it", async () => {
+    const { facts } = await run("Istanbul Airport hotel, 3 nights; return flight via Istanbul, SAR 3,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Istanbul");
+  });
+
+  it("does not read «غرفتان» in a suite layout as two booked rooms", async () => {
+    const { analysis } = await run("دبي، الجناح فيه غرفتان وصالة، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 2,000 ريال.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

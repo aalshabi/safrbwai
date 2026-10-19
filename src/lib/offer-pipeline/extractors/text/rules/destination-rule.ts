@@ -189,8 +189,13 @@ function findCanonical(text: string): Match | null {
     // Only the marked occurrence is dropped, plus its airport mentions
     // («مطار إسطنبول» after «عبر إسطنبول»); "Dubai 5 nights … through Dubai old
     // town" keeps Dubai.
-    const ranks = entry.aliases.flatMap((alias) => occurrences(haystack, alias.toLowerCase()).map((i) => markerRank(haystack, i, alias.length, entry.countryCode === "SA")));
-    const transitPoint = ranks.includes(-1) && !ranks.includes(2);
+    const ranked = entry.aliases.flatMap((alias) =>
+      occurrences(haystack, alias.toLowerCase()).map((i) => ({ index: i, rank: markerRank(haystack, i, alias.length, entry.countryCode === "SA") }))
+    );
+    // Airport mentions after the place is first passed through are that transit; one before it may be the stay.
+    const firstTransit = ranked.some(({ rank }) => rank === 2)
+      ? Infinity
+      : Math.min(...ranked.filter(({ rank }) => rank === -1).map(({ index }) => index));
     for (const alias of entry.aliases) {
       const needle = alias.toLowerCase();
       // Scan every occurrence: the first may sit inside a longer word.
@@ -204,7 +209,7 @@ function findCanonical(text: string): Match | null {
         const marker = markerRank(haystack, index, needle.length, entry.countryCode === "SA" && entry.kind !== "country");
         // Where the traveller leaves from, or only passes through, is never where they are going.
         if (marker <= 0) continue;
-        if (transitPoint && namesAnAirport(haystack, index, needle.length)) continue;
+        if (index > firstTransit && namesAnAirport(haystack, index, needle.length)) continue;
         if (markerOnly && marker !== 2) continue;
 
         const hit: Match = { entry, index, length: alias.length, marker };

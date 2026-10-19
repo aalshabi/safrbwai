@@ -157,7 +157,7 @@ const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i
  * hotel ("offers 5 rooms") is not a booking multiplier.
  */
 const MULTIPLE_ROOMS =
-  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|اثنتان|اثنان|ثلاث|أربع|اربع|خمس|ست|سبع|ثمان|تسع|عشر)(?![\d\p{L}])|(?:حجز|ل|عدد\s+الغرف\s*[:：]?)\s*(?:غرفتين|غرفتان)|(?:^|[،,;؛\n]\s*)(?:غرفتين|غرفتان)\s*(?=[،,;؛.\n]|$)|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/iu;
+  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|اثنتان|اثنان|ثلاث|أربع|اربع|خمس|ست|سبع|ثمان|تسع|عشر)(?![\d\p{L}])|(?:حجز|ل|عدد\s+الغرف\s*[:：]?)\s*(?:غرفتين|غرفتان)|(?:^|[،,;؛\n]\s*)(?:غرفتين|غرفتان)\s*(?=[،,;؛.\n]|$)|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/iu;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
@@ -452,8 +452,11 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const severalStays = hasSeveralStays(text);
   const discountStated = DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
+  // An amount the offer states again as its total is the same total, not another charge.
   const otherCharge = allMatches.some(
-    (match) => !matches.some((kept) => kept.amount === match.amount && kept.currency === match.currency)
+    (match) =>
+      !matches.includes(match) &&
+      !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency)
   );
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
