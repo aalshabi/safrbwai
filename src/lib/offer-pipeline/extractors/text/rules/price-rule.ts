@@ -458,10 +458,11 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     .split(/[.;؛،\n]|,(?!\d)/)
     .some((clause) => DISCOUNT_STATED.test(clause) && (PRICED_CLAUSE.test(clause) || /\d\s*%/.test(clause)) && !BENEFIT_ITEM.test(clause));
   // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
-  // A surcharge on a hotel benefit ("restaurant purchases incur a service charge 15%") is not.
+  // Only a surcharge on the price itself counts: one that leads its clause ("plus VAT 15%") or sits
+  // beside the price ("prices exclude VAT"); "late checkout incurs a service charge 15%" does not.
   const surchargeStated = normalizedText
     .split(/[.;؛،\n]|,(?!\d)/)
-    .some((clause) => SURCHARGE_STATED.test(clause) && !BENEFIT_ITEM.test(clause));
+    .some((clause) => SURCHARGE_STATED.test(clause) && PACKAGE_SURCHARGE.test(clause) && !BENEFIT_ITEM.test(clause));
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
   // An amount the offer states again as its total is the same total, not another charge.
   const otherCharge = allMatches.some(
@@ -530,6 +531,10 @@ const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*
 /** A hotel benefit rather than the booking: "20% spa discount", "restaurant service charge 15%", «خصم على المطعم». */
 const BENEFIT_ITEM =
   /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
+const PACKAGE_SURCHARGE = new RegExp(
+  `^\\s*(?:\\+|plus\\b|excl|vat\\b|tax|service\\s+charge|\\d+(?:\\.\\d+)?\\s*[%٪]|(?:ال)?ضريبة|رسوم|زائد|غير\\s+شامل)|${PRICED_CLAUSE.source}|\\b(?:prices|rates|fares?|package|booking)\\b|الأسعار|الباقة|الحجز`,
+  "iu"
+);
 const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
 /**
  * The clause around an amount: back to the nearest , ; . or line break, and on to the

@@ -930,3 +930,25 @@ describe("forty-fifth review follow-ups", () => {
     expect(facts.destination?.value.canonicalValue).not.toBe("Istanbul");
   });
 });
+
+describe("forty-sixth review follow-ups", () => {
+  it("still compares a nightly rate beside a surcharge on an unrelated service", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000; late checkout incurs a service charge 15%");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still treats a surcharge on the prices as adjusting the total", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; prices exclude VAT 15%; total SAR 1,840.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not confirm breakfast for fewer adults than the party", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults and 1 child; breakfast included for one adult. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("still confirms breakfast stated for the whole adult party", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults; breakfast included for 2 adults. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+});

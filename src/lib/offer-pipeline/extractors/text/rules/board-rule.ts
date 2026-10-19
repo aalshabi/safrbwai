@@ -99,6 +99,22 @@ function scopedBefore(text: string, index: number): boolean {
   return !MEAL_MENTION.test(between) && !SCOPE_END.test(between);
 }
 
+const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const toCount = (word: string) => COUNT_WORDS[word.toLowerCase()] ?? Number(word);
+const COUNTED_ADULTS = /^\s*for\s+(\d+|one|two|three|four|five|six)\s+adults?\b/iu;
+const PARTY_ADULTS = /\b(\d+|one|two|three|four|five|six)\s+adults?\b/giu;
+const CHILD_IN_PARTY = /\b(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?)\b|أطفال|طفل|رضيع/iu;
+/**
+ * "for one adult" when the party is larger or has children covers part of it only;
+ * "breakfast for 2 adults" for a party of 2 adults is the whole booking.
+ */
+function fewerAdults(text: string, rest: string): boolean {
+  const counted = rest.match(COUNTED_ADULTS);
+  if (!counted) return false;
+  if (CHILD_IN_PARTY.test(text)) return true;
+  return [...text.matchAll(PARTY_ADULTS)].some((party) => toCount(party[1]) > toCount(counted[1]));
+}
+
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
   for (const m of scanned.matchAll(all)) {
@@ -114,7 +130,7 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     // A plan for some guests or days only ("with breakfast for children only",
     // «شامل الإفطار للأطفال», "on the first day") is not the booking's board;
     // a later unscoped mention still is.
-    if (SCOPED_PLAN.test(rest) || scopedBefore(text, m.index)) continue;
+    if (SCOPED_PLAN.test(rest) || scopedBefore(text, m.index) || fewerAdults(text, rest)) continue;
     return m as RegExpExecArray;
   }
   return null;
