@@ -90,6 +90,14 @@ export function extractNightObservations(text: string): NightObservation[] {
   return readNights(text).observations;
 }
 
+/** An option heading ("### الخيار الأول — فنادق 4 نجوم", "Option 2:"). */
+const OPTION_HEADING = /^[\s#*>-]*(?:الخيار|خيار|option)(?!\p{L})/gimu;
+
+/** How many option headings precede `index` (0 when the offer has none). */
+function optionIndex(text: string, index: number): number {
+  return [...text.slice(0, index).matchAll(OPTION_HEADING)].length;
+}
+
 /**
  * Whether this count's own item names a hotel ("ليلتان: `Royal Kandyan Hotel`").
  * Only the rest of this item counts ("| Hotel A: …" belongs to the next
@@ -116,6 +124,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
     onStayLine: boolean;
     onTotalLine: boolean;
     stay: string;
+    option: number;
   })[] = [];
 
   let previousEnd = 0;
@@ -144,6 +153,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       onTotalLine: TOTAL_LINE.test(label),
       isStay: onStayLine || STAY_AFTER.test(after) || hotelAfter(after),
       stay: stayName(label, after),
+      option: optionIndex(normalizedText, match.index),
     });
   }
 
@@ -170,15 +180,20 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       (n) => n.value !== candidate.value || (n.isStay && n.stay !== "")
     );
     const sum = (list: typeof parts) => list.reduce((acc, n) => acc + n.value, 0);
-    // An offer with options repeats the same named stays per option (موسكو 3،
-    // سانت بطرسبرغ 3 … موسكو 3، سانت بطرسبرغ 3): each named stay counts once.
-    const seenStays = new Set<string>();
+    // An offer with options repeats the same named stays per option (الخيار
+    // الأول: موسكو 3، سانت بطرسبرغ 3 … الخيار الثاني: موسكو 3، سانت بطرسبرغ 3):
+    // a named stay repeated under a later option counts once. Within one
+    // option a return to the same city is a stay of its own.
+    const firstOption = new Map<string, number>();
     const distinctStays = parts.filter((n) => {
       if (!n.stay) return true;
       const key = `${n.stay}\u0000${n.value}`;
-      if (seenStays.has(key)) return false;
-      seenStays.add(key);
-      return true;
+      const seen = firstOption.get(key);
+      if (seen === undefined) {
+        firstOption.set(key, n.option);
+        return true;
+      }
+      return seen === n.option;
     });
     return (
       isTotal &&

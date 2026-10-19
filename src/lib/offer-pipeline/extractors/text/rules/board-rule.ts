@@ -34,6 +34,10 @@ const EXCLUDED_PREFIX =
 /** An exclusion closing the clause right after a signal ("إفطار بوفيه غير مشمول"). */
 const EXCLUDED_SUFFIX = /^[^.،,;؛\n]{0,25}?(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|not\s+included|excluded)/i;
 
+/** A meal plan its own clause sells as an optional or paid extra ("إفطار بوفيه اختياري مقابل رسوم إضافية"). */
+const OPTIONAL_EXTRA =
+  /^[^.،,;؛\n]{0,40}?(?:اختياري|رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|عند\s*الطلب|optional|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|on\s*request)/i;
+
 /** The first match of `re` that the offer does not state as excluded. */
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
@@ -41,6 +45,7 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     const lineStart = text.lastIndexOf("\n", m.index - 1) + 1;
     if (EXCLUDED_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (EXCLUDED_SUFFIX.test(text.slice(m.index + m[0].length))) continue;
+    if (OPTIONAL_EXTRA.test(text.slice(m.index + m[0].length))) continue;
     if (inExcludedSection(text, m.index)) continue;
     return m as RegExpExecArray;
   }

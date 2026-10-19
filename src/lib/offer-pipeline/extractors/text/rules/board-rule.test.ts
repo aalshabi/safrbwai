@@ -55,4 +55,10 @@ describe("board upgrades and buffet breakfast", () => {
     expect(boardRule.apply("buffet: إفطار يومي not included").facts.board).toBeUndefined();
     expect(boardRule.apply("مع الإفطار، النقل غير مشمول").facts.board?.value).toBe("BB");
   });
+
+  it("never reads a breakfast sold as an optional extra as the board", () => {
+    expect(boardRule.apply("إفطار بوفيه اختياري مقابل رسوم إضافية").facts.board).toBeUndefined();
+    expect(boardRule.apply("Buffet: إفطار بوفيه optional, extra charge").facts.board).toBeUndefined();
+    expect(boardRule.apply("غرفة مع إفطار بوفيه مفتوح، والجولات اختيارية").facts.board?.value).toBe("BB");
+  });
 });

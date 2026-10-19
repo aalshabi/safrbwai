@@ -225,4 +225,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("7 nights: Hotel A: 4 nights | Hotel B: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("a return to the same city is its own stay unless a later option repeats it", () => {
+    const text = "Duration: 6 nights\n- Dubai, 3 nights: Hotel A\n- Abu Dhabi, 3 nights: Hotel B\n- Dubai, 3 nights: Hotel C";
+    expect(nightsRule.apply(text).observations?.nights?.length).toBeGreaterThan(1);
+  });
 });
