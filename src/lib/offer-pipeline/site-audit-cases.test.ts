@@ -461,3 +461,15 @@ describe("twentieth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_components_mismatch");
   });
 });
+
+describe("twenty-first review follow-ups", () => {
+  it("does not sum across a discount signed after its currency", async () => {
+    const { analysis } = await run("SAR 2,000 + SAR 3,000 + SAR -1,000, total SAR 4,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("does not read an airport named with and without its city as a change", async () => {
+    const { facts } = await run("London 4 nights: arrive at London Heathrow Airport and depart from Heathrow Airport, SAR 9,000 total.");
+    expect(facts.airportChange?.value).not.toBe(true);
+  });
+});

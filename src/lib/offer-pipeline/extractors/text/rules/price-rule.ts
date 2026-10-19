@@ -488,6 +488,11 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
       // The last part reaches the total through a label; every other link is a "+".
       if (chain.length > 0 && !gap.includes("+")) break;
+      // A signed amount the parser skipped ("+ SAR -1,000") is a discount inside the gap.
+      if (/[-−]\s*[\d٠-٩]/.test(gap)) {
+        chain.length = 0;
+        break;
+      }
       // A discount ("+ Discount -SAR 1,000", «خصم 500») is subtracted, not added.
       if (DISCOUNT_BEFORE.test(normalizedText.slice(Math.max(0, part.index - 20), part.index))) {
         chain.length = 0;
