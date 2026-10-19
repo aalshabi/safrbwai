@@ -44,26 +44,29 @@ const INCLUDE = new RegExp(
 const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 
 /**
- * A transfer the line offers for a fee, on request, or says is unavailable
+ * A transfer its own clause offers for a fee, on request, or says is unavailable
  * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
  * الاستقبال في المطار») is not a package inclusion.
  */
 const NOT_PROVIDED =
   /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable/i;
 
-function lineOf(text: string, evidence: string): string {
+/** The clause holding `evidence`: "Airport transfers included; excursions optional" → "Airport transfers included". */
+function clauseOf(text: string, evidence: string): string {
   const at = text.indexOf(evidence);
   if (at < 0) return evidence;
-  const start = text.lastIndexOf("\n", at - 1) + 1;
-  const end = text.indexOf("\n", at + evidence.length);
-  return text.slice(start, end < 0 ? undefined : end);
+  const before = text.slice(0, at);
+  const after = text.slice(at + evidence.length);
+  const start = Math.max(...[...".،,;؛!?؟\n"].map((c) => before.lastIndexOf(c))) + 1;
+  const end = after.search(/[.،,;؛!?؟\n]/);
+  return before.slice(start) + evidence + (end < 0 ? after : after.slice(0, end));
 }
 
 export const transfersRule: ExtractionRule = {
   key: "transfer",
   apply(text: string): RuleResult {
-    const found = detectInclusion(text, INCLUDE, EXCLUDE) ?? listedAsIncluded(text, MENTION);
-    const hit = found?.value && NOT_PROVIDED.test(lineOf(text, found.evidence)) ? null : found;
+    const found = detectInclusion(text, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(text, MENTION);
+    const hit = found?.value && NOT_PROVIDED.test(clauseOf(text, found.evidence)) ? null : found;
     if (hit) return { facts: { transfer: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

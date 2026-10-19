@@ -87,4 +87,14 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("لا تتوفر خدمة الاستقبال والمساعدة في المطار")).toBeUndefined();
     expect(included("نقل بالقارب السريع مقابل رسوم إضافية")).toBeUndefined();
   });
+
+  it("an optional service in another clause does not cancel an included transfer", () => {
+    expect(included("Airport transfers included; excursions optional")).toEqual({ included: true });
+    expect(included("الاستقبال والتوديع من وإلى المطار، والرحلات الاختيارية مقابل رسوم إضافية")).toEqual({ included: true });
+  });
+
+  it("a transfer listed under «غير مشمول» is excluded", () => {
+    expect(included("### Not included\n- Seaplane transfers")).toEqual({ included: false });
+    expect(included("### غير مشمول\n- النقل بالطائرة المائية.")).toEqual({ included: false });
+  });
 });
