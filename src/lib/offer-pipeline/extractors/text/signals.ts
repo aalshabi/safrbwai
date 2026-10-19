@@ -45,6 +45,10 @@ const LIST_ITEM = /^\s*(?:[-–•·▪*]|\d{1,2}[.)\-])\s+/;
 const HEADING_LIKE = /^\s*(?:#{1,6}\s|\*[^*\n]+\*\s*:?\s*$)|[:：]\s*\**\s*$/;
 const SECTION_LOOKBACK = 25;
 
+/** An item offered for a fee or on request ("Flights available on request", «مقابل رسوم إضافية»). */
+const OPTIONAL_STATUS =
+  /اختياري|رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|عند\s*الطلب|optional|on\s*request|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)/i;
+
 /** A heading that introduces what the offer includes («الخدمات المشمولة», "Included"). */
 const INCLUDED_HEADING = /(?:مشمول|مشمولة|المشمولات|يشمل|تشمل|شامل|includes?|included|inclusions)/i;
 
@@ -107,7 +111,7 @@ function listedMention(text: string, mentionRe: RegExp, inSection: (text: string
  */
 export function listedAsIncluded(text: string, mentionRe: RegExp): InclusionMatch | null {
   const item = listedMention(text, mentionRe, inIncludedSection);
-  if (item === null || NEGATIVE_STATUS.test(item)) return null;
+  if (item === null || NEGATIVE_STATUS.test(item) || OPTIONAL_STATUS.test(item)) return null;
   return { value: true, evidence: item };
 }
 

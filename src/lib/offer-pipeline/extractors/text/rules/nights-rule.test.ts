@@ -245,4 +245,13 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("7 ليالٍ شامل الإفطار\n- Hotel A: 4 nights\n- Hotel B: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
   });
+
+  it("a cancellation deadline is not a stay length", () => {
+    expect(nightsRule.apply("Duration: 7 nights. Cancel up to one night before arrival.").observations?.nights).toEqual([
+      { value: 7, evidence: "7 nights" },
+    ]);
+    expect(nightsRule.apply("المدة 5 ليالٍ، الإلغاء مجاني حتى ليلتين قبل الوصول").observations?.nights).toEqual([
+      { value: 5, evidence: "5 ليالٍ" },
+    ]);
+  });
 });

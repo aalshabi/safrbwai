@@ -90,6 +90,9 @@ export function extractNightObservations(text: string): NightObservation[] {
   return readNights(text).observations;
 }
 
+/** Words that make a count a deadline rather than a duration. */
+const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/iu;
+
 /** An option heading ("### الخيار الأول — فنادق 4 نجوم", "Option 2:"). */
 const OPTION_HEADING = /^[\s#*>-]*(?:الخيار|خيار|option)(?!\p{L})/gimu;
 
@@ -144,6 +147,8 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
     if (!Number.isInteger(value) || value <= 0) continue;
 
     const end = match.index + match[0].length;
+    // A deadline ("cancel up to one night before arrival", «قبل الوصول بليلة») is not a stay length.
+    if (DEADLINE_AFTER.test(normalizedText.slice(end))) continue;
     const label = labelBefore(normalizedText, match.index, previousEnd);
     // The place after a count ("in Dubai") belongs to it, never to the next
     // count's label ("4 nights in Dubai, 4 nights in Dubai").

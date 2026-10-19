@@ -92,4 +92,9 @@ describe("flightRule", () => {
   it("a domestic leg with a route qualifier is still a domestic leg", () => {
     expect(included("### Included\n- International flights\n\n### Not included\n- Domestic connecting flights")).toEqual({ included: true });
   });
+
+  it("a flight listed as optional or paid is not included", () => {
+    expect(included("### Included\n- Flights available on request")).toBeUndefined();
+    expect(included("### Included\n- Flights for an additional charge")).toBeUndefined();
+  });
 });
