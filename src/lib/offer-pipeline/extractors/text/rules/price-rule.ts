@@ -147,16 +147,28 @@ const PER_NIGHT_QUALIFIER =
   /^\s*(?:[/\\]\s*(?:ال)?ليلة|[/\\]\s*night\b|[/\\]?\s*(?:لكل\s+ليلة|لليلة|في\s+الليلة|per\s+night))/i;
 /** A stated night count: "4 nights", «5 ليالٍ», «ليلتين». */
 const NIGHT_COUNT = /\d+\s*(?:nights?\b|ليال|ليلة)|ليلتين|ليلتان/gi;
+/** A night count used as a deadline ("up to 1 night before arrival", «قبل ليلة من الوصول»), not a stay. */
+const DEADLINE_BEFORE = /(?:before|prior\s+to|up\s+to|until|within|قبل|حتى|خلال)\s*$/i;
+const DEADLINE_AFTER = /^\s*(?:before|prior|قبل|من\s+(?:الوصول|موعد))/i;
+
+function stayCounts(text: string): number {
+  return [...text.matchAll(NIGHT_COUNT)].filter(
+    (m) =>
+      !DEADLINE_BEFORE.test(text.slice(Math.max(0, m.index - 20), m.index)) &&
+      !DEADLINE_AFTER.test(text.slice(m.index + m[0].length))
+  ).length;
+}
+
 /** "per room" / «للغرفة» right after a nightly rate. */
 const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
 /**
- * A booking for more than one room: the dual «غرفتين», or 2–9 rooms tied to
- * booking wording ("for 2 rooms", «حجز 3 غرف», "2 x rooms") or standing as its
- * own item in the offer («…، 3 غرف، …»). A count inside a description of the
+ * A booking for more than one room: the dual «غرفتين», any count tied to
+ * booking wording ("for 2 rooms", "book 10 rooms", «حجز 3 غرف», "2 x rooms"),
+ * or 2–9 rooms standing as their own item in the offer («…، 3 غرف، …»). A count inside a description of the
  * hotel ("offers 5 rooms") is not a booking multiplier.
  */
 const MULTIPLE_ROOMS =
-  /غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*[2-9]\s*(?:غرف|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five)\s+rooms\b|[2-9]\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/i;
+  /غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five)\s+rooms\b|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/i;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
@@ -447,7 +459,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const observations: PriceObservation[] = [];
   const multipleRooms = MULTIPLE_ROOMS.test(normalizedText);
   // Several night counts («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
-  const severalStays = (normalizedText.match(NIGHT_COUNT) ?? []).length > 1;
+  const severalStays = stayCounts(normalizedText) > 1;
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;

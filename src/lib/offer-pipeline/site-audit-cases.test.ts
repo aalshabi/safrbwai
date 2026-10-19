@@ -257,3 +257,15 @@ describe("sixth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("seventh review follow-ups", () => {
+  it("does not count a cancellation deadline as a second stay", async () => {
+    const { analysis } = await run("Dubai 4 nights, nightly price SAR 400, total SAR 2,000, cancellation up to 1 night before arrival.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("reads an explicitly booked room count above nine", async () => {
+    const { analysis } = await run("Dubai, book 10 rooms, 4 nights, nightly price SAR 400, total SAR 16,000.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});
