@@ -184,7 +184,10 @@ export function detectContradictions(
     facts.taxes?.value.included === true ||
     facts.insurance?.value === true ||
     facts.visa?.value === true;
-  const uniquePerNight = uniquePrices(obs.prices.filter((price) => price.basis === "per_night"));
+  const perNightPrices = obs.prices.filter((price) => price.basis === "per_night");
+  const uniquePerNight = uniquePrices(perNightPrices);
+  // A rate per room, or several rooms, needs a room count the offer does not give us.
+  const roomScoped = perNightPrices.some((price) => price.roomScoped);
   const nights = obs.nights.length === 1 ? obs.nights[0] : undefined;
   if (
     uniqueTotals.length === 1 &&
@@ -192,6 +195,7 @@ export function detectContradictions(
     uniquePerPerson.length === 0 &&
     nights &&
     !includesOtherServices &&
+    !roomScoped &&
     uniqueTotals[0].currency === uniquePerNight[0].currency
   ) {
     const total = uniqueTotals[0];

@@ -182,3 +182,15 @@ describe("second review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("nightly check and rooms", () => {
+  it("does not multiply a per-room rate by nights alone", async () => {
+    const { analysis } = await run("Dubai, 2 rooms, 4 nights, nightly price SAR 400 per room, total SAR 3,200.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not compare a nightly rate in an offer for several rooms", async () => {
+    const { analysis } = await run("باكو 4 ليالٍ، 3 غرف، سعر الليلة 400 ريال، المجموع 4,800 ريال.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});
