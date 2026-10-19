@@ -88,7 +88,11 @@ const WHOLE_BOOKING =
 function scopedBefore(text: string, index: number): boolean {
   const before = text.slice(0, index);
   const sentence = before.slice(before.search(/[^.!?؟;؛\n]*$/));
-  const scopes = [...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu"))];
+  const scopes = [
+    ...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu")),
+    // "For one adult, …" scopes the meal only when the party is larger or has children.
+    ...[...sentence.matchAll(PREFIX_ADULTS)].filter((m) => partOfParty(text, m[1])),
+  ].sort((a, b) => a.index - b.index);
   const last = scopes.at(-1);
   if (!last) return false;
   // "for all guests" counts only in the meal's own clause, not for a later service.
@@ -110,9 +114,13 @@ const CHILD_IN_PARTY = /\b(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?
  */
 function fewerAdults(text: string, rest: string): boolean {
   const counted = rest.match(COUNTED_ADULTS);
-  if (!counted) return false;
+  return counted !== null && partOfParty(text, counted[1]);
+}
+
+const PREFIX_ADULTS = /(?:^|[^\p{L}])for\s+(\d+|one|two|three|four|five|six)\s+adults?\b/giu;
+function partOfParty(text: string, count: string): boolean {
   if (CHILD_IN_PARTY.test(text)) return true;
-  return [...text.matchAll(PARTY_ADULTS)].some((party) => toCount(party[1]) > toCount(counted[1]));
+  return [...text.matchAll(PARTY_ADULTS)].some((party) => toCount(party[1]) > toCount(count));
 }
 
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {

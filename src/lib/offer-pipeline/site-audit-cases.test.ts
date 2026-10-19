@@ -979,3 +979,30 @@ describe("forty-seventh review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_components_mismatch");
   });
 });
+
+describe("forty-eighth review follow-ups", () => {
+  it("keeps every city in a longer transit list out of the destination", async () => {
+    const { facts } = await run("Rome 5 nights, flight via Kuala Lumpur and Abu Dhabi and Singapore");
+    expect(facts.destination?.value.value).toBe("Rome");
+  });
+
+  it("keeps every city in a longer Arabic transit list out of the destination", async () => {
+    const { facts } = await run("روما 5 ليالي، الطيران عبر كوالالمبور وأبوظبي وسنغافورة");
+    expect(["Singapore", "Abu Dhabi", "Kuala Lumpur"]).not.toContain(facts.destination?.value.canonicalValue);
+  });
+
+  it("does not confirm breakfast from a counted-adult prefix for part of the party", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults and 1 child. For one adult, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("does not confirm room only from a counted-adult prefix for part of the party", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults and 1 child. For one adult, breakfast is not included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("still confirms breakfast from a counted-adult prefix for the whole party", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults. For 2 adults, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+});

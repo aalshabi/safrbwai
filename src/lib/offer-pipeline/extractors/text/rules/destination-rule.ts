@@ -156,15 +156,22 @@ function markerRank(haystack: string, index: number, length: number, saudi = fal
 
 /** A city joined by "and"/"or" to a transit city ("via Istanbul and Singapore", «عبر إسطنبول وسنغافورة») is a transit too. */
 function inTransitList(haystack: string, index: number): boolean {
-  const joined = haystack.slice(Math.max(0, index - 60), index).match(/^(.*?)(?:\s+(?:and|or|&)\s+|\s+(?:أو\s*|و))$/su);
-  if (!joined) return false;
+  // «وأبوظبي» → «و أبوظبي», so an attached «و» joins the list like "and".
+  const head = haystack.slice(Math.max(0, index - 160), index).replace(/(^|\s)و(?=\p{L})/gu, "$1و ");
+  return listedAfterTransit(head, 0);
+}
+
+/** Whether `head` ends with "and"/«و» after a list that a transit marker opens ("via A and B and"). */
+function listedAfterTransit(head: string, depth: number): boolean {
+  const joined = head.match(/^(.*?)(?:\s+(?:and|or|&)|\s+(?:أو|و))\s*$/su);
+  if (!joined || depth > 5) return false;
   const words = joined[1].split(/\s+/);
-  // The listed transit city is one to three words long.
+  // Each listed transit city is one to three words long.
   for (let n = 1; n <= Math.min(3, words.length - 1); n++) {
     const city = words.slice(-n).join(" ");
     if (/[\d,،;؛.]/.test(city)) break;
     const rest = words.slice(0, -n).join(" ");
-    if (TRANSIT_MARKER.test(rest.slice(-24))) return true;
+    if (TRANSIT_MARKER.test(rest.slice(-24)) || listedAfterTransit(rest, depth + 1)) return true;
   }
   return false;
 }
