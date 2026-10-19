@@ -48,13 +48,16 @@ const LISTED_TRANSFER = new RegExp(`(?:${TRANSFER_WORD})(?!\\s*(?:ال)?جوي)|
 
 /**
  * A transfer its own clause offers for a fee, on request, says is unavailable,
- * says the package does not include («لا تشمل الباقة خدمة الاستقبال …»), or
- * prices separately ("Seaplane transfers available for USD 100")
+ * or says the package does not include («لا تشمل الباقة خدمة الاستقبال …»)
  * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
  * الاستقبال في المطار») is not a package inclusion.
  */
 const NOT_PROVIDED =
-  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include|(?:\bfor|\bat)\s*(?:(?:usd|sar|aed|eur|\$)\s*\d|\d[\d,.]*\s*(?:usd|sar|aed|eur))|(?:بسعر|بقيمة|بمبلغ)\s*\d/i;
+  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include/i;
+
+/** A price attached after the transfer ("… available for USD 100", «… بسعر 300 ريال»); a package price before it is not. */
+const PRICED_AFTER =
+  /(?:\bfor|\bat)\s*(?:(?:usd|sar|aed|eur|\$)\s*\d|\d[\d,.]*\s*(?:usd|sar|aed|eur))|(?:بسعر|بقيمة|بمبلغ)\s*\d/i;
 
 /** A clause boundary; a comma or dot between digits ("2,000", "1.5") is part of a number. */
 const CLAUSE_BREAK = /[،;؛!?؟\n]|(?<!\d)[.,]|[.,](?!\d)/g;
@@ -87,7 +90,9 @@ function providedInclusion(text: string): InclusionMatch | null {
     const found = detectInclusion(scanned, INCLUDE, EXCLUDE, LISTED_TRANSFER) ?? listedAsIncluded(scanned, LISTED_TRANSFER);
     if (!found?.value) return found;
     const clause = clauseOf(scanned, found.evidence);
-    if (!clause || !NOT_PROVIDED.test(scanned.slice(clause.start, clause.end))) return found;
+    if (!clause) return found;
+    const afterEvidence = scanned.slice(scanned.indexOf(found.evidence, clause.start) + found.evidence.length, clause.end);
+    if (!NOT_PROVIDED.test(scanned.slice(clause.start, clause.end)) && !PRICED_AFTER.test(afterEvidence)) return found;
     scanned = scanned.slice(0, clause.start) + " ".repeat(clause.end - clause.start) + scanned.slice(clause.end);
   }
   return null;

@@ -273,4 +273,9 @@ describe("nightsRule", () => {
       { value: 7, evidence: "7 ليالٍ" },
     ]);
   });
+
+  it("a cancellation benefit that qualifies the stay keeps its length", () => {
+    expect(nightsRule.apply("Free cancellation for a 7-night stay").facts.nights?.value).toBe(7);
+    expect(nightsRule.apply("إلغاء مجاني لإقامة 7 ليالٍ").facts.nights?.value).toBe(7);
+  });
 });

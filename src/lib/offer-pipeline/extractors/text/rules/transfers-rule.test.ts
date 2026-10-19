@@ -120,4 +120,8 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("والإجمالي 2,000 ريال شامل الضرائب والإفطار والنقل من وإلى المطار.")).toEqual({ included: true });
     expect(included("Private airport transfers for 2 persons")).toEqual({ included: true });
   });
+
+  it("a package price before the transfer does not make it a paid extra", () => {
+    expect(included("Package for USD 1,000 includes airport transfers")).toEqual({ included: true });
+  });
 });

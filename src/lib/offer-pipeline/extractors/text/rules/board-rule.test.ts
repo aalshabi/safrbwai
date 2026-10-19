@@ -63,4 +63,8 @@ describe("board upgrades and buffet breakfast", () => {
     expect(boardRule.apply("Buffet: إفطار بوفيه optional, extra charge").facts.board).toBeUndefined();
     expect(boardRule.apply("غرفة مع إفطار بوفيه مفتوح، والجولات اختيارية").facts.board?.value).toBe("BB");
   });
+
+  it("a separately priced breakfast is not the board", () => {
+    expect(boardRule.apply("إفطار بوفيه بسعر 50 ريال للشخص").facts.board).toBeUndefined();
+  });
 });

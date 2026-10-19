@@ -94,8 +94,12 @@ export function extractNightObservations(text: string): NightObservation[] {
 const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/iu;
 /** A deadline anchor right before the count in its clause ("before arrival", «قبل الوصول ب»). */
 const DEADLINE_BEFORE = /(?:قبل|before|prior\s+to)[^.،,;؛\n\d]{0,25}$/iu;
-/** A cancellation/refund clause the count sits in. */
-const PENALTY_BEFORE = /(?:penalty|cancel\w*|refund\w*|no[-\s]?show|غرامة|إلغاء|الإلغاء|استرداد|عدم\s+الحضور)[^.،,;؛\n]*$/iu;
+/**
+ * A penalty measured in nights that the count sits in ("Late cancellation
+ * penalty: one night", «غرامة الإلغاء: ليلة»). A cancellation benefit that
+ * qualifies the stay ("Free cancellation for a 7-night stay") is not one.
+ */
+const PENALTY_BEFORE = /(?:penalty|fee|charged?|no[-\s]?show|غرامة|رسوم|يُ?خصم|خصم|عدم\s+الحضور)[^.،,;؛\n]*$/iu;
 
 /** An option heading ("### الخيار الأول — فنادق 4 نجوم", "Option 2:"). */
 const OPTION_HEADING = /^[\s#*>-]*(?:الخيار|خيار|option)(?!\p{L})/gimu;
