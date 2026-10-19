@@ -126,6 +126,15 @@ describe("OfferAnalysisResult — text that is not a travel offer", () => {
     expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
   });
 
+  it("does not take a lone meal-plan mention as an offer", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [{ key: "board", label: { ar: "الوجبات", en: "Board" }, value: "RO", evidence: "Breakfast is not included", confidenceType: "exact" }],
+    });
+    expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
+  });
+
   it("stays quiet for an offer with a price or nights", () => {
     renderResult(analysis);
     expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();

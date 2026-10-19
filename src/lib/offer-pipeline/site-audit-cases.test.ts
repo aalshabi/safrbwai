@@ -387,3 +387,15 @@ describe("fourteenth review follow-ups", () => {
     expect(facts.airportChange?.value).toBe(true);
   });
 });
+
+describe("fifteenth review follow-ups", () => {
+  it("leaves an airport change unresolved when the text contradicts itself", async () => {
+    const { facts } = await run("New York 4 nights, no airport change: arrive at JFK Airport and depart from LGA Airport, SAR 9,000 total.");
+    expect(facts.airportChange).toBeUndefined();
+  });
+
+  it("still reads a plain no-change statement", async () => {
+    const { facts } = await run("New York 4 nights, no airport change, SAR 9,000 total.");
+    expect(facts.airportChange?.value).toBe(false);
+  });
+});

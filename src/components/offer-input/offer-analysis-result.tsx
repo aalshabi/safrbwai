@@ -98,13 +98,16 @@ const CHECK_STATUS: Record<ChecklistStatus, { icon: LucideIcon; className: strin
 
 /** Facts only a travel offer states; with none of them the text is probably something else. */
 const OFFER_SIGNALS = new Set([
-  "destination", "nights", "travelDates", "travellers", "accommodation", "board", "flight",
+  "destination", "nights", "travelDates", "accommodation", "flight",
   "totalPrice", "perPersonPrice", "perNightPrice", "statedPrice",
-  "baggage", "transfers", "transitDuration", "stopCount", "airportChange",
+  "transitDuration", "stopCount", "airportChange",
 ]);
+/** Facts other texts state too ("breakfast is not included in this recipe"): two of them are needed. */
+const WEAK_OFFER_SIGNALS = new Set(["travellers", "board", "baggage", "transfers"]);
 
 export function looksLikeTravelOffer(analysis: OfferAnalysis): boolean {
-  return analysis.confirmedFacts.some(({ key }) => OFFER_SIGNALS.has(key));
+  const keys = analysis.confirmedFacts.map(({ key }) => key);
+  return keys.some((key) => OFFER_SIGNALS.has(key)) || new Set(keys.filter((key) => WEAK_OFFER_SIGNALS.has(key))).size >= 2;
 }
 
 export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
