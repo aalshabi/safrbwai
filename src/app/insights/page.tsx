@@ -7,6 +7,7 @@ import {
   AirportStatusSidebarLoader,
 } from "@/components/airport-status/airport-status-loader";
 import { getPublishedInsights } from "@/lib/travel-insights";
+import { itemListJsonLd, jsonLdHtml } from "@/lib/structured-data";
 
 export const metadata: Metadata = pageMetadata({
   title: "مرصد السفر العالمي — Global Travel Monitor",
@@ -18,20 +19,13 @@ export const metadata: Metadata = pageMetadata({
 
 export default function InsightsPage() {
   const insights = getPublishedInsights();
-  const itemList = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    itemListElement: insights.map((insight, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
-      url: `/insights/${insight.slug}`,
-      name: insight.title.ar,
-    })),
-  };
+  const itemList = itemListJsonLd(
+    insights.map((insight) => ({ name: insight.title.ar, path: `/insights/${insight.slug}` })),
+  );
 
   return (
     <div className="container py-14 md:py-20">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(itemList)} />
       <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_19rem] xl:gap-8">
         <div className="min-w-0">
           {/* Mobile: slim banner. Tablet: compact card. Desktop: sidebar below.
