@@ -35,6 +35,9 @@
     --ring: 186 100% 36%;
 
     --radius: 0.85rem;
+
+    /* teal for text and buttons on light backgrounds: #007480 */
+    --teal: 0 116 128;
   }
 
   .dark {
@@ -65,6 +68,14 @@
     --border: 217 33% 20%;
     --input: 217 33% 22%;
     --ring: 186 100% 40%;
+
+    /* brand teal #00A7B6 */
+    --teal: 0 167 182;
+  }
+
+  /* Navy panels keep the bright brand teal: the darker light-theme teal is 3.3:1 on navy. */
+  .bg-navy {
+    --teal: 0 167 182;
   }
 }
 

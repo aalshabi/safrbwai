@@ -52,12 +52,14 @@ export const metadata: Metadata = {
     description:
       "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
     siteName: "SafrBwai",
+    images: [{ url: "/og/site.png", width: 1200, height: 630, alt: "سافر بوعي — SafrBwai" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "سافر بوعي — SafrBwai",
     description:
       "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
+    images: ["/og/site.png"],
   },
   robots: SITE_ROBOTS,
   // iPhone "Add to Home Screen": opens full screen with this name; the icon
