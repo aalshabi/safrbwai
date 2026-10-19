@@ -216,9 +216,10 @@ function differentAirports(first: string, second: string): boolean | undefined {
   if (IATA_CODE.test(a) && IATA_CODE.test(b)) return a !== b;
   if (IATA_CODE.test(a) || IATA_CODE.test(b)) return undefined;
   // A name with its city in front is the same airport ("London Heathrow" /
-  // "Heathrow"); a city followed by another name is a second airport there
+  // "Heathrow"), so a claimed change beside it stays unresolved; a city
+  // followed by another name is a second airport there
   // («دبي» / «دبي آل مكتوم»).
-  if (a.endsWith(` ${b}`) || b.endsWith(` ${a}`)) return undefined;
+  if (a.endsWith(` ${b}`) || b.endsWith(` ${a}`)) return false;
   return a !== b;
 }
 

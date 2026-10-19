@@ -556,6 +556,10 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
     if (chain.length > 0) {
       const before = normalizedText.slice(0, chain[0].index);
       if (before.slice(before.search(/[^.\n!?؟;؛،,]*$/)).includes("+")) continue;
+      // Another priced item earlier in the sentence without a "+" ("Flight SAR 2,000, Hotel … + Tour …")
+      // means the chain is only part of the breakdown.
+      const sentenceStart = before.search(/[^.\n!?؟;؛]*$/);
+      if (matches.some((match) => match.basis !== "total" && match.index >= sentenceStart && match.index < chain[0].index)) continue;
     }
     if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {
       return chain.map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));

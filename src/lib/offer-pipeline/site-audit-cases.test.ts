@@ -785,3 +785,20 @@ describe("thirty-eighth review follow-ups", () => {
     expect(facts.board?.value).toBe("BB");
   });
 });
+
+describe("thirty-ninth review follow-ups", () => {
+  it("does not compare a partial '+' chain with the total", async () => {
+    const { analysis } = await run("Flight SAR 2,000, Hotel SAR 3,000 + Tour SAR 500, total SAR 5,500.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("leaves a claimed airport change unresolved beside one airport named two ways", async () => {
+    const { facts } = await run("London 4 nights, requires an airport change: arrive at London Heathrow Airport and depart from Heathrow Airport, SAR 9,000 total.");
+    expect(facts.airportChange).toBeUndefined();
+  });
+
+  it("does not read room only when another meal is excluded only for some guests", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast not included. Dinner not included for children. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+});
