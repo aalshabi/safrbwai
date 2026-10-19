@@ -230,7 +230,7 @@ function findCanonical(text: string): Match | null {
 const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,5}airport\b/iu;
 
 /** Between a transit city and its country: nothing, a comma, or the city's airport ("Istanbul International Airport, Turkey"). */
-const TRANSIT_COUNTRY_GAP = /^[ \t]*(?:(?:[\p{L}.]+[ \t]+){0,2}airport|الدولي)?[ \t]*[,،(\-–]?[ \t]*$/iu;
+const TRANSIT_COUNTRY_GAP = /^[ \t]*(?:(?:[\p{L}.]+[ \t]+){0,5}airport|الدولي)?[ \t]*[,،(\-–]?[ \t]*$/iu;
 
 function namesAnAirport(haystack: string, index: number, length: number): boolean {
   return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || AIRPORT_AFTER.test(haystack.slice(index + length));

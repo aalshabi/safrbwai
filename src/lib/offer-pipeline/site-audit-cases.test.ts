@@ -547,3 +547,36 @@ describe("twenty-fifth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("twenty-sixth review follow-ups", () => {
+  it("does not sum a breakdown with a percentage charge", async () => {
+    const { analysis } = await run("Hotel SAR 3,000 + VAT 15% + Flight SAR 2,000, total SAR 5,750.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("ties a country to a transit city named with its long airport name", async () => {
+    const { facts } = await run("Flight to Nuuk via Istanbul Sabiha Gokcen International Airport, Turkey, 5 nights, SAR 9,000.");
+    expect(facts.destination?.value.canonicalValue).not.toBe("Turkey");
+  });
+
+  it("does not read any breakfast form scoped to some guests as bed and breakfast", async () => {
+    for (const text of ["Dubai 4 nights, with breakfast for children only, SAR 3,000 total.", "دبي 4 ليالٍ، شامل الإفطار للأطفال فقط، السعر 3,000 ريال."]) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).not.toBe("BB");
+    }
+  });
+});
+
+describe("scoped plan guard keeps whole-stay plans", () => {
+  it("still reads plans stated for the whole stay", async () => {
+    const cases: [string, string][] = [
+      ["Dubai 4 nights, half board only, SAR 3,000 total.", "HB"],
+      ["دبي 4 ليالٍ، إفطار مجاني يومياً، السعر 3,000 ريال.", "BB"],
+      ["Dubai 4 nights, with breakfast, SAR 3,000 total.", "BB"],
+    ];
+    for (const [text, board] of cases) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).toBe(board);
+    }
+  });
+});

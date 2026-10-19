@@ -20,8 +20,7 @@ const BOARD_SIGNALS: BoardSignal[] = [
   { code: "HB", re: /half[-\s]?board|نصف\s*إقامة|إفطار\s*و?عشاء|\bHB\b/i },
   {
     code: "BB",
-    // An inclusion scoped to some guests or days ("for children only", «يوم الوصول») is not the plan.
-    re: /bed\s*(?:and|&|\+)?\s*breakfast|breakfast\s+(?:is\s+)?included(?!\s*(?:for\s+(?:children|kids|infants|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|[^.,;\n]{0,30}\bonly\b|للأطفال|للطفل|في\s+(?:اليوم|أول|آخر)|يوم|عدا|ما\s+عدا|إلا))|(?:ال)?إفطار\s*(?:مشمول|شامل|مجاني)(?![\u0600-\u06FF])(?!\s*(?:for\s+(?:children|kids|infants|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|[^.,;\n]{0,30}\bonly\b|للأطفال|للطفل|في\s+(?:اليوم|أول|آخر)|يوم|عدا|ما\s+عدا|إلا))|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
+    re: /bed\s*(?:and|&|\+)?\s*breakfast|breakfast\s+(?:is\s+)?included|(?:ال)?إفطار\s*(?:مشمول|شامل|مجاني)(?![\u0600-\u06FF])|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
   },
   // «بدون الإفطار للأطفال» excludes it for some guests only (see QUALIFIED_EXCLUSION).
   { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار(?!\s*(?:لل|في\s+يوم|يوم|عدا|ما\s+عدا|إلا))|\bRO\b/i },
@@ -31,6 +30,8 @@ const BOARD_SIGNALS: BoardSignal[] = [
 const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
+const SCOPED_PLAN =
+  /^\s*(?:for\s+(?:children|kids|infants|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|للأطفال|للطفل|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
 /** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
 const QUALIFIED_EXCLUSION = /^\s*(?:for\s|on\s|during\s|except|unless|لل|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
 /** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */
@@ -90,6 +91,9 @@ export const boardRule: ExtractionRule = {
     );
     for (const { code, re } of BOARD_SIGNALS) {
       const m = firstIncluded(text, scanned, re);
+      // A plan for some guests or days only ("with breakfast for children only",
+      // «شامل الإفطار للأطفال», "on the first day") is not the booking's board.
+      if (m && SCOPED_PLAN.test(text.slice(m.index + m[0].length))) continue;
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 

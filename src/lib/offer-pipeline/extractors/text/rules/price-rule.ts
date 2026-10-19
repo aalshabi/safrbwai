@@ -503,8 +503,8 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
       // The last part reaches the total through a label; every other link is a "+".
       if (chain.length > 0 && !gap.includes("+")) break;
-      // A signed amount the parser skipped ("+ SAR -1,000") is a discount inside the gap.
-      if (/[-−]\s*[\d٠-٩]/.test(gap)) {
+      // A number the parser skipped ("+ SAR -1,000", "+ VAT 15% +") is a part we cannot add up.
+      if (/[\d٠-٩]/.test(gap)) {
         chain.length = 0;
         break;
       }
