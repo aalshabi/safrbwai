@@ -230,4 +230,9 @@ describe("nightsRule", () => {
     const text = "Duration: 6 nights\n- Dubai, 3 nights: Hotel A\n- Abu Dhabi, 3 nights: Hotel B\n- Dubai, 3 nights: Hotel C";
     expect(nightsRule.apply(text).observations?.nights?.length).toBeGreaterThan(1);
   });
+
+  it("checks each option's stays against the total on their own", () => {
+    const text = "Duration: 3 nights\nOption 1\n- Hotel A: one night\n- Hotel B: two nights\nOption 2\n- Hotel C: one night\n- Hotel D: two nights";
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 3, evidence: "3 nights" }]);
+  });
 });

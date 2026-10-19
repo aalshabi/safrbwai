@@ -88,6 +88,10 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("نقل بالقارب السريع مقابل رسوم إضافية")).toBeUndefined();
   });
 
+  it("an optional transfer does not hide a later included one", () => {
+    expect(included("Seaplane transfers available for an additional charge. Airport transfers included.")).toEqual({ included: true });
+  });
+
   it("an optional service in another clause does not cancel an included transfer", () => {
     expect(included("Airport transfers included; excursions optional")).toEqual({ included: true });
     expect(included("الاستقبال والتوديع من وإلى المطار، والرحلات الاختيارية مقابل رسوم إضافية")).toEqual({ included: true });

@@ -5,7 +5,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { detectInclusion, listedAsIncluded } from "../signals";
+import { detectInclusion, listedAsIncluded, type InclusionMatch } from "../signals";
 import { exact } from "../utils";
 
 /** The words an Arabic offer uses for ground transport. */
@@ -51,22 +51,39 @@ const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 const NOT_PROVIDED =
   /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable/i;
 
-/** The clause holding `evidence`: "Airport transfers included; excursions optional" → "Airport transfers included". */
-function clauseOf(text: string, evidence: string): string {
+/** The span of the clause holding `evidence`: "Airport transfers included; excursions optional" → "Airport transfers included". */
+function clauseOf(text: string, evidence: string): { start: number; end: number } | null {
   const at = text.indexOf(evidence);
-  if (at < 0) return evidence;
+  if (at < 0) return null;
   const before = text.slice(0, at);
   const after = text.slice(at + evidence.length);
   const start = Math.max(...[...".،,;؛!?؟\n"].map((c) => before.lastIndexOf(c))) + 1;
   const end = after.search(/[.،,;؛!?؟\n]/);
-  return before.slice(start) + evidence + (end < 0 ? after : after.slice(0, end));
+  return { start, end: at + evidence.length + (end < 0 ? after.length : end) };
+}
+
+/**
+ * The first inclusion that its clause does not sell as optional or paid. An
+ * optional match ("Seaplane transfers available for an additional charge.")
+ * is blanked out and the scan goes on, so a later "Airport transfers
+ * included." is still found.
+ */
+function providedInclusion(text: string): InclusionMatch | null {
+  let scanned = text;
+  for (let i = 0; i < 10; i++) {
+    const found = detectInclusion(scanned, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(scanned, MENTION);
+    if (!found?.value) return found;
+    const clause = clauseOf(scanned, found.evidence);
+    if (!clause || !NOT_PROVIDED.test(scanned.slice(clause.start, clause.end))) return found;
+    scanned = scanned.slice(0, clause.start) + " ".repeat(clause.end - clause.start) + scanned.slice(clause.end);
+  }
+  return null;
 }
 
 export const transfersRule: ExtractionRule = {
   key: "transfer",
   apply(text: string): RuleResult {
-    const found = detectInclusion(text, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(text, MENTION);
-    const hit = found?.value && NOT_PROVIDED.test(clauseOf(text, found.evidence)) ? null : found;
+    const hit = providedInclusion(text);
     if (hit) return { facts: { transfer: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

@@ -180,26 +180,21 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       (n) => n.value !== candidate.value || (n.isStay && n.stay !== "")
     );
     const sum = (list: typeof parts) => list.reduce((acc, n) => acc + n.value, 0);
-    // An offer with options repeats the same named stays per option (الخيار
-    // الأول: موسكو 3، سانت بطرسبرغ 3 … الخيار الثاني: موسكو 3، سانت بطرسبرغ 3):
-    // a named stay repeated under a later option counts once. Within one
-    // option a return to the same city is a stay of its own.
-    const firstOption = new Map<string, number>();
-    const distinctStays = parts.filter((n) => {
-      if (!n.stay) return true;
-      const key = `${n.stay}\u0000${n.value}`;
-      const seen = firstOption.get(key);
-      if (seen === undefined) {
-        firstOption.set(key, n.option);
-        return true;
-      }
-      return seen === n.option;
-    });
+    // An offer with options lists one itinerary per option (الخيار الأول:
+    // موسكو 3، سانت بطرسبرغ 3 … الخيار الثاني: موسكو 3، سانت بطرسبرغ 3). The
+    // options are alternatives, so each option's stays must add up to the
+    // total on their own; stays outside any option keep the plain sum.
+    const byOption = new Map<number, typeof parts>();
+    for (const n of parts) byOption.set(n.option, [...(byOption.get(n.option) ?? []), n]);
+    const optionsAgree =
+      byOption.size >= 2 &&
+      !byOption.has(0) &&
+      [...byOption.values()].every((group) => sum(group) === candidate.value);
     return (
       isTotal &&
       parts.length >= 2 &&
       parts.every((n) => n.isStay) &&
-      (sum(parts) === candidate.value || sum(distinctStays) === candidate.value)
+      (sum(parts) === candidate.value || optionsAgree)
     );
   });
   if (total) return { observations: [toObservation(total)], length: toObservation(total) };
