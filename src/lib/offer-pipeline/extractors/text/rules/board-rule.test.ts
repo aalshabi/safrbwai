@@ -33,3 +33,54 @@ describe("boardRule", () => {
     expect(boardRule.apply("جو رائع وخدمة ممتازة").facts).toEqual({});
   });
 });
+
+describe("board upgrades and buffet breakfast", () => {
+  it("takes the plan an upgrade leads to, not the one it leaves", () => {
+    const r = boardRule.apply("إقامة كاملة Full Board تشمل الوجبات\nترقية مجانية من نصف إقامة HB إلى إقامة كاملة FB.");
+    expect(r.facts.board?.value).toBe("FB");
+  });
+
+  it("reads a buffet breakfast as bed and breakfast", () => {
+    expect(boardRule.apply("غرفة بإطلالة بحرية وإفطار بوفيه مفتوح").facts.board?.value).toBe("BB");
+  });
+
+  it("never reads a breakfast the offer excludes as the board", () => {
+    expect(boardRule.apply("غير مشمول: إفطار بوفيه").facts.board).toBeUndefined();
+    expect(boardRule.apply("### غير مشمول\n- إفطار بوفيه يومي.").facts.board).toBeUndefined();
+    expect(boardRule.apply("السعر غير شامل الإفطار").facts.board).toBeUndefined();
+  });
+
+  it("never reads a breakfast excluded after the signal as the board", () => {
+    expect(boardRule.apply("إفطار بوفيه غير مشمول").facts.board).toBeUndefined();
+    expect(boardRule.apply("buffet: إفطار يومي not included").facts.board).toBeUndefined();
+    expect(boardRule.apply("مع الإفطار، النقل غير مشمول").facts.board?.value).toBe("BB");
+  });
+
+  it("never reads a breakfast sold as an optional extra as the board", () => {
+    expect(boardRule.apply("إفطار بوفيه اختياري مقابل رسوم إضافية").facts.board).toBeUndefined();
+    expect(boardRule.apply("Optional bed and breakfast").facts.board).toBeUndefined();
+    expect(boardRule.apply("اختياري: إفطار بوفيه").facts.board).toBeUndefined();
+    expect(boardRule.apply("Buffet: إفطار بوفيه optional, extra charge").facts.board).toBeUndefined();
+    expect(boardRule.apply("غرفة مع إفطار بوفيه مفتوح، والجولات اختيارية").facts.board?.value).toBe("BB");
+  });
+
+  it("a separately priced breakfast is not the board", () => {
+    expect(boardRule.apply("إفطار بوفيه بسعر 50 ريال للشخص").facts.board).toBeUndefined();
+  });
+
+  it("an Arabic-digit price on breakfast is not the board", () => {
+    expect(boardRule.apply("إفطار بوفيه بسعر ٥٠ ريال للشخص").facts.board).toBeUndefined();
+  });
+
+  it("a breakfast with a price written right after it is not the board", () => {
+    expect(boardRule.apply("إفطار بوفيه 50 ريال للشخص").facts.board).toBeUndefined();
+  });
+
+  it("a buffet breakfast inside a full-board plan keeps FB", () => {
+    expect(boardRule.apply("إقامة كاملة تشمل إفطار بوفيه وغداء وعشاء").facts.board?.value).toBe("FB");
+  });
+
+  it("alternative board plans stay ambiguous", () => {
+    expect(boardRule.apply("Full Board or bed and breakfast").facts.board).toBeUndefined();
+  });
+});

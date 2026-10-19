@@ -66,4 +66,53 @@ describe("flightRule", () => {
     expect(r.facts).toEqual({});
     expect(r.warnings).toEqual([]);
   });
+
+  it("a ticket listed under an included heading is included; a domestic leg is not", () => {
+    expect(included("### Included\n- Flights\n- Hotel")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران ذهاب وعودة.")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- طيران داخلي: بانكوك ← بوكيت.")).toBeUndefined();
+  });
+
+  it("an excluded domestic leg does not override an included trip ticket", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Domestic flights")).toEqual({ included: true });
+    expect(included("### غير مشمول\n- الطيران الداخلي.")).toBeUndefined();
+    expect(included("### غير مشمول\n- تذاكر الطيران الدولية.")).toEqual({ included: false });
+  });
+
+  it("an excluded flight add-on is not the ticket", () => {
+    expect(included("### Included\n- Flights\n\n### Not included\n- Flight upgrades")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران.\n\n### غير مشمول\n- ترقية مقعد الطيران.")).toEqual({ included: true });
+  });
+
+  it("a listed ticket that details an add-on is still the ticket", () => {
+    expect(included("### Included\n- Flights with 20 kg baggage")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران مع أمتعة 20 كجم.")).toEqual({ included: true });
+  });
+
+  it("a domestic leg with a route qualifier is still a domestic leg", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Domestic connecting flights")).toEqual({ included: true });
+  });
+
+  it("a flight listed as optional or paid is not included", () => {
+    expect(included("### Included\n- Flights available on request")).toBeUndefined();
+    expect(included("### Included\n- Flights for an additional charge")).toBeUndefined();
+  });
+
+  it("domestic and international flights together include the ticket", () => {
+    expect(included("Includes domestic and international flights")).toEqual({ included: true });
+    expect(included("### Included\n- Domestic and international flights")).toEqual({ included: true });
+  });
+
+  it("a listed flight sold separately is not included", () => {
+    expect(included("### Included\n- Flights available separately for USD 100")).toBeUndefined();
+  });
+
+  it("an excluded local leg does not override an included trip ticket", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Local flights")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران الدولية.\n\n### غير مشمول\n- الطيران المحلي.")).toEqual({ included: true });
+  });
+
+  it("an optional listed flight does not hide a later included one", () => {
+    expect(included("### Included\n- Flights available on request\n- International flights")).toEqual({ included: true });
+  });
 });

@@ -98,12 +98,12 @@ export function buildSuggestedQuestions(
   });
 
   // 5) Baggage allowance — only an airline sets it, so only when the offer
-  // includes or mentions flights and does not exclude them; a hotel-and-tours
-  // package has none to ask about.
+  // states a flight is included. A package that merely mentions flights
+  // ("أيام رحلات الطيران: توصيل فقط") has no allowance to ask about.
   candidates.push({
     key: "baggage",
     priority: "high",
-    when: missing.has("baggage") && context.hasFlight && !context.flightExcluded,
+    when: missing.has("baggage") && context.flightIncluded,
     question: registryQuestion("baggage"),
   });
 

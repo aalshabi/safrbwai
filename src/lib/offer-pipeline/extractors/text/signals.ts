@@ -14,6 +14,27 @@
  *   so no fact is returned rather than a wrong one.
  */
 
+import { CURRENCY_ALT, toWesternDigits } from "./utils";
+
+/** Every currency form the price extractor accepts: the same alternation, so the two never drift apart. */
+export const CURRENCY = CURRENCY_ALT;
+
+/**
+ * A price or "sold separately" attached to an item ("for USD 100", "$100",
+ * "USD 100", «بسعر ٣٠٠ ريال», «50 ريال», "available separately"). Callers pass
+ * only the text that belongs to the item, never a package price before it. Digits are normalized first, so
+ * Arabic-Indic amounts count too.
+ */
+const SEPARATE_PRICE = new RegExp(
+  `(?:${CURRENCY})\\s*\\d|\\d[\\d,.]*\\s*(?:${CURRENCY})|(?:بسعر|بقيمة|بمبلغ)\\s*\\d|\\bseparately\\b|بشكل\\s+منفصل`,
+  "i"
+);
+
+/** Whether `text` prices its item separately (see SEPARATE_PRICE). */
+export function pricedSeparately(text: string): boolean {
+  return SEPARATE_PRICE.test(toWesternDigits(text));
+}
+
 export interface InclusionMatch {
   value: boolean;
   evidence: string;
@@ -37,13 +58,110 @@ const NEGATIVE_STATUS =
 /** Where a clause ends: sentence punctuation, Arabic and Latin commas, line breaks. */
 const CLAUSE_END = /[.،,;؛!?؟\n]/;
 
+/** A heading that introduces what the offer does NOT include. */
+const EXCLUDED_HEADING =
+  /(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|لا\s*(?:يشمل|تشمل)|الاستثناءات|استثناءات|مستثنى|not\s+included|excludes?|exclusions)/i;
+/** A list item: "- …", "• …", "* …", "1. …", "2) …". */
+const LIST_ITEM = /^\s*(?:[-–•·▪*]|\d{1,2}[.)\-])\s+/;
+const HEADING_LIKE = /^\s*(?:#{1,6}\s|\*[^*\n]+\*\s*:?\s*$)|[:：]\s*\**\s*$/;
+const SECTION_LOOKBACK = 25;
+
+/** An item offered for a fee or on request ("Flights available on request", «مقابل رسوم إضافية»). */
+const OPTIONAL_STATUS =
+  /اختياري|رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|عند\s*الطلب|optional|on\s*request|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)/i;
+
+/** A heading that introduces what the offer includes («الخدمات المشمولة», "Included"). */
+const INCLUDED_HEADING = /(?:مشمول|مشمولة|المشمولات|يشمل|تشمل|شامل|includes?|included|inclusions)/i;
+
+/**
+ * The heading of the section whose item holds `index`, or null when the line
+ * is not a section item. Items are list lines, or plain lines right under a
+ * heading ending in a colon; the heading is the first other line above them.
+ */
+function sectionHeading(text: string, index: number): string | null {
+  const lineStart = text.lastIndexOf("\n", index - 1) + 1;
+  const lines = text.slice(0, lineStart).split("\n").slice(0, -1).reverse();
+  const itemLine = text.slice(lineStart, (text.indexOf("\n", index) + 1 || text.length + 1) - 1);
+  const isListItem = LIST_ITEM.test(itemLine);
+  for (const line of lines.slice(0, SECTION_LOOKBACK)) {
+    if (line.trim() === "") {
+      if (isListItem) continue;
+      return null;
+    }
+    if (LIST_ITEM.test(line)) continue;
+    if (isListItem || HEADING_LIKE.test(line)) return line;
+  }
+  return null;
+}
+
+/**
+ * Whether the line holding `index` is an item of a section headed «غير مشمول»
+ * / "Not included" ("### غير مشمول\n- تذاكر الطيران الدولية.").
+ */
+export function inExcludedSection(text: string, index: number): boolean {
+  const heading = sectionHeading(text, index);
+  return heading !== null && EXCLUDED_HEADING.test(heading);
+}
+
+/**
+ * Whether the line holding `index` is an item of a section headed «الخدمات
+ * المشمولة» / "Included" ("### الخدمات المشمولة\n- جميع الضرائب.").
+ */
+export function inIncludedSection(text: string, index: number): boolean {
+  const heading = sectionHeading(text, index);
+  return heading !== null && !EXCLUDED_HEADING.test(heading) && INCLUDED_HEADING.test(heading);
+}
+
+/** The item text (list marker stripped) of the first `mentionRe` match that `inSection` accepts. */
+function listedMention(
+  text: string,
+  mentionRe: RegExp,
+  inSection: (text: string, index: number) => boolean,
+  accept: (item: string) => boolean = () => true
+): string | null {
+  const mentions = new RegExp(mentionRe.source, mentionRe.flags.includes("g") ? mentionRe.flags : mentionRe.flags + "g");
+  for (const m of text.matchAll(mentions)) {
+    if (m.index !== undefined && inSection(text, m.index)) {
+      const start = text.lastIndexOf("\n", m.index - 1) + 1;
+      const end = text.indexOf("\n", m.index);
+      const item = text.slice(start, end < 0 ? undefined : end).replace(LIST_ITEM, "").trim();
+      if (accept(item)) return item;
+    }
+  }
+  return null;
+}
+
+/**
+ * A bare mention listed under «الخدمات المشمولة» ("- جميع الضرائب."), read as
+ * included. Only for rules whose mention cannot itself be optional or paid
+ * (taxes, transfers); null when no such item exists.
+ */
+export function listedAsIncluded(text: string, mentionRe: RegExp): InclusionMatch | null {
+  // An optional or separately priced item is skipped, not final: a later item may still include it.
+  const item = listedMention(
+    text,
+    mentionRe,
+    inIncludedSection,
+    (candidate) => !NEGATIVE_STATUS.test(candidate) && !OPTIONAL_STATUS.test(candidate) && !pricedSeparately(candidate)
+  );
+  if (item === null) return null;
+  return { value: true, evidence: item };
+}
+
 export function detectInclusion(
   text: string,
   includeRe: RegExp,
-  excludeRe: RegExp
+  excludeRe: RegExp,
+  /** A bare mention ("تذاكر الطيران"), read as excluded inside a «غير مشمول» list. */
+  mentionRe?: RegExp
 ): InclusionMatch | null {
   const ex = excludeRe.exec(text);
   if (ex) return { value: false, evidence: text.slice(ex.index, ex.index + ex[0].length) };
+
+  if (mentionRe) {
+    const item = listedMention(text, mentionRe, inExcludedSection);
+    if (item !== null) return { value: false, evidence: item };
+  }
 
   const inc = includeRe.exec(text);
   if (!inc) return null;

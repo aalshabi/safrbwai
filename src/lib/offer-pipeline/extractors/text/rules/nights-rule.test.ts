@@ -183,4 +183,108 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("4 nights in Dubai and 3 nights in Rome and Total: 7 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("reads nights written as words", () => {
+    expect(nightsRule.apply("إقامة ليلة واحدة").facts.nights?.value).toBe(1);
+    expect(nightsRule.apply("لمدة ليلتين").facts.nights?.value).toBe(2);
+    expect(nightsRule.apply("one night in Rome").facts.nights?.value).toBe(1);
+  });
+
+  it("reads a city-by-city hotel list as one stay", () => {
+    const text = [
+      "- المدة: 9 ليالٍ / 10 أيام.",
+      "- تبليسي، ليلة واحدة: Marjan Hotel 4★، شامل الإفطار.",
+      "- جوداوري، ليلتان: Gudauri Inn 4★، شامل الإفطار.",
+      "- باكورياني، ليلة واحدة: Crystal Hotel & Spa 4★، شامل الإفطار.",
+      "- باتومي، 3 ليالٍ: New Wave Hotel 4★، شامل الإفطار.",
+      "- تبليسي، ليلتان: Marjan Hotel 4★، شامل الإفطار.",
+    ].join("\n");
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 9, evidence: "9 ليالٍ" }]);
+  });
+
+  it("counts each named stay once across the options of one offer", () => {
+    const text = [
+      "- المدة: 6 ليالٍ / 7 أيام.",
+      "الخيار الأول",
+      "- موسكو، 3 ليالٍ: DoubleTree Moscow 4★، شامل الإفطار.",
+      "- سانت بطرسبرغ، 3 ليالٍ: Muse of City 4★، شامل الإفطار.",
+      "الخيار الثاني",
+      "- موسكو، 3 ليالٍ: Radisson Blu 5★، شامل الإفطار.",
+      "- سانت بطرسبرغ، 3 ليالٍ: Cosmos 5★، شامل الإفطار.",
+      "- الإقامة 6 ليالٍ مع الإفطار اليومي.",
+    ].join("\n");
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 6, evidence: "6 ليالٍ" }]);
+  });
+
+  it("treats «6 ليالٍ في الفنادق المذكورة» as a restatement of the total", () => {
+    const text = "المدة: 6 ليالٍ\n- كاندي، ليلتان: Royal Hotel\n- نواراليا، ليلتان: Fort Hotel\n- بنتوتة، ليلتان: Beach Hotel\n- 6 ليالٍ في الفنادق المذكورة أو ما يماثلها.";
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 6, evidence: "6 ليالٍ" }]);
+  });
+
+  it("gives a hotel to the later count on the same line, not to the total", () => {
+    const r = nightsRule.apply("7 nights: Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("a return to the same city is its own stay unless a later option repeats it", () => {
+    const text = "Duration: 6 nights\n- Dubai, 3 nights: Hotel A\n- Abu Dhabi, 3 nights: Hotel B\n- Dubai, 3 nights: Hotel C";
+    expect(nightsRule.apply(text).observations?.nights?.length).toBeGreaterThan(1);
+  });
+
+  it("checks each option's stays against the total on their own", () => {
+    const text = "Duration: 3 nights\nOption 1\n- Hotel A: one night\n- Hotel B: two nights\nOption 2\n- Hotel C: one night\n- Hotel D: two nights";
+    expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 3, evidence: "3 nights" }]);
+  });
+
+  it("generic hotel wording after the total does not make it a stay", () => {
+    const r = nightsRule.apply("7 nights with hotel accommodation | Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
+
+  it("package breakfast after the total does not make it a stay", () => {
+    const r = nightsRule.apply("7 ليالٍ شامل الإفطار\n- Hotel A: 4 nights\n- Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
+
+  it("a cancellation deadline is not a stay length", () => {
+    expect(nightsRule.apply("Duration: 7 nights. Cancel up to one night before arrival.").observations?.nights).toEqual([
+      { value: 7, evidence: "7 nights" },
+    ]);
+    expect(nightsRule.apply("المدة 5 ليالٍ، الإلغاء مجاني حتى ليلتين قبل الوصول").observations?.nights).toEqual([
+      { value: 5, evidence: "5 ليالٍ" },
+    ]);
+  });
+
+  it("a cancellation penalty is not a stay length", () => {
+    expect(nightsRule.apply("Duration: 7 nights. Late cancellation penalty: one night.").observations?.nights).toEqual([
+      { value: 7, evidence: "7 nights" },
+    ]);
+    expect(nightsRule.apply("المدة 5 ليالٍ\nغرامة الإلغاء المتأخر: ليلة واحدة").observations?.nights).toEqual([
+      { value: 5, evidence: "5 ليالٍ" },
+    ]);
+  });
+
+  it("a Latin comma ends a cancellation clause", () => {
+    expect(nightsRule.apply("Cancellation policy, duration: 7 nights").facts.nights?.value).toBe(7);
+  });
+
+  it("an Arabic deadline before the count is not a stay length", () => {
+    expect(nightsRule.apply("المدة 7 ليالٍ\nيمكن التعديل قبل الوصول بليلة واحدة").observations?.nights).toEqual([
+      { value: 7, evidence: "7 ليالٍ" },
+    ]);
+  });
+
+  it("a cancellation benefit that qualifies the stay keeps its length", () => {
+    expect(nightsRule.apply("Free cancellation for a 7-night stay").facts.nights?.value).toBe(7);
+    expect(nightsRule.apply("إلغاء مجاني لإقامة 7 ليالٍ").facts.nights?.value).toBe(7);
+  });
+
+  it("a waived fee that qualifies the stay keeps its length", () => {
+    expect(nightsRule.apply("No cancellation fee for a 7-night stay").facts.nights?.value).toBe(7);
+  });
+
+  it("a booking deadline before the stay length keeps it", () => {
+    expect(nightsRule.apply("احجز قبل رمضان لمدة 7 ليالٍ").facts.nights?.value).toBe(7);
+    expect(nightsRule.apply("Book before Ramadan for 7 nights").facts.nights?.value).toBe(7);
+  });
 });

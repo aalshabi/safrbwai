@@ -26,6 +26,23 @@ describe("taxesRule", () => {
   });
 });
 
+describe("taxesRule — included sections", () => {
+  it("reads «جميع الضرائب» listed under «الخدمات المشمولة» as included", () => {
+    const r = taxesRule.apply("### الخدمات المشمولة\n\n- 6 وجبات إفطار.\n- جميع الضرائب.");
+    expect(r.facts.taxes?.value).toEqual({ included: true });
+    expect(r.facts.taxes?.evidence).toBe("جميع الضرائب.");
+  });
+
+  it("does not read entry fees listed as included as a taxes statement", () => {
+    expect(taxesRule.apply("### الخدمات المشمولة\n- رسوم دخول المزارات.").facts.taxes).toBeUndefined();
+  });
+
+  it("taxes listed under an exclusion heading read as excluded", () => {
+    expect(taxesRule.apply("### غير مشمول\n- جميع الضرائب.").facts.taxes?.value).toEqual({ included: false });
+    expect(taxesRule.apply("### Not included\n- Taxes").facts.taxes?.value).toEqual({ included: false });
+  });
+});
+
 describe("cancellationRule", () => {
   it("extracts the policy wording verbatim as its own evidence", () => {
     const r = cancellationRule.apply("الحجز غير قابل للاسترداد بعد التأكيد");

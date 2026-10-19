@@ -12,7 +12,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { detectInclusion } from "../signals";
+import { detectInclusion, listedAsIncluded } from "../signals";
 import { exact } from "../utils";
 
 /**
@@ -27,12 +27,15 @@ const FLIGHT_NOUN =
   "الطيران|طيران|الرحلة\\s*الجوية|رحلة\\s*جوية|(?:التذاكر|تذاكر|التذكرة|تذكرة)\\s*(?:ال)?(?:طيران|جوية|الجوية)";
 
 /**
- * A domestic flight («الطيران الداخلي», "domestic flights") is a leg inside the
+ * A domestic flight («الطيران الداخلي/المحلي», "domestic/local flights") is a leg inside the
  * destination, not the trip's air ticket, so it never answers "is the flight
  * included" — reading it that way would overstate what the price covers.
  */
-const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?داخلي)`;
-const EN_FLIGHT = "(?<!(?:domestic|internal)\\s)(?:flights?|airfare|air\\s*tickets?)";
+const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?(?:داخلي|محلي))`;
+// A route qualifier may sit between ("domestic connecting flights"), but not
+// "international": "domestic and international flights" includes the ticket.
+const EN_FLIGHT =
+  "(?<!(?:domestic|internal|local)(?:\\s+(?!international\\b)[a-z-]+){0,2}\\s)(?:flights?|airfare|air\\s*tickets?)";
 
 /**
  * After «مع» only a definite flight noun is an inclusion ("مع الطيران",
@@ -75,7 +78,9 @@ const INCLUDE = new RegExp(
     `|(?:${FLIGHT_WORD})[^.،\\n]{0,15}?(?:ذهاب\\s*و\\s*(?:عودة|إياب)|ذهاب\\s*فقط)` +
     `|(?:round[\\s-]?trip|one[\\s-]?way|return)\\s*(?:flights?|air\\s*)?tickets?` +
     `|${EN_FLIGHT}[^.\\n]{0,20}?included` +
-    `|includes?\\s*(?:return\\s*|round[\\s-]?trip\\s*)?${EN_FLIGHT}`,
+    `|includes?\\s*(?:return\\s*|round[\\s-]?trip\\s*)?${EN_FLIGHT}` +
+    // "includes domestic and international flights"
+    `|includes?\\s+(?:domestic\\s+(?:and|&)\\s+)?international\\s+${EN_FLIGHT}`,
   "iu"
 );
 
@@ -83,10 +88,28 @@ const INCLUDE = new RegExp(
 // it yields the "inclusion not stated" warning instead of silence.
 const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
+/**
+ * Add-ons sold with a flight. An item about one is not the ticket: the add-on
+ * comes first («ترقية مقعد الطيران») or names the flight's own extra right
+ * after it ("Flight upgrades"). A ticket that details an add-on ("Flights with
+ * 20 kg baggage", «تذاكر الطيران مع أمتعة 20 كجم») is still the ticket.
+ */
+const FLIGHT_ADDON = "upgrades?|ترقية|seats?|مقعد|مقاعد|meals?|وجبة|وجبات|baggage|luggage|أمتعة|حقائب|lounge|صالة";
+
+/**
+ * The trip's ticket as an item of an included or excluded list ("### Included\n-
+ * Flights"). A domestic leg is not it either way: excluding «الطيران الداخلي»
+ * says nothing about the international ticket.
+ */
+const LISTED_FLIGHT = new RegExp(
+  `(?<!(?:${FLIGHT_ADDON})[^\\n]*)(?:${FLIGHT_WORD}|${EN_FLIGHT})(?!\\s*(?:${FLIGHT_ADDON}))`,
+  "iu"
+);
+
 export const flightRule: ExtractionRule = {
   key: "flight",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, LISTED_FLIGHT) ?? listedAsIncluded(text, LISTED_FLIGHT);
     if (hit) return { facts: { flight: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

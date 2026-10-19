@@ -43,3 +43,16 @@ describe("travellersRule", () => {
     expect(travellersRule.apply("2 adults and 0 children").facts.travelers?.value).toEqual({ adults: 2, children: 0 });
   });
 });
+
+describe("price tiers", () => {
+  it("does not read «لـ4 أشخاص» after a price as the party", () => {
+    expect(travellersRule.apply("الأسعار: 12,100 ريال لـ4 أشخاص").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("الأسعار: 18,810 ريال لـ14 أشخاص").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("الأسعار: 12,100 ريال سعودي لـ4 أشخاص، 16,500 ريال سعودي لـ6 أشخاص").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("Prices: 12,100 SAR for 4 persons").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("Prices: SAR 12,100 for 4 persons").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("$12,100 for 4 persons, $16,500 for 6 persons").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("12,100 ر.س لـ4 أشخاص").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("12,100 د.إ لـ4 أشخاص، 16,500 د.إ لـ6 أشخاص").facts.travelers).toBeUndefined();
+  });
+});

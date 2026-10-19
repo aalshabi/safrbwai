@@ -15,7 +15,7 @@ const MENTION = /تأمين|insurance/i;
 export const insuranceRule: ExtractionRule = {
   key: "insurance",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION);
     if (hit) return { facts: { insurance: exact(hit.value, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {
