@@ -75,6 +75,10 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     if (pricedSeparately(rest.slice(0, rest.search(/[.،,;؛\n]|$/)))) continue;
     if (OPTIONAL_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (inExcludedSection(text, m.index)) continue;
+    // A plan for some guests or days only ("with breakfast for children only",
+    // «شامل الإفطار للأطفال», "on the first day") is not the booking's board;
+    // a later unscoped mention still is.
+    if (SCOPED_PLAN.test(rest)) continue;
     return m as RegExpExecArray;
   }
   return null;
@@ -91,9 +95,6 @@ export const boardRule: ExtractionRule = {
     );
     for (const { code, re } of BOARD_SIGNALS) {
       const m = firstIncluded(text, scanned, re);
-      // A plan for some guests or days only ("with breakfast for children only",
-      // «شامل الإفطار للأطفال», "on the first day") is not the booking's board.
-      if (m && SCOPED_PLAN.test(text.slice(m.index + m[0].length))) continue;
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 

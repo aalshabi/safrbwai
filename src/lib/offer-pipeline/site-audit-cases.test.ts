@@ -580,3 +580,20 @@ describe("scoped plan guard keeps whole-stay plans", () => {
     }
   });
 });
+
+describe("twenty-seventh review follow-ups", () => {
+  it("reads an unscoped meal plan after a scoped one", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast included for children only. Breakfast included. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+
+  it("does not compare parts with a total stated after a discount", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, after discount total SAR 4,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("lets two different named airports settle an unstated airport change", async () => {
+    const { facts } = await run("New York 4 nights. Airport change not stated. Arrive at JFK Airport and depart from LGA Airport. SAR 9,000 total.");
+    expect(facts.airportChange?.value).toBe(true);
+  });
+});

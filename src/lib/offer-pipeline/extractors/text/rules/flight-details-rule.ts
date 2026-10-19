@@ -223,11 +223,12 @@ function differentAirports(first: string, second: string): boolean | undefined {
 }
 
 function airportChangeFact(original: string) {
-  if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
   // Two different named airports for arrival and departure: the change is stated by the names themselves.
   const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
   // Only the generic words airportKey drops are ignored: «مطار دبي آل مكتوم» is another airport.
   const namedChange = pair ? differentAirports(pair[1], pair[2]) : undefined;
+  // "Airport change not stated" says nothing the named airports do not settle.
+  if (AIRPORT_CHANGE_UNKNOWN.test(original)) return pair && namedChange ? exact(true, pair[0].trim()) : undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
   // "No airport change" beside two different named airports contradicts itself: neither is confirmed.
   if (noChange?.index !== undefined) return namedChange ? undefined : exact(false, noChange[0].trim());
