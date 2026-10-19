@@ -263,4 +263,8 @@ describe("nightsRule", () => {
       { value: 5, evidence: "5 ليالٍ" },
     ]);
   });
+
+  it("a Latin comma ends a cancellation clause", () => {
+    expect(nightsRule.apply("Cancellation policy, duration: 7 nights").facts.nights?.value).toBe(7);
+  });
 });

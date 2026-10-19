@@ -93,7 +93,7 @@ export function extractNightObservations(text: string): NightObservation[] {
 /** Words that make a count a deadline rather than a duration. */
 const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/iu;
 /** A cancellation/refund clause the count sits in. */
-const PENALTY_BEFORE = /(?:penalty|cancel\w*|refund\w*|no[-\s]?show|غرامة|إلغاء|الإلغاء|استرداد|عدم\s+الحضور)[^.،;؛\n]*$/iu;
+const PENALTY_BEFORE = /(?:penalty|cancel\w*|refund\w*|no[-\s]?show|غرامة|إلغاء|الإلغاء|استرداد|عدم\s+الحضور)[^.،,;؛\n]*$/iu;
 
 /** An option heading ("### الخيار الأول — فنادق 4 نجوم", "Option 2:"). */
 const OPTION_HEADING = /^[\s#*>-]*(?:الخيار|خيار|option)(?!\p{L})/gimu;

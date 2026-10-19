@@ -37,8 +37,9 @@ describe("taxesRule — included sections", () => {
     expect(taxesRule.apply("### الخدمات المشمولة\n- رسوم دخول المزارات.").facts.taxes).toBeUndefined();
   });
 
-  it("a «غير مشمول» heading never reads as included", () => {
-    expect(taxesRule.apply("### غير مشمول\n- جميع الضرائب.").facts.taxes).toBeUndefined();
+  it("taxes listed under an exclusion heading read as excluded", () => {
+    expect(taxesRule.apply("### غير مشمول\n- جميع الضرائب.").facts.taxes?.value).toEqual({ included: false });
+    expect(taxesRule.apply("### Not included\n- Taxes").facts.taxes?.value).toEqual({ included: false });
   });
 });
 

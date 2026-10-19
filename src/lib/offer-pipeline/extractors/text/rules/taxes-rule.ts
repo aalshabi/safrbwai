@@ -17,13 +17,13 @@ const INCLUDE =
 
 const MENTION = /ضرائب|ضريبة|رسوم|taxes|vat|fees/i;
 
-/** Taxes proper: «رسوم دخول المزارات» listed as included is not a tax statement. */
+/** Taxes proper: «رسوم دخول المزارات» in an included or excluded list is not a tax statement. */
 const TAX_WORD = /ضرائب|ضريبة|\btaxes\b|\bvat\b/i;
 
 export const taxesRule: ExtractionRule = {
   key: "taxes",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE) ?? listedAsIncluded(text, TAX_WORD);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, TAX_WORD) ?? listedAsIncluded(text, TAX_WORD);
     if (hit) return { facts: { taxes: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {
