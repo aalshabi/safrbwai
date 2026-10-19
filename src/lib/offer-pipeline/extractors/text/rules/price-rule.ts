@@ -508,7 +508,7 @@ const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|trav
 const SURCHARGE_STATED =
   /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
 const CONDITIONAL_CHARGE_BEFORE =
-  /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.;؛\n]{0,30}$/iu;
+  /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.,;؛،\n]{0,30}$/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {

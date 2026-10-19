@@ -773,3 +773,15 @@ describe("thirty-seventh review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("thirty-eighth review follow-ups", () => {
+  it("counts a regular charge after a penalty in the same sentence", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; penalty SAR 500, cleaning SAR 200; total SAR 1,800.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not carry a scope from an earlier meal to a later one", async () => {
+    const { facts } = await run("Dubai 4 nights. For children only, lunch is included, but breakfast is included for all guests. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+});

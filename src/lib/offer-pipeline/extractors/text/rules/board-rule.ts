@@ -70,10 +70,21 @@ const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 const SCOPE_BEFORE =
   /(?:^|[^\p{L}])(?:for\s+(?:children|kids|infants|babies|toddlers|teens|teenagers|seniors|elderly|adults)\b|on\s+(?:the\s+)?(?:first|last|arrival|departure)\s+(?:day|night)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
 
-const sentenceBefore = (text: string, index: number) => {
+const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
+
+/**
+ * Whether a guest/day scope earlier in the sentence belongs to this meal
+ * statement: it does unless another meal is named between them ("For
+ * children only, lunch is included, but breakfast is included for all").
+ */
+function scopedBefore(text: string, index: number): boolean {
   const before = text.slice(0, index);
-  return before.slice(before.search(/[^.!?؟;؛\n]*$/));
-};
+  const sentence = before.slice(before.search(/[^.!?؟;؛\n]*$/));
+  const scopes = [...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu"))];
+  const last = scopes.at(-1);
+  if (!last) return false;
+  return !MEAL_MENTION.test(sentence.slice(last.index + last[0].length));
+}
 
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
@@ -90,7 +101,7 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     // A plan for some guests or days only ("with breakfast for children only",
     // «شامل الإفطار للأطفال», "on the first day") is not the booking's board;
     // a later unscoped mention still is.
-    if (SCOPED_PLAN.test(rest) || SCOPE_BEFORE.test(sentenceBefore(text, m.index))) continue;
+    if (SCOPED_PLAN.test(rest) || scopedBefore(text, m.index)) continue;
     return m as RegExpExecArray;
   }
   return null;
@@ -116,7 +127,7 @@ export const boardRule: ExtractionRule = {
       const excluded = [...text.matchAll(new RegExp(BREAKFAST_EXCLUDED.source, "giu"))].find(
         (m) =>
           !QUALIFIED_EXCLUSION.test(text.slice(m.index + m[0].length)) &&
-          !SCOPE_BEFORE.test(sentenceBefore(text, m.index))
+          !scopedBefore(text, m.index)
       );
       if (excluded && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };
