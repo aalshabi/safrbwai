@@ -63,14 +63,23 @@ const config: Config = {
           900: "#0D1B3A",
           950: "#081026",
         },
+        // DEFAULT follows --teal: a darker teal on light backgrounds (5.5:1 on
+        // white, WCAG AA for text and white-on-teal buttons) and the brand
+        // #00A7B6 in dark mode and on navy panels (see globals.css).
         teal: {
-          DEFAULT: "#00A7B6",
+          DEFAULT: "rgb(var(--teal) / <alpha-value>)",
           50: "#e0f7f9",
           100: "#b3ecf0",
+          300: "#5fd3dc",
           400: "#22c4d1",
           500: "#00A7B6",
-          600: "#008795",
+          600: "#007480",
+          700: "#00646e",
         },
+      },
+      spacing: {
+        // Large buttons (size="lg") are 52px tall.
+        13: "3.25rem",
       },
       borderRadius: {
         lg: "var(--radius)",

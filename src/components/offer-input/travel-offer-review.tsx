@@ -77,7 +77,7 @@ export function TravelOfferReview({
 
           {input.type === "url" && (
             <Row label={r.linkLabel}>
-              <span dir="ltr" className="ltr-nums break-all text-teal-600">
+              <span dir="ltr" className="ltr-nums break-all text-teal-600 dark:text-teal-300">
                 {input.url}
               </span>
             </Row>

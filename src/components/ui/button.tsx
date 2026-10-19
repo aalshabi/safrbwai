@@ -9,7 +9,8 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-teal text-white shadow-lg shadow-teal-500/20 hover:bg-teal-600",
+          // A fixed shade, not the themed teal: white text stays at 5.5:1 on navy panels too.
+          "bg-teal-600 text-white shadow-lg shadow-teal-500/20 hover:bg-teal-700",
         navy: "bg-navy text-white hover:bg-navy-950 shadow-lg shadow-navy/20",
         outline:
           "border border-border bg-transparent hover:bg-muted hover:text-foreground",

@@ -40,8 +40,8 @@ export const PRODUCT_CAPABILITIES = {
     title: { ar: "تحليل عرض سفر", en: "Travel offer analysis" },
     route: "/analyze-offer",
     reason: {
-      ar: "تحليل نصي حتمي متاح الآن.",
-      en: "Deterministic text analysis is available now.",
+      ar: "تحليل النص بقواعد ثابتة متاح الآن.",
+      en: "Fixed-rule text analysis is available now.",
     },
     launchRequirement: {
       ar: "استمرار اختبارات الدقة والخصوصية والأمان.",

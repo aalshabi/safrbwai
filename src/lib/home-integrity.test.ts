@@ -67,8 +67,8 @@ describe("home page integrity", () => {
   it("describes only current text-analysis behavior on the home page", () => {
     expect(ar.how.step1Desc).toContain("نص عرض سفر");
     expect(en.how.step1Desc).toContain("travel-offer text");
-    expect(ar.how.step2Desc).toContain("المحرك الحتمي");
-    expect(en.how.step2Desc).toContain("deterministic engine");
+    expect(ar.how.step2Desc).toContain("بقواعد ثابتة");
+    expect(en.how.step2Desc).toContain("fixed rules");
 
     const currentHowAndPillars = JSON.stringify({
       ar: { how: ar.how, pillars: ar.pillars },

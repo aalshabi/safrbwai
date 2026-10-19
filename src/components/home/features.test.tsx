@@ -54,6 +54,6 @@ describe("first-release feature cards", () => {
 
     expect(await screen.findByText("Travel offer analysis")).toBeTruthy();
     expect(screen.getByText("Offer review guides")).toBeTruthy();
-    expect(screen.getByText("Deterministic text analysis is available now.")).toBeTruthy();
+    expect(screen.getByText("Fixed-rule text analysis is available now.")).toBeTruthy();
   });
 });

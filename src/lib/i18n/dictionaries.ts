@@ -80,7 +80,7 @@ export const dictionaries = {
         "سافر بوعي أداة تساعدك على مراجعة المعلومات الواردة في عروض السفر واتخاذ قرار أوضح قبل الحجز.",
       ctaPrimary: "حلّل عرض سفر",
       ctaSecondary: "تعرّف على الأدوات",
-      trustLine: "النتائج استشارية وتستند إلى النص الذي تدخله فقط.",
+      trustLine: "النتائج استشارية وتستند إلى نص العرض وحده: تلصقه، أو يُستخرج من PDF أو صورة أو رابط وتراجعه قبل التحليل.",
     },
     benefits: {
       title: "لماذا سافر بوعي؟",
@@ -124,7 +124,7 @@ export const dictionaries = {
       step1Title: "ألصق نص العرض",
       step1Desc: "أدخل نص عرض سفر غير حساس أو مجهّل، دون بيانات شخصية أو دفع.",
       step2Title: "راجع النتيجة",
-      step2Desc: "يفحص المحرك الحتمي المعلومات المذكورة والناقصة والتناقضات الواضحة.",
+      step2Desc: "يفحص المحرك بقواعد ثابتة المعلومات المذكورة والناقصة والتناقضات الواضحة.",
       step3Title: "تحقق قبل الالتزام",
       step3Desc: "استخدم الأسئلة المقترحة، وتحقق دائمًا من المصدر الرسمي قبل الحجز أو الدفع.",
     },
@@ -134,14 +134,14 @@ export const dictionaries = {
       items: [
         { title: "حقائق مؤكدة", desc: "معلومات صريحة مستخرجة من النص نفسه." },
         { title: "معلومات ناقصة", desc: "نقاط مهمة لم يذكرها العرض بوضوح." },
-        { title: "تناقضات واضحة", desc: "اختلافات حتمية يمكن إثباتها داخل النص." },
+        { title: "تناقضات واضحة", desc: "اختلافات يمكن إثباتها من النص نفسه." },
         { title: "أسئلة مقترحة", desc: "حتى خمسة أسئلة عملية قبل الحجز." },
         { title: "تحقق رسمي", desc: "تذكير بالرجوع إلى المصدر الرسمي قبل أي التزام مالي." },
       ],
     },
     cta: {
       title: "راجع عرض سفرك النصي",
-      subtitle: "ألصق نص العرض لتحصل على مراجعة حتمية للنقاط المذكورة والناقصة قبل الحجز.",
+      subtitle: "ألصق نص العرض لتحصل على مراجعة بقواعد ثابتة للنقاط المذكورة والناقصة قبل الحجز.",
       button: "حلّل عرض سفر",
     },
     footer: {
@@ -793,7 +793,7 @@ export const dictionaries = {
         "SafrBwai helps you review the information stated in travel offers and make a clearer decision before booking.",
       ctaPrimary: "Analyze a travel offer",
       ctaSecondary: "Explore the tools",
-      trustLine: "Results are advisory and based only on the text you provide.",
+      trustLine: "Results are advisory and based only on the offer text: pasted, or read from a PDF, image or link and reviewed by you before analysis.",
     },
     benefits: {
       title: "Why SafrBwai?",
@@ -837,7 +837,7 @@ export const dictionaries = {
       step1Title: "Paste the offer text",
       step1Desc: "Enter non-sensitive or anonymized travel-offer text without personal or payment data.",
       step2Title: "Review the result",
-      step2Desc: "The deterministic engine checks stated information, missing details, and clear contradictions.",
+      step2Desc: "The engine applies fixed rules to check stated information, missing details, and clear contradictions.",
       step3Title: "Verify before committing",
       step3Desc: "Use the suggested questions and always verify with the official source before booking or paying.",
     },
@@ -847,7 +847,7 @@ export const dictionaries = {
       items: [
         { title: "Confirmed facts", desc: "Explicit information extracted from the text itself." },
         { title: "Missing information", desc: "Important points the offer does not clearly state." },
-        { title: "Clear contradictions", desc: "Deterministic differences that can be proven within the text." },
+        { title: "Clear contradictions", desc: "Differences that can be proven from the text itself." },
         { title: "Suggested questions", desc: "Up to five practical questions before booking." },
         { title: "Official verification", desc: "A reminder to check the official source before any financial commitment." },
       ],
@@ -855,7 +855,7 @@ export const dictionaries = {
     cta: {
       title: "Review your text travel offer",
       subtitle:
-        "Paste the offer text for a deterministic review of the stated and missing information before booking.",
+        "Paste the offer text for a fixed-rule review of the stated and missing information before booking.",
       button: "Analyze a travel offer",
     },
     footer: {
