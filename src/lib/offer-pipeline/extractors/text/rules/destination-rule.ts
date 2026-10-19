@@ -226,8 +226,8 @@ function findCanonical(text: string): Match | null {
 }
 
 /** «مطار إسطنبول», "Istanbul airport". */
-/** "Istanbul Airport", "Istanbul International Airport", "Istanbul New Airport". */
-const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,2}airport\b/iu;
+/** "Istanbul Airport", "Istanbul International Airport", "Istanbul Sabiha Gokcen International Airport". */
+const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,5}airport\b/iu;
 
 /** Between a transit city and its country: nothing, a comma, or the city's airport ("Istanbul International Airport, Turkey"). */
 const TRANSIT_COUNTRY_GAP = /^[ \t]*(?:(?:[\p{L}.]+[ \t]+){0,2}airport|الدولي)?[ \t]*[,،(\-–]?[ \t]*$/iu;

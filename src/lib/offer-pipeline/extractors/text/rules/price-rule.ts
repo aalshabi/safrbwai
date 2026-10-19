@@ -462,7 +462,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     const roomScoped =
       basis === "per_night" &&
       (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
-    const discounted = basis === "per_night" && DISCOUNT_STATED.test(normalizedText);
+    const discounted = basis === "per_night" && DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
     observations.push({
       amount,
       currency,
@@ -486,6 +486,9 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
 const UNIT_LABEL_BEFORE = /(?:adults?|child(?:ren)?|infants?|(?:ال)?بالغ|(?:ال)?طفل|(?:ال)?رضيع|للبالغ|للطفل)(?:\s+(?:fare|price|rate|ticket)s?)?\s*[:：]?\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 /** A discount or promo code anywhere in the offer ("discount SAR 200", «خصم 10%»). */
 const DISCOUNT_STATED = /\b(?:discount|promo(?:tion)?\s+code|coupon)\b|خصم|تخفيض|حسم/iu;
+/** "No discount", «بدون خصم», «الخصم غير متاح»: the offer rules a discount out. */
+const NO_DISCOUNT =
+  /\b(?:no|without)\s+(?:discounts?|promo(?:tion)?\s+codes?|coupons?)\b|\bdiscounts?\s+(?:(?:is|are)\s+)?not\s+(?:applicable|available|included|applied)|(?:لا\s+(?:يوجد|يشمل|تشمل)\s+(?:أي\s+)?|بدون\s+)(?:ال)?(?:خصم|تخفيض)|(?:ال)?(?:خصم|تخفيض)\s+غير\s+(?:متاح|متوفر|مشمول|مطبق)/giu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {

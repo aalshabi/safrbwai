@@ -523,3 +523,27 @@ describe("twenty-fourth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("twenty-fifth review follow-ups", () => {
+  it("does not take a transit city's long airport name as the destination", async () => {
+    const { facts } = await run("Paris 5 nights, flight via Istanbul, transfer at Istanbul Sabiha Gokcen International Airport, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Paris");
+  });
+
+  it("does not read a breakfast inclusion for some guests or days as bed and breakfast", async () => {
+    for (const text of ["Dubai 4 nights, breakfast included for children only, SAR 3,000 total.", "Dubai 4 nights, breakfast included on the first day only, SAR 3,000 total."]) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).not.toBe("BB");
+    }
+  });
+
+  it("still reads a plain breakfast inclusion as bed and breakfast", async () => {
+    const { facts } = await run("Dubai 4 nights, breakfast included, SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+
+  it("still compares a nightly rate when the offer rules out a discount", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 500; no discount; total SAR 1,800.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});
