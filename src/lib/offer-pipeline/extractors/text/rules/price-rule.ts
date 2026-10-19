@@ -7,6 +7,7 @@
 import type { ExtractedOfferFacts, OfferPrice, OfferPriceBasis } from "@/lib/offer-pipeline/types";
 import type { OfferObservations } from "@/lib/offer-pipeline/analysis/types";
 import type { ExtractionRule, RuleResult } from "../rule";
+import { hasSeveralStays } from "./nights-rule";
 import {
   AMOUNT_PATTERN,
   CURRENCY_ALT,
@@ -71,7 +72,7 @@ const PARTY_WORD_SIZE: Record<string, number> = {
 const PER_PERSON_LABEL =
   /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:للشخص|للفرد|لكل\s+(?:شخص|فرد))|(?:price|cost)\s+per\s+(?:person|pax|travell?er))\s*[:：\-–—]?\s*$/i;
 const PER_NIGHT_LABEL =
-  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:لليلة|لكل\s+ليلة|في\s+الليلة)|(?:nightly|per[-\s]?night)\s*(?:price|cost)?)\s*[:：\-–—]?\s*$/i;
+  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:لليلة|لكل\s+ليلة|في\s+الليلة|(?:ال)?ليلة(?:\s+الواحدة)?)|(?:nightly|per[-\s]?night)\s*(?:price|cost)?)\s*[:：\-–—]?\s*$/i;
 /**
  * A bare price label — "السعر 6,000 ريال" — with no "النهائي/الإجمالي".
  * Anchored to the end of the clause so "سعر الفندق 3000 ريال" does NOT match:
@@ -145,6 +146,18 @@ const PER_PERSON_QUALIFIER = new RegExp(
 );
 const PER_NIGHT_QUALIFIER =
   /^\s*(?:[/\\]\s*(?:ال)?ليلة|[/\\]\s*night\b|[/\\]?\s*(?:لكل\s+ليلة|لليلة|في\s+الليلة|per\s+night))/i;
+/** "per room" / «للغرفة» right after a nightly rate. */
+const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
+/**
+ * A booking for more than one room: the dual «غرفتين» as a booking («حجز غرفتين», or an
+ * item of its own; «جناح مكون من غرفتين» is one suite's layout), any count tied to
+ * booking wording ("for 2 rooms", "book six rooms", «حجز 3 غرف», «لخمس غرف», "2 x rooms"),
+ * a room-count label ("Rooms: 2", «عدد الغرف: ٢»),
+ * or 2–9 rooms standing as their own item in the offer («…، 3 غرف، …»). A count inside a description of the
+ * hotel ("offers 5 rooms") is not a booking multiplier.
+ */
+const MULTIPLE_ROOMS =
+  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|اثنتان|اثنان|ثلاث|أربع|اربع|خمس|ست|سبع|ثمان|تسع|عشر)(?![\d\p{L}])|(?:حجز|(?<![\p{L}])ل|عدد\s+الغرف\s*[:：]?)\s*(?:غرفتين|غرفتان)|(?:^|[،,;؛\n]\s*)(?:غرفتين|غرفتان)\s*(?=[،,;؛.\n]|$)|(?:(?<![\p{L}])لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:(?<![\p{L}])لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/iu;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
@@ -433,7 +446,38 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
 
   const seen = new Set<string>();
   const observations: PriceObservation[] = [];
-  for (const { amount, currency, basis, evidence, party } of matches) {
+  const multipleRooms = MULTIPLE_ROOMS.test(normalizedText);
+  // Several stays («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
+  // The nights rule decides what a stay is, so deadlines and penalties never count.
+  const severalStays = hasSeveralStays(text);
+  // A discount counts only in a clause that prices something ("discount SAR 200", "10% discount");
+  // "a 20% spa discount" on a hotel benefit does not change the package total.
+  // Clauses split at commas too, but not inside "2,000".
+  const discountStated = normalizedText
+    .replace(NO_DISCOUNT, " ")
+    .split(/[.;؛،\n]|,(?!\d)/)
+    .some((clause) => DISCOUNT_STATED.test(clause) && (PRICED_CLAUSE.test(clause) || /\d\s*%/.test(clause)) && !BENEFIT_ITEM.test(clause));
+  // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
+  // Only a surcharge on the price itself counts: one that leads its clause ("plus VAT 15%") or sits
+  // beside the price ("prices exclude VAT"); "late checkout incurs a service charge 15%" does not.
+  const surchargeStated = normalizedText
+    .split(/[.;؛،\n]|,(?!\d)/)
+    .some((clause) => SURCHARGE_STATED.test(clause) && PACKAGE_SURCHARGE.test(clause) && !BENEFIT_ITEM.test(clause));
+  // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
+  // An amount the offer states again as its total is the same total, not another charge.
+  const otherCharge = allMatches.some(
+    (match) =>
+      !matches.includes(match) &&
+      // An amount in another currency ("total SAR 2,000 (USD 533)") is a conversion, not a charge.
+      matches.some((kept) => kept.currency === match.currency) &&
+      !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency) &&
+      // A charge due only on cancellation, no-show or as a deposit is not in the total.
+      !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index)) &&
+      !CONDITIONAL_CHARGE_AFTER.test(normalizedText.slice(match.index + match.length, match.index + match.length + 40)) &&
+      // An optional or excluded extra ("Optional tour SAR 500, not included") is outside the total.
+      !OPTIONAL_CHARGE.test(clauseAround(normalizedText, match.index))
+  );
+  for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;
     if (
@@ -443,9 +487,135 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       continue;
     }
     seen.add(key);
-    observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}) });
+    const roomScoped =
+      basis === "per_night" &&
+      (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
+    const totalAdjusted = basis === "per_night" && (discountStated || otherCharge || surchargeStated);
+    observations.push({
+      amount,
+      currency,
+      basis,
+      evidence,
+      ...(party ? { party } : {}),
+      ...(roomScoped ? { roomScoped } : {}),
+      ...(totalAdjusted ? { totalAdjusted } : {}),
+    });
   }
-  return { observations, components: extractComponents(normalizedText, allMatches) };
+  const components = extractComponents(normalizedText, allMatches);
+  return { observations, components: components.length > 0 ? components : plusComponents(normalizedText, allMatches) };
+}
+
+/**
+ * Amounts the offer itself adds up with "+" right before its total, in one
+ * sentence: «الطيران 2,000 ريال + الفندق 3,000 ريال، الإجمالي 4,000 ريال».
+ * The plus sign is the offer's own statement that these are parts of the total.
+ */
+/** A traveller-type label right before an amount ("Adult SAR 2,000", "Child fare SAR 1,000", «الطفل: 1,000») marks a unit rate. */
+const UNIT_LABEL_BEFORE = /(?:adults?|child(?:ren)?|infants?|(?:ال)?بالغ|(?:ال)?طفل|(?:ال)?رضيع|للبالغ|للطفل)(?:\s+(?:fare|price|rate|ticket)s?)?\s*[:：]?\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
+/** A discount or promo code anywhere in the offer ("discount SAR 200", «خصم 10%»). */
+const DISCOUNT_STATED = /\b(?:discount|promo(?:tion)?\s+code|coupon)\b|خصم|تخفيض|حسم/iu;
+/** "No discount", «بدون خصم», «الخصم غير متاح»: the offer rules a discount out. */
+const NO_DISCOUNT =
+  /\b(?:no|without)\s+(?:discounts?|promo(?:tion)?\s+codes?|coupons?)\b|\bdiscounts?\s+(?:(?:is|are)\s+)?not\s+(?:applicable|available|included|applied)|\bdiscounts?\s+(?:(?:does|do|will)\s+not|doesn'?t|don'?t|won'?t)\s+apply|\bnot\s+eligible\s+for\s+(?:a\s+|any\s+)?discounts?|(?:لا\s+(?:يوجد|يشمل|تشمل)\s+(?:أي\s+)?|بدون\s+)(?:ال)?(?:خصم|تخفيض)|(?:ال)?(?:خصم|تخفيض)\s+غير\s+(?:متاح|متوفر|مشمول|مطبق)/giu;
+/** "SAR 2,000 each", "per ticket", «للواحد»: a rate multiplied by a count the chain does not see. */
+const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|traveller|traveler|seat)|للواحد|لكل\s+(?:واحد|تذكرة|مسافر))/iu;
+// Only a tax or a booking-type fee: a cancellation fee of 100% is a penalty, not part of the total.
+const SURCHARGE_STATED =
+  /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
+const CONDITIONAL_CHARGE_BEFORE =
+  /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.,;؛،\n]{0,30}$/iu;
+/** The same labels written after the amount: "SAR 500 cancellation fee applies". */
+const CONDITIONAL_CHARGE_AFTER =
+  /^[^.,;؛،\n\d]{0,20}?(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)/iu;
+const PARTY_IN_LABEL =
+  /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
+const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;
+/** A hotel benefit rather than the booking: "20% spa discount", "restaurant service charge 15%", «خصم على المطعم». */
+const BENEFIT_ITEM =
+  /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?|check-?(?:in|out)|minibar|room\s+service|parking|upgrades?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
+const PACKAGE_SURCHARGE = new RegExp(
+  `^\\s*(?:\\+|plus\\b|excl|vat\\b|tax|\\d+(?:\\.\\d+)?\\s*[%٪]\\s*(?:vat|tax|ضريبة)|(?:ال)?ضريبة|زائد|غير\\s+شامل)|${PRICED_CLAUSE.source}|\\b(?:prices|rates|fares?|package|booking)\\b|الأسعار|الباقة|الحجز`,
+  "iu"
+);
+const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
+/**
+ * The clause around an amount: back to the nearest , ; . or line break, and on to the
+ * nearest ; . or line break. A later comma part that has its own amount belongs to that
+ * amount ("cleaning fee SAR 200, optional tour SAR 500, not included").
+ */
+function clauseAround(text: string, index: number): string {
+  const start = text.slice(0, index).search(/[^.,;؛،\n]*$/);
+  const rest = text.slice(index).search(/[.;؛\n]/);
+  const [first, ...later] = text.slice(index, rest === -1 ? text.length : index + rest).split(/(?=[,،](?!\d))/);
+  const ownedLater = later.findIndex((part) => /\d/.test(part));
+  const tail = first + (ownedLater === -1 ? later : later.slice(0, ownedLater)).join("");
+  return text.slice(start, index) + tail;
+}
+const INCLUDED_UNPRICED =
+  /\b(?:including|incl\.?|inclusive\s+of)\s+(?!(?:the\s+)?(?:total|sum|above)\b)\p{L}|\b(?:with|plus)\s+(?:all\s+)?(?:taxes|tax|vat|fees?|charges?|service|transfers?|breakfast|lunch|dinner|meals?|insurance|visas?|tickets?)\b|(?:شامل(?:ة|اً|ا)?|يشمل|تشمل)\s+(?!(?:ال)?(?:إجمالي|مجموع)(?![\p{L}]))\p{L}|مع\s+(?:ال)?(?:ضريبة|ضرائب|رسوم|نقل|تأمين|تأشيرة|إفطار|غداء|عشاء)|بما\s+في(?:ها|\s+ذلك)/iu;
+const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
+
+function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
+  for (const total of matches.filter((match) => match.basis === "total")) {
+    const before = matches.filter((match) => match.index < total.index && match.basis === "unspecified");
+    const chain: PriceMatch[] = [];
+    for (let i = before.length - 1; i >= 0; i--) {
+      const part = before[i];
+      const next = chain[0] ?? total;
+      const gap = normalizedText.slice(part.index + part.length, next.index);
+      // Only a short label sits between itemised amounts: «ريال + الفندق».
+      if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
+      // The last part reaches the total through a label; every other link is a "+".
+      if (chain.length > 0 && !gap.includes("+")) break;
+      // An item added with no amount ("+ taxes") is a part the chain cannot price.
+      if ((gap.match(/\+/g)?.length ?? 0) > (chain.length > 0 ? 1 : 0)) {
+        chain.length = 0;
+        break;
+      }
+      // A total "including taxes" adds an item the chain cannot price.
+      if (chain.length === 0 && INCLUDED_UNPRICED.test(gap)) {
+        chain.length = 0;
+        break;
+      }
+      // A total "after discount" is not the sum of the parts before it.
+      if (chain.length === 0 && DISCOUNT_STATED.test(gap)) break;
+      // A number the parser skipped ("+ SAR -1,000", "+ VAT 15% +") is a part we cannot add up.
+      // A party count in the total's own label ("total for 2 people") is not a skipped amount.
+      if (/[\d٠-٩]/.test(gap.replace(PARTY_IN_LABEL, " "))) {
+        chain.length = 0;
+        break;
+      }
+      // A discount ("+ Discount -SAR 1,000", «خصم 500») is subtracted, not added.
+      if (DISCOUNT_BEFORE.test(normalizedText.slice(Math.max(0, part.index - 20), part.index))) {
+        chain.length = 0;
+        break;
+      }
+      // A unit rate ("SAR 2,000 per adult + SAR 1,000 per child") counts once
+      // per traveller, so the plain sum says nothing about the total.
+      if (
+        OTHER_PER_UNIT_QUALIFIER.test(normalizedText.slice(part.index + part.length)) ||
+        UNIT_RATE_AFTER.test(normalizedText.slice(part.index + part.length)) ||
+        UNIT_LABEL_BEFORE.test(normalizedText.slice(Math.max(0, part.index - 20), part.index))
+      ) {
+        chain.length = 0;
+        break;
+      }
+      chain.unshift(part);
+    }
+    // An item added before the first amount ("Taxes + Flight SAR 2,000 + …") is unpriced too.
+    if (chain.length > 0) {
+      const before = normalizedText.slice(0, chain[0].index);
+      if (before.slice(before.search(/[^.\n!?؟;؛،,:：]*$/)).includes("+")) continue;
+      // Another priced item earlier in the sentence without a "+" ("Flight SAR 2,000, Hotel … + Tour …")
+      // means the chain is only part of the breakdown.
+      const sentenceStart = before.search(/[^.\n!?؟;؛]*$/);
+      if (matches.some((match) => match.basis !== "total" && match.index >= sentenceStart && match.index < chain[0].index)) continue;
+    }
+    if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {
+      return chain.map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
+    }
+  }
+  return [];
 }
 
 export const priceRule: ExtractionRule = {

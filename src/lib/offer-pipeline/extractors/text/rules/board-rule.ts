@@ -20,10 +20,31 @@ const BOARD_SIGNALS: BoardSignal[] = [
   { code: "HB", re: /half[-\s]?board|نصف\s*إقامة|إفطار\s*و?عشاء|\bHB\b/i },
   {
     code: "BB",
-    re: /bed\s*(?:and|&|\+)?\s*breakfast|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
+    re: /bed\s*(?:and|&|\+)?\s*breakfast|breakfast\s+(?:is\s+)?included|(?:ال)?إفطار\s*(?:مشمول|شامل|مجاني)(?![\u0600-\u06FF])|(?:ال)?إفطار\s*(?:ال)?(?:بوفيه|يومي)|(?:شامل[ةه]?|يشمل|تشمل)\s*(?:الضرائب(?:\s+والرسوم)?|الرسوم)?\s*(?:،?\s*و)?\s*(?:ال)?إفطار|includ(?:es?|ing)\s+(?:(?:all\s+)?(?:taxes(?:\s+and\s+fees)?|fees)\s*(?:,\s*|\s+(?:and|&)\s+))?breakfast|with\s+breakfast|مع\s*(?:ال)?إفطار|(?:ال)?إفطار\s*فقط|\bBB\b/i,
   },
-  { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*إفطار|\bRO\b/i },
+  // «بدون الإفطار للأطفال» excludes it for some guests only (see QUALIFIED_EXCLUSION).
+  { code: "RO", re: /room\s*only|بدون\s*وجبات|بدون\s*(?:ال)?إفطار(?!\s*(?:لل|في\s+يوم|يوم|عدا|ما\s+عدا|إلا))|\bRO\b/i },
 ];
+
+/** «الإفطار غير شامل» / "breakfast not included": no breakfast, but not yet proof of room only. */
+const BREAKFAST_EXCLUDED =
+  /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
+/** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
+const SCOPED_PLAN =
+  /^\s*(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|(?:for|on|during)\s+[^.,;\n]{0,40}\b(?:except|excluding|but\s+not)\b|[^.,;،\n]{0,40}(?:عدا|باستثناء)|للأطفال|للطفل|للبالغين|للكبار|للرضع|للرضّع|لكبار\s+السن|للمسنين|للمراهقين|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
+/** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
+// "For all guests", "for the entire stay", «للجميع» cover the whole booking and are not a scope,
+// unless an exception follows ("for all guests except children").
+const QUALIFIED_EXCLUSION =
+  /^\s*(?:(?:for|on|during)\s+(?!(?:all(?!\s+(?:the\s+)?adults?\b)|every(?:one|body)?|the\s+(?:entire|whole|full)|(?:the\s+)?(?:whole|entire)\s+stay)\b(?![^.,;\n]*\b(?:except|excluding|but\s+not)\b))|except|unless|لل(?!(?:جميع|كل)(?![^.,;،\n]*(?:عدا|باستثناء|إلا)))|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
+/** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */
+const MEAL_WORD = "(?:lunch|dinner|meals?|(?:ال)?غداء|(?:ال)?عشاء|(?:ال)?وجبات)";
+const MEAL_LIST = `${MEAL_WORD}(?:\\s*(?:,|،|and|or|&|أو|و)\\s*${MEAL_WORD})*`;
+const NEGATED_MEALS = new RegExp(
+  `(?:\\b(?:no|without)\\s+|(?:بدون|لا\\s+(?:يشمل|تشمل))\\s*)${MEAL_LIST}|${MEAL_LIST}\\s*(?:(?:are|is)\\s+)?(?:not\\s+included|excluded|غير\\s+(?:مشمول|مشمولة|متضمن|متضمنة))`,
+  "giu"
+);
+const OTHER_MEAL = /غداء|عشاء|الوجبات|وجبات|نصف\s*إقامة|إقامة\s*كاملة|lunch|dinner|meals?\b|half[-\s]?board|full[-\s]?board|all[-\s]?inclusive/i;
 
 const PLAN_COMPONENT_GAP = /^\s*(?:[:(]|تشمل|يشمل|شامل[ةه]?|مع|includ\w*|with)?\s*$/iu;
 
@@ -45,6 +66,70 @@ const OPTIONAL_EXTRA = new RegExp(`^[^.،,;؛\\n]{0,40}?(?:${OPTIONAL_WORD})`, "
 const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 
 /** The first match of `re` that the offer does not state as excluded. */
+/** A guest or day scope earlier in the same sentence: "For children only, breakfast is included". */
+const SCOPE_BEFORE =
+  /(?:^|[^\p{L}])(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
+
+const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
+
+/** A contrast or another service between a scope and the meal ends the scope ("For children only, transfer is included, but …"). */
+const SCOPE_END =
+  /\b(?:but|however|whereas|while|transfers?|tours?|wi-?fi|parking|flights?|visas?|insurance)\b|لكن|بينما|أما|نقل|توصيل|جولة|جولات|تأشيرة|تأمين|طيران|واي\s*فاي/iu;
+
+/** "for all guests", «لجميع النزلاء»: the meal is stated for the whole booking. */
+const WHOLE_BOOKING =
+  /^[^.!?؟;؛\n]*?(?:\bfor\s+(?:all|every)\s+(?:guests?|travell?ers?|passengers?|occupants?|members?)\b|\bfor\s+everyone\b|لجميع\s+(?:النزلاء|الضيوف|المسافرين|الأفراد)|للجميع)/iu;
+
+/**
+ * Whether a guest/day scope earlier in the sentence belongs to this meal
+ * statement: it does unless another meal is named between them ("For
+ * children only, lunch is included, but breakfast is included for all").
+ */
+function scopedBefore(text: string, index: number): boolean {
+  const before = text.slice(0, index);
+  const sentence = before.slice(before.search(/[^.!?؟;؛\n]*$/));
+  const scopes = [
+    ...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu")),
+    // "For one adult, …" scopes the meal only when the party is larger or has children.
+    ...[...sentence.matchAll(PREFIX_ADULTS)].filter((m) => partOfParty(text, m[1])),
+  ].sort((a, b) => a.index - b.index);
+  const last = scopes.at(-1);
+  if (!last) return false;
+  // "for all guests" counts only in the meal's own clause, not for a later service.
+  const after = text.slice(index);
+  const ownClause = after.slice(0, after.search(SCOPE_END) === -1 ? after.length : after.search(SCOPE_END));
+  if (WHOLE_BOOKING.test(ownClause)) return false;
+  const between = sentence.slice(last.index + last[0].length);
+  return !MEAL_MENTION.test(between) && !SCOPE_END.test(between);
+}
+
+const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const toCount = (word: string) => COUNT_WORDS[word.toLowerCase()] ?? Number(word);
+const COUNTED_ADULTS = /^\s*for\s+(?:(\d+|one|two|three|four|five|six|all|both|the)\s+)?adults?\b/iu;
+const PARTY_ADULTS = /\b(\d+|one|two|three|four|five|six)\s+adults?\b/giu;
+const CHILD_IN_PARTY = /\b(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?)\b|أطفال|طفل|رضيع/iu;
+/**
+ * "for one adult" when the party is larger or has children covers part of it only;
+ * "breakfast for 2 adults" for a party of 2 adults is the whole booking.
+ */
+function fewerAdults(text: string, rest: string): boolean {
+  const counted = rest.match(COUNTED_ADULTS);
+  return counted !== null && partOfParty(text, counted[1]);
+}
+
+const PREFIX_ADULTS = /(?:^|[^\p{L}])for\s+(?:(\d+|one|two|three|four|five|six|all|both|the)\s+)?adults?\b/giu;
+/**
+ * Whether "for (N/all) adults" covers only part of the party: the offer books children,
+ * or more adults than N. "For adults" with no party stated stays a scope.
+ */
+function partOfParty(text: string, count: string | undefined): boolean {
+  if (CHILD_IN_PARTY.test(text)) return true;
+  const parties = [...text.matchAll(PARTY_ADULTS)];
+  const n = count === undefined ? NaN : toCount(count);
+  if (Number.isNaN(n)) return parties.length === 0;
+  return parties.some((party) => toCount(party[1]) > n);
+}
+
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
   for (const m of scanned.matchAll(all)) {
@@ -57,6 +142,10 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     if (pricedSeparately(rest.slice(0, rest.search(/[.،,;؛\n]|$/)))) continue;
     if (OPTIONAL_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (inExcludedSection(text, m.index)) continue;
+    // A plan for some guests or days only ("with breakfast for children only",
+    // «شامل الإفطار للأطفال», "on the first day") is not the booking's board;
+    // a later unscoped mention still is.
+    if (SCOPED_PLAN.test(rest) || scopedBefore(text, m.index) || fewerAdults(text, rest)) continue;
     return m as RegExpExecArray;
   }
   return null;
@@ -76,7 +165,22 @@ export const boardRule: ExtractionRule = {
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 
-    if (found.length === 0) return { facts: {}, warnings: [] };
+    if (found.length === 0) {
+      // An offer whose only meal statement excludes breakfast sells the room only.
+      // The first exclusion for the whole stay; one for some guests or days ("for children") is skipped.
+      const excluded = [...text.matchAll(new RegExp(BREAKFAST_EXCLUDED.source, "giu"))].find(
+        (m) =>
+          !QUALIFIED_EXCLUSION.test(text.slice(m.index + m[0].length)) &&
+          !scopedBefore(text, m.index)
+      );
+      // A meal excluded for everyone says nothing more; one excluded only for some guests still may be served.
+      const withoutExcludedMeals = text.replace(NEGATED_MEALS, (meal: string, ...rest: unknown[]) => {
+        const offset = rest[rest.length - 2] as number;
+        return QUALIFIED_EXCLUSION.test(text.slice(offset + meal.length)) || scopedBefore(text, offset) ? meal : " ";
+      });
+      if (excluded && !OTHER_MEAL.test(withoutExcludedMeals)) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
+      return { facts: {}, warnings: [] };
+    }
 
     // A buffet or daily breakfast listed inside a stated FB/HB/AI plan («إقامة
     // كاملة تشمل إفطار بوفيه وغداء وعشاء») is one of its meals, not a rival plan.

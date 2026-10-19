@@ -16,6 +16,13 @@ import { cn } from "@/lib/utils";
 export const TITLE = "حالة المطارات الآن";
 export const NOTICE = "تحقق من حالة رحلتك لدى شركة الطيران قبل التوجه إلى المطار؛ قد تتغير العمليات خلال وقت قصير.";
 export const UNAVAILABLE_MESSAGE = "تعذر تحديث البيانات حاليًا";
+/** Without any current record the widget is a set of official links, not a live status. */
+export const LINKS_TITLE = "تحقق من حالة رحلتك";
+export const NO_LIVE_STATUS = "لا نعرض حالة مباشرة حاليًا";
+
+export function widgetTitle(view: AirportStatusView): string {
+  return view.hasCurrentData ? TITLE : LINKS_TITLE;
+}
 
 const STATUS_STYLE: Record<DisplayedStatus, { icon: ComponentType<{ className?: string }>; tone: string }> = {
   normal: { icon: CheckCircle2, tone: "bg-emerald-500/10 text-emerald-800 dark:text-emerald-300" },
@@ -226,7 +233,7 @@ function StateNotes({ view }: { view: AirportStatusView }) {
       )}
       {!view.hasCurrentData && (
         <div role="status" className="rounded-xl bg-muted p-3 text-sm">
-          <p className="font-bold text-foreground">{UNAVAILABLE_MESSAGE}</p>
+          <p className="font-bold text-foreground">{view.refreshFailed || view.lastUpdate ? UNAVAILABLE_MESSAGE : NO_LIVE_STATUS}</p>
           <p className="mt-1 text-muted-foreground">
             {view.lastUpdate ? `آخر تحديث ناجح: ${view.lastUpdate} بتوقيت الرياض` : "لا يوجد تحديث موثق بعد. تحقق من الروابط الرسمية أدناه."}
           </p>
@@ -247,7 +254,7 @@ function Header({ view, id }: { view: AirportStatusView; id: string }) {
       </span>
       <div className="min-w-0">
         <h2 id={id} className="font-display text-base font-extrabold text-foreground">
-          {TITLE}
+          {widgetTitle(view)}
         </h2>
         <p className="text-xs text-muted-foreground">{updateLine(view)}</p>
       </div>
@@ -319,7 +326,7 @@ export function AirportStatusBanner({ view, className }: { view: AirportStatusVi
   return (
     <section dir="rtl" lang="ar" aria-labelledby={`${id}-title`} className={className}>
       <h2 id={`${id}-title`} className="sr-only">
-        {TITLE}
+        {widgetTitle(view)}
       </h2>
       <details className="group rounded-2xl border border-border bg-card shadow-sm">
         <summary className="flex min-h-12 cursor-pointer list-none items-center gap-3 rounded-2xl px-4 py-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal [&::-webkit-details-marker]:hidden">
@@ -327,7 +334,7 @@ export function AirportStatusBanner({ view, className }: { view: AirportStatusVi
             <Icon className="size-4" aria-hidden />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block font-display text-sm font-extrabold text-foreground">{TITLE}</span>
+            <span className="block font-display text-sm font-extrabold text-foreground">{widgetTitle(view)}</span>
             <span className="block text-xs leading-5 text-foreground">{saudiSummary(view)}</span>
             <span className="block text-xs leading-5 text-muted-foreground">{updateLine(view)}</span>
           </span>

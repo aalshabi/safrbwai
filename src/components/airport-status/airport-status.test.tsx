@@ -11,6 +11,8 @@ import {
   AirportStatusSidebar,
   NOTICE,
   TITLE,
+  LINKS_TITLE,
+  NO_LIVE_STATUS,
   UNAVAILABLE_MESSAGE,
   saudiSummary,
   updateLine,
@@ -130,6 +132,13 @@ describe("sidebar (desktop)", () => {
     expect(within(status).getByText(/تحقق من الروابط الرسمية/)).toBeTruthy();
     expect(screen.getAllByRole("link", { name: /الموقع الرسمي/ })).toHaveLength(4);
     expect(screen.getByText("بيانات الاضطرابات العالمية غير متاحة حاليًا.")).toBeTruthy();
+  });
+
+  it("is titled as official links, not a live status, when no record is current", () => {
+    render(<AirportStatusSidebar view={emptyView()} />);
+    expect(screen.getByRole("complementary", { name: LINKS_TITLE })).toBeTruthy();
+    expect(screen.queryByText(TITLE)).toBeNull();
+    expect(within(screen.getByRole("status")).getByText(NO_LIVE_STATUS)).toBeTruthy();
   });
 
   it("keeps last successful data labelled when a refresh failed", () => {

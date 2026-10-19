@@ -4,6 +4,7 @@
  * the analysis layer can then ask for clarification without inventing facts.
  */
 
+import { SAUDI_AIRPORTS } from "@/lib/airport-status/config";
 import type { ExtractedOfferFacts } from "@/lib/offer-pipeline/types";
 import type { ExtractionRule, RuleResult } from "../rule";
 import { exact, toWesternDigits } from "../utils";
@@ -67,8 +68,46 @@ function nearestContextDistance(text: string, index: number, pattern: RegExp): n
   }, Number.POSITIVE_INFINITY);
 }
 
+/** A flight routed through another city ("via Doha", «عبر إسطنبول»): a bare «توقف ١٤ ساعة» elsewhere in it is that stop. */
+const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|layover|stopover)\b/iu;
+
+/**
+ * A stop whose duration sits right beside it, naming no place: «توقف 14 ساعة»,
+ * «14 ساعة توقف», "layover 7 hours", "7 hours layover".
+ */
+const UNNAMED_STOP =
+  /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit|stop)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit|stop))/i;
+const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
+/**
+ * A stop placed somewhere after its duration («توقف 3 ساعات في الفندق», «… في
+ * وسط المدينة», "in the old town") names its place, so it is not the routed
+ * flight's unnamed stop. Only the airport itself keeps it a flight stop.
+ */
+const PLACED_STOP =
+  /(?:^|[^\p{L}])(?:في|داخل|عند|at|in|inside)\s+(?!(?:ال)?مطار|(?:ال)?صالة|(?:the\s+)?(?:airport|terminal))/iu;
+
+/** The sentence around `index`: up to the nearest full stop or line break. */
+function sentenceAt(text: string, index: number): string {
+  const before = text.slice(0, index);
+  const start = Math.max(...[".", "!", "?", "؟", "\n"].map((mark) => before.lastIndexOf(mark))) + 1;
+  const rest = text.slice(index).search(/[.!?؟\n]/);
+  return text.slice(start, rest === -1 ? text.length : index + rest);
+}
+
 function hasAviationContext(text: string, index: number): boolean {
   const clause = clauseAt(text, index);
+  // A routed flight («… عبر إسطنبول، توقف 14 ساعة») names its stop in the same
+  // sentence; a stop "at" or "in" a place («توقف عند برج خليفة», «توقف 3
+  // ساعات في وسط المدينة») or with ground transport is not that stop.
+  if (
+    ROUTED_VIA.test(sentenceAt(text, index)) &&
+    UNNAMED_STOP.test(text.slice(index)) &&
+    !PLACED_STOP.test(clause.text.slice(clause.matchIndex)) &&
+    !GROUND_STOP_CONTEXT.test(clause.text) &&
+    !SIGHTSEEING_STOP.test(clause.text)
+  ) {
+    return true;
+  }
   const aviationDistance = Math.min(
     nearestContextDistance(clause.text, clause.matchIndex, EXPLICIT_TRANSIT_CONTEXT),
     nearestContextDistance(clause.text, clause.matchIndex, FLIGHT_CONTEXT)
@@ -131,12 +170,73 @@ function stopCountFact(original: string, normalized: string) {
   return undefined;
 }
 
+/** An airport name after «مطار»: up to six words («الأمير محمد بن عبدالعزيز الدولي»), stopping at a clause break or «و». */
+/** Words that follow an airport name without being part of it: times, days, the next leg. */
+const AFTER_AIRPORT_NAME =
+  "و?(?:المغادرة|الإقلاع|مغادرة)|و|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
+  // route and terminal qualifiers: «عبر الصالة 1», «مبنى 3», «بوابة»
+  "|عبر|الصالة|صالة|المبنى|مبنى|البوابة|بوابة|رقم|رحلة|الرحلة";
+const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}\\p{M}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\p{M}\\-']+\\s*){1,6})`;
+/** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
+const AR_ARRIVE_DEPART = new RegExp(
+  `(?:الوصول|وصول|الهبوط)\\s*(?:إلى|الى|في)\\s*${AR_AIRPORT_NAME}[^.\\n]{0,40}?(?:المغادرة|مغادرة|الإقلاع)\\s*(?:من)\\s*${AR_AIRPORT_NAME}`,
+  "u"
+);
+const EN_ARRIVE_DEPART =
+  /arriv(?:e|es|al|ing)\s+(?:at|in|into)\s+((?:[\p{L}\-'.]+\s+){1,6})airport[^.\n]{0,40}?depart(?:s|ure|ing)?\s+from\s+((?:[\p{L}\-'.]+\s+){1,6})airport/iu;
+
+/** «مطار دبي الدولي», «مطار دُبي» and «مطار دبي» are one airport. */
+const airportKey = (name: string) =>
+  name
+    .replace(/\p{M}/gu, "")
+    .replace(/[.'’\-]/g, " ")
+    .toLowerCase()
+    .replace(/(?:^|\s)(?:الدولي|الدولية|international|intl)(?=\s|$)/gu, " ")
+    .replace(/(?:^|\s)ال/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+/** Saudi airports by code, city and official name, so «مطار الرياض» and "RUH" are «مطار الملك خالد». */
+const KNOWN_AIRPORTS = new Map(
+  SAUDI_AIRPORTS.flatMap(({ airportCode, cityAr, airportNameAr }) =>
+    [airportCode, cityAr, airportNameAr.replace(/^مطار\s+/u, "")].map((name) => [airportKey(name), airportCode] as const)
+  )
+);
+const IATA_CODE = /^[a-z]{3}$/;
+
+/**
+ * Whether two airport names are different airports: undefined when that
+ * cannot be told from the names alone, as with a code beside a name
+ * ("King Khalid" and "RUH") that no known alias links.
+ */
+function differentAirports(first: string, second: string): boolean | undefined {
+  const [a, b] = [airportKey(first), airportKey(second)];
+  const [knownA, knownB] = [KNOWN_AIRPORTS.get(a), KNOWN_AIRPORTS.get(b)];
+  if (knownA && knownB) return knownA !== knownB;
+  if (IATA_CODE.test(a) && IATA_CODE.test(b)) return a !== b;
+  if (IATA_CODE.test(a) || IATA_CODE.test(b)) return undefined;
+  // A name with its city in front is the same airport ("London Heathrow" /
+  // "Heathrow"), so a claimed change beside it stays unresolved; a city
+  // followed by another name is a second airport there
+  // («دبي» / «دبي آل مكتوم»).
+  if (a.endsWith(` ${b}`) || b.endsWith(` ${a}`)) return false;
+  return a !== b;
+}
+
 function airportChangeFact(original: string) {
-  if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
+  // Two different named airports for arrival and departure: the change is stated by the names themselves.
+  const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
+  // Only the generic words airportKey drops are ignored: «مطار دبي آل مكتوم» is another airport.
+  const namedChange = pair ? differentAirports(pair[1], pair[2]) : undefined;
+  // "Airport change not stated" says nothing the named airports do not settle.
+  if (AIRPORT_CHANGE_UNKNOWN.test(original)) return pair && namedChange ? exact(true, pair[0].trim()) : undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
-  if (noChange?.index !== undefined) return exact(false, noChange[0].trim());
+  // "No airport change" beside two different named airports contradicts itself: neither is confirmed.
+  if (noChange?.index !== undefined) return namedChange ? undefined : exact(false, noChange[0].trim());
   const change = AIRPORT_CHANGE.exec(original);
-  if (change?.index !== undefined) return exact(true, change[0].trim());
+  // …and "airport change" beside the same airport named twice does too.
+  if (change?.index !== undefined) return namedChange === false ? undefined : exact(true, change[0].trim());
+  if (pair && namedChange) return exact(true, pair[0].trim());
   return undefined;
 }
 

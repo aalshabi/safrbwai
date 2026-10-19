@@ -96,6 +96,22 @@ const CHECK_STATUS: Record<ChecklistStatus, { icon: LucideIcon; className: strin
   conflicting: { icon: AlertTriangle, className: "text-amber-700 dark:text-amber-400" },
 };
 
+/** Facts only a travel offer states; with none of them the text is probably something else. */
+const OFFER_SIGNALS = new Set([
+  "destination", "nights", "travelDates", "accommodation", "flight",
+  "totalPrice", "perPersonPrice", "perNightPrice", "statedPrice",
+  "transitDuration", "stopCount", "airportChange",
+]);
+/** Facts other texts state too ("breakfast is not included in this recipe"): two of them are needed. */
+const WEAK_OFFER_SIGNALS = new Set([
+  "travellers", "board", "baggage", "transfers", "visa", "insurance", "taxes", "cancellationPolicy", "roomType",
+]);
+
+export function looksLikeTravelOffer(analysis: OfferAnalysis): boolean {
+  const keys = analysis.confirmedFacts.map(({ key }) => key);
+  return keys.some((key) => OFFER_SIGNALS.has(key)) || new Set(keys.filter((key) => WEAK_OFFER_SIGNALS.has(key))).size >= 2;
+}
+
 export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
   const { t, locale } = useLanguage();
   const r = t.analyzeOffer.v2.result;
@@ -129,6 +145,13 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
           </div>
           <ResultCopyAction analysis={analysis} kind="summary" />
         </div>
+
+        {!looksLikeTravelOffer(analysis) && (
+          <p role="status" className="flex items-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 p-3 text-sm font-medium text-foreground">
+            <AlertTriangle className="size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />
+            {r.notAnOffer}
+          </p>
+        )}
 
         {/* Completeness — present / required with the counted fields */}
         <Section id="oa-completeness" icon={ClipboardCheck} title={r.completenessTitle}>

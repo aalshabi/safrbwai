@@ -40,6 +40,9 @@ const STOP_WORDS = [
   "فندق", "إقامة", "للشخص", "ابتداءً", "تبدأ", "خلال",
   "for", "from", "includes", "including", "price", "nights", "night", "days", "with", "at",
   "starting", "per", "hotel", "stay", "on",
+  // A transit point is not part of the destination's name ("Nuuk via Istanbul").
+  "via", "عبر", "ترانزيت", "transit", "layover", "stopover", "connecting", "connection", "stop", "stopping",
+  "change", "planes",
 ];
 
 /** Phrases where a following "إلى/to" is NOT introducing a destination. */
@@ -115,15 +118,62 @@ const DESTINATION_MARKER = /(?:إلى|الى|الوجهة\s*[:：]|وجهة\s*[:
 const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
 
 /**
+ * A place the traveller only passes through: "via Kuala Lumpur", «عبر إسطنبول»,
+ * «ترانزيت في الدوحة», "layover in Doha", also through the city's airport ("via the
+ * Istanbul airport", «عبر مطار إسطنبول»). A bare "through" is not one: "a tour
+ * through Dubai old town" is sightseeing.
+ */
+const TRANSIT_MARKER =
+  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|(?:تغيير|تبديل)\s+(?:ال)?طائرة\s+(?:في|ب)|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+flights?)?(?:\s+(?:in|at|through|via))?|stop(?:s|ping)?\s+(?:over\s+)?(?:in|at)|chang(?:e|es|ing)\s+(?:of\s+)?(?:planes?|flights?|aircraft)\s+(?:in|at)))(?:\s+(?:the|airport|of)\b|\s*(?:ال)?مطار)*\s*$/iu;
+
+/**
+ * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul",
+ * «الرياض-باريس». An unspaced hyphen counts only right after a Saudi city.
+ * Only a Saudi departure city marks a route; "Dubai – Abu Dhabi" stays a
+ * two-city trip and keeps the usual ranking.
+ */
+const DASH = "(?:[–—→]|\\s-\\s)";
+const SAUDI_ALIASES = DESTINATIONS.filter((entry) => entry.countryCode === "SA" && entry.kind !== "country")
+  .flatMap((entry) => entry.aliases)
+  .map((alias) => alias.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+const ROUTE_TO = new RegExp(`(?:${SAUDI_ALIASES.join("|")})(?:\\s*${DASH}|-)\\s*$`, "u");
+const ROUTE_FROM = new RegExp(`^(?:\\s*${DASH}|-)\\s*\\p{L}`, "u");
+
+/**
  * "من الرياض إلى تبليسي" names two cities. The one after "إلى" is where the
  * traveller is going; the one after "من" is where they leave from and must
- * never be reported as the destination.
+ * never be reported as the destination. In a dashed route the first city is
+ * the origin and the second the destination. A transit point ranks -1.
  */
-function markerRank(haystack: string, index: number): number {
+function markerRank(haystack: string, index: number, length: number, saudi = false): number {
   const before = haystack.slice(Math.max(0, index - 24), index);
-  if (DESTINATION_MARKER.test(before)) return 2;
+  if (TRANSIT_MARKER.test(before) || inTransitList(haystack, index)) return -1;
+  if (DESTINATION_MARKER.test(before) || ROUTE_TO.test(before)) return 2;
   if (ORIGIN_MARKER.test(before)) return 0;
+  if (saudi && ROUTE_FROM.test(haystack.slice(index + length, index + length + 4))) return 0;
   return 1;
+}
+
+/** A city joined by "and"/"or" to a transit city ("via Istanbul and Singapore", «عبر إسطنبول وسنغافورة») is a transit too. */
+function inTransitList(haystack: string, index: number): boolean {
+  // «وأبوظبي» → «و أبوظبي», so an attached «و» joins the list like "and".
+  const head = haystack.slice(Math.max(0, index - 160), index).replace(/(^|\s)و(?=\p{L})/gu, "$1و ");
+  return listedAfterTransit(head, 0);
+}
+
+/** Whether `head` ends with "and"/«و» after a list that a transit marker opens ("via A and B and"). */
+function listedAfterTransit(head: string, depth: number): boolean {
+  const joined = head.match(/^(.*?)(?:\s+(?:and|or|&)|\s+(?:أو|و))\s*$/su);
+  if (!joined || depth > 5) return false;
+  const words = joined[1].split(/\s+/);
+  // Each listed transit city is one to three words long.
+  for (let n = 1; n <= Math.min(3, words.length - 1); n++) {
+    const city = words.slice(-n).join(" ");
+    if (/[\d,،;؛.]/.test(city)) break;
+    const rest = words.slice(0, -n).join(" ");
+    if (TRANSIT_MARKER.test(rest.slice(-24)) || listedAfterTransit(rest, depth + 1)) return true;
+  }
+  return false;
 }
 
 /** Better = stronger marker first, then the longer alias. */
@@ -143,8 +193,37 @@ function findCanonical(text: string): Match | null {
   const haystack = text.toLowerCase();
   let city: Match | null = null;
   let country: Match | null = null;
+  // Where each transit city ends, so its country right after it on the same
+  // line ("via Istanbul, Turkey", «عبر إسطنبول، تركيا») is read as part of it.
+  const transitCities = DESTINATIONS.filter((entry) => entry.kind !== "country").flatMap((entry) =>
+    entry.aliases.flatMap((alias) =>
+      occurrences(haystack, alias.toLowerCase())
+        .filter((i) => markerRank(haystack, i, alias.length, entry.countryCode === "SA") === -1)
+        .map((i) => ({ end: i + alias.length, countryCode: entry.countryCode }))
+    )
+  );
+  const qualifiesATransitCity = (entry: (typeof DESTINATIONS)[number], index: number) =>
+    transitCities.some(
+      (city) => city.countryCode === entry.countryCode && city.end <= index && TRANSIT_COUNTRY_GAP.test(haystack.slice(city.end, index))
+    );
 
   for (const entry of DESTINATIONS) {
+    // A place named as a transit point is not where the traveller is going.
+    // Only the marked occurrence is dropped, plus its airport mentions
+    // («مطار إسطنبول» after «عبر إسطنبول»); "Dubai 5 nights … through Dubai old
+    // town" keeps Dubai.
+    const ranked = entry.aliases.flatMap((alias) =>
+      occurrences(haystack, alias.toLowerCase()).map((i) => ({
+        index: i,
+        rank: markerRank(haystack, i, alias.length, entry.countryCode === "SA"),
+        airport: namesAnAirport(haystack, i, alias.length),
+      }))
+    );
+    // Airport mentions after the place is first passed through are that transit; one before it may be the stay.
+    // "Transfer to Istanbul Airport" is not a destination marker for Istanbul.
+    const firstTransit = ranked.some(({ rank, airport }) => rank === 2 && !airport)
+      ? Infinity
+      : Math.min(...ranked.filter(({ rank }) => rank === -1).map(({ index }) => index));
     for (const alias of entry.aliases) {
       const needle = alias.toLowerCase();
       // Scan every occurrence: the first may sit inside a longer word.
@@ -153,10 +232,12 @@ function findCanonical(text: string): Match | null {
         if (!endsOnAWordBoundary(haystack, index, needle.length)) continue;
         if (!startsOnAWordBoundary(haystack, index, needle)) continue;
         if (entry.kind === "country" && namesACarrier(haystack, index, needle.length)) continue;
+        if (entry.kind === "country" && qualifiesATransitCity(entry, index)) continue;
 
-        const marker = markerRank(haystack, index);
-        // Where the traveller leaves from is never where they are going.
-        if (marker === 0) continue;
+        const marker = markerRank(haystack, index, needle.length, entry.countryCode === "SA" && entry.kind !== "country");
+        // Where the traveller leaves from, or only passes through, is never where they are going.
+        if (marker <= 0) continue;
+        if (index > firstTransit && namesAnAirport(haystack, index, needle.length)) continue;
         if (markerOnly && marker !== 2) continue;
 
         const hit: Match = { entry, index, length: alias.length, marker };
@@ -175,6 +256,26 @@ function findCanonical(text: string): Match | null {
     if (contains(country, city)) return country;
   }
   return city ?? country;
+}
+
+/** «مطار إسطنبول», "Istanbul airport". */
+/** "Istanbul Airport", "Istanbul International Airport", "Istanbul Sabiha Gokcen International Airport". */
+const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,5}airport\b/iu;
+
+/** Between a transit city and its country: nothing, a comma, or the city's airport ("Istanbul International Airport, Turkey"). */
+const TRANSIT_COUNTRY_GAP = /^[ \t]*(?:(?:[\p{L}.]+[ \t]+){0,5}airport|الدولي)?[ \t]*[,،(\-–]?[ \t]*$/iu;
+
+function namesAnAirport(haystack: string, index: number, length: number): boolean {
+  return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || AIRPORT_AFTER.test(haystack.slice(index + length));
+}
+
+/** Every whole-word index of `needle` in `haystack`. */
+function occurrences(haystack: string, needle: string): number[] {
+  const found: number[] = [];
+  for (let index = haystack.indexOf(needle); index !== -1; index = haystack.indexOf(needle, index + 1)) {
+    if (endsOnAWordBoundary(haystack, index, needle.length) && startsOnAWordBoundary(haystack, index, needle)) found.push(index);
+  }
+  return found;
 }
 
 function contains(outer: Match, inner: Match): boolean {

@@ -139,15 +139,18 @@ function hotelAfter(after: string): boolean {
  * length is left unknown — and the stays are dropped, since they are parts,
  * not rival lengths.
  */
-function readNights(text: string): { observations: NightObservation[]; length?: NightObservation } {
+type NightOccurrence = NightObservation & {
+  isStay: boolean;
+  onStayLine: boolean;
+  onTotalLine: boolean;
+  stay: string;
+  option: number;
+};
+
+/** Every night count that states a length — deadlines and penalties excluded. */
+function nightOccurrences(text: string): { normalizedText: string; occurrences: NightOccurrence[] } {
   const normalizedText = toWesternDigits(text);
-  const occurrences: (NightObservation & {
-    isStay: boolean;
-    onStayLine: boolean;
-    onTotalLine: boolean;
-    stay: string;
-    option: number;
-  })[] = [];
+  const occurrences: NightOccurrence[] = [];
 
   let previousEnd = 0;
   for (const match of normalizedText.matchAll(NIGHTS)) {
@@ -184,6 +187,33 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       option: optionIndex(normalizedText, match.index),
     });
   }
+  return { normalizedText, occurrences };
+}
+
+/**
+ * True when the offer states more than one stay length (different counts, or
+ * two counts that are each a stay): a rate quoted beside one of them may not
+ * cover the whole package.
+ */
+export function hasSeveralStays(text: string): boolean {
+  const { occurrences } = nightOccurrences(text);
+  return new Set(occurrences.map(({ value }) => value)).size > 1 || distinctStays(occurrences).size > 1;
+}
+
+/**
+ * One stay mentioned twice ("Hotel A: 4 nights" … "Hotel A stay: 4 nights")
+ * is still one stay; stays that do not say which they are stay separate.
+ */
+function distinctStays(occurrences: NightOccurrence[]): Set<string> {
+  return new Set(
+    occurrences
+      .filter((n) => n.isStay)
+      .map((n, i) => (n.stay ? `${n.stay}\u0000${n.value}` : `#${i}`))
+  );
+}
+
+function readNights(text: string): { observations: NightObservation[]; length?: NightObservation } {
+  const { occurrences } = nightOccurrences(text);
 
   // A stay split across hotels ("7 ليالٍ" … "الإقامة الأولى | 4 ليالٍ" …
   // "الإقامة الثانية | 3 ليالٍ", or the parts first and "Total: 7 nights"
@@ -235,14 +265,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       return true;
     })
     .map(toObservation);
-  // One stay mentioned twice ("Hotel A: 4 nights" … "Hotel A stay: 4 nights")
-  // is still one stay; stays that do not say which they are stay separate.
-  const stays = new Set(
-    occurrences
-      .filter((n) => n.isStay)
-      .map((n, i) => (n.stay ? `${n.stay}\u0000${n.value}` : `#${i}`))
-  );
-  if (stays.size < 2) {
+  if (distinctStays(occurrences).size < 2) {
     // A stated length that is not a stay ("Duration: 7 nights") still wins.
     const stated = occurrences.find((n) => !n.isStay);
     return { observations, length: stated ? toObservation(stated) : observations[0] };

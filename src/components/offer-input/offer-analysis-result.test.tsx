@@ -103,3 +103,69 @@ describe("TravelOfferReview disabled sources", () => {
     }
   });
 });
+
+describe("OfferAnalysisResult — text that is not a travel offer", () => {
+  const renderResult = (value: OfferAnalysis) =>
+    render(
+      <LanguageProvider>
+        <OfferAnalysisResult analysis={value} />
+      </LanguageProvider>
+    );
+
+  it("says so when no offer fact was found", () => {
+    renderResult({ ...analysis, confirmedFacts: [], contradictions: [] });
+    expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
+  });
+
+  it("counts flight details as offer facts", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [{ key: "transitDuration", label: { ar: "مدة الترانزيت", en: "Transit duration" }, value: { minutes: 840 }, evidence: "layover 14 hours", confidenceType: "exact" }],
+    });
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+
+  it("does not take a lone meal-plan mention as an offer", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [{ key: "board", label: { ar: "الوجبات", en: "Board" }, value: "RO", evidence: "Breakfast is not included", confidenceType: "exact" }],
+    });
+    expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
+  });
+
+  it("takes several weaker travel facts together as an offer", () => {
+    renderResult({
+      ...analysis,
+      contradictions: [],
+      confirmedFacts: [
+        { key: "visa", label: { ar: "التأشيرة", en: "Visa" }, value: { included: true }, evidence: "Visa included", confidenceType: "exact" },
+        { key: "insurance", label: { ar: "التأمين", en: "Insurance" }, value: { included: true }, evidence: "travel insurance included", confidenceType: "exact" },
+      ],
+    });
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+
+  it("stays quiet for an offer with a price or nights", () => {
+    renderResult(analysis);
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+});
+
+describe("OfferAnalysisResult — a bare stated price", () => {
+  it("counts as an offer signal", () => {
+    render(
+      <LanguageProvider>
+        <OfferAnalysisResult
+          analysis={{
+            ...analysis,
+            contradictions: [],
+            confirmedFacts: [{ key: "statedPrice", label: { ar: "السعر", en: "Price" }, value: { amount: 5000, currency: "SAR" }, evidence: "5,000 ريال", confidenceType: "exact" }],
+          }}
+        />
+      </LanguageProvider>
+    );
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+});
