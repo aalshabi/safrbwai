@@ -238,7 +238,9 @@ export function detectContradictions(
     facts.visa?.value === true ||
     (facts.board !== undefined && facts.board.value !== "RO") ||
     (obs.priceComponents?.length ?? 0) > 0;
-  const perNightPrices = obs.prices.filter((price) => price.basis === "per_night");
+  const perNightPrices = obs.prices.filter(
+    (price) => price.basis === "per_night" && price.componentScope === undefined
+  );
   const uniquePerNight = uniquePrices(perNightPrices);
   // A rate per room, or several rooms, needs a room count the offer does not give us.
   const roomScoped = perNightPrices.some((price) => price.roomScoped);

@@ -189,6 +189,7 @@ describe("audit P0 — component unit prices versus the package total", () => {
       const { analysis } = await run(text);
       expect(codes(analysis).includes("price_components_mismatch")).toBe(mismatches);
       expect(codes(analysis)).not.toContain("price_total_mismatch");
+      if (!mismatches) expect(analysis.contradictions).toEqual([]);
     }
   );
 });
