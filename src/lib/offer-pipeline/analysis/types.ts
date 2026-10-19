@@ -30,6 +30,7 @@ export type ContradictionCode =
   | "multiple_prices"
   | "price_total_mismatch"
   | "price_components_mismatch"
+  | "price_nightly_mismatch"
   | "conflicting_currency"
   | "conflicting_nights"
   | "conflicting_board"

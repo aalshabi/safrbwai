@@ -67,8 +67,18 @@ function nearestContextDistance(text: string, index: number, pattern: RegExp): n
   }, Number.POSITIVE_INFINITY);
 }
 
+/** A flight routed through another city ("via Doha", «عبر إسطنبول»): a bare «توقف ١٤ ساعة» elsewhere in it is that stop. */
+const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|layover|stopover)\b/iu;
+
 function hasAviationContext(text: string, index: number): boolean {
   const clause = clauseAt(text, index);
+  if (
+    ROUTED_VIA.test(text) &&
+    !GROUND_STOP_CONTEXT.test(clause.text) &&
+    !GROUND_STOP_CONTEXT.test(text)
+  ) {
+    return true;
+  }
   const aviationDistance = Math.min(
     nearestContextDistance(clause.text, clause.matchIndex, EXPLICIT_TRANSIT_CONTEXT),
     nearestContextDistance(clause.text, clause.matchIndex, FLIGHT_CONTEXT)
@@ -131,12 +141,34 @@ function stopCountFact(original: string, normalized: string) {
   return undefined;
 }
 
+/** An airport name after «مطار»: up to three words, stopping at a clause break or «و». */
+const AR_AIRPORT_NAME = "مطار\\s+((?:(?!و?(?:المغادرة|الإقلاع|مغادرة))[\\p{L}\\-']+\\s*){1,3})";
+/** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
+const AR_ARRIVE_DEPART = new RegExp(
+  `(?:الوصول|وصول|الهبوط)\\s*(?:إلى|الى|في)\\s*${AR_AIRPORT_NAME}[^.\\n]{0,40}?(?:المغادرة|مغادرة|الإقلاع)\\s*(?:من)\\s*${AR_AIRPORT_NAME}`,
+  "u"
+);
+const EN_ARRIVE_DEPART =
+  /arriv(?:e|es|al|ing)\s+(?:at|in|into)\s+((?:[\p{L}\-']+\s+){1,3})airport[^.\n]{0,40}?depart(?:s|ure|ing)?\s+from\s+((?:[\p{L}\-']+\s+){1,3})airport/iu;
+
+/** «مطار دبي الدولي» and «مطار دبي» are one airport. */
+const airportKey = (name: string) =>
+  name
+    .toLowerCase()
+    .replace(/(?:^|\s)(?:الدولي|الدولية|international|intl)(?=\s|$)/gu, " ")
+    .replace(/(?:^|\s)ال/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 function airportChangeFact(original: string) {
   if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
   if (noChange?.index !== undefined) return exact(false, noChange[0].trim());
   const change = AIRPORT_CHANGE.exec(original);
   if (change?.index !== undefined) return exact(true, change[0].trim());
+  // Two different named airports for arrival and departure: the change is stated by the names themselves.
+  const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
+  if (pair && airportKey(pair[1]) !== airportKey(pair[2])) return exact(true, pair[0].trim());
   return undefined;
 }
 

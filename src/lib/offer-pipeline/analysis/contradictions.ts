@@ -174,6 +174,36 @@ export function detectContradictions(
     }
   }
 
+  // A nightly rate times the stated nights should equal the total, unless the
+  // total also pays for something else. Checked only when the offer states no
+  // included flight and no per-person price, and reported as a check, not as
+  // a blocking conflict.
+  const uniquePerNight = uniquePrices(obs.prices.filter((price) => price.basis === "per_night"));
+  const nights = obs.nights.length === 1 ? obs.nights[0] : undefined;
+  if (
+    uniqueTotals.length === 1 &&
+    uniquePerNight.length === 1 &&
+    uniquePerPerson.length === 0 &&
+    nights &&
+    facts.flight?.value.included !== true &&
+    uniqueTotals[0].currency === uniquePerNight[0].currency
+  ) {
+    const total = uniqueTotals[0];
+    const expected = uniquePerNight[0].amount * nights.value;
+    if (Math.abs(expected - total.amount) > 0.01) {
+      const amount = (value: number) => `${value.toLocaleString("en-US")} ${total.currency}`;
+      out.push({
+        code: "price_nightly_mismatch",
+        message: {
+          ar: `سعر الليلة × ${nights.value} ليالٍ = ${amount(expected)}، والإجمالي المذكور ${amount(total.amount)}؛ تحقق هل يشمل الإجمالي بنودًا أخرى أو خصمًا.`,
+          en: `The nightly rate × ${nights.value} nights is ${amount(expected)}, but the stated total is ${amount(total.amount)}; check whether the total covers other items or a discount.`,
+        },
+        evidence: [uniquePerNight[0].evidence, nights.evidence, total.evidence],
+        severity: "warning",
+      });
+    }
+  }
+
   // conflicting currency for the price
   if (distinct(obs.currencies.map((c) => c.code)).length > 1) {
     out.push({

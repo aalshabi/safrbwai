@@ -103,3 +103,22 @@ describe("TravelOfferReview disabled sources", () => {
     }
   });
 });
+
+describe("OfferAnalysisResult — text that is not a travel offer", () => {
+  const renderResult = (value: OfferAnalysis) =>
+    render(
+      <LanguageProvider>
+        <OfferAnalysisResult analysis={value} />
+      </LanguageProvider>
+    );
+
+  it("says so when no offer fact was found", () => {
+    renderResult({ ...analysis, confirmedFacts: [], contradictions: [] });
+    expect(screen.getByText(d.analyzeOffer.v2.result.notAnOffer)).toBeTruthy();
+  });
+
+  it("stays quiet for an offer with a price or nights", () => {
+    renderResult(analysis);
+    expect(screen.queryByText(d.analyzeOffer.v2.result.notAnOffer)).toBeNull();
+  });
+});

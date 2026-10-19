@@ -10,6 +10,9 @@ import { articleJsonLd, breadcrumbJsonLd, jsonLdHtml, SECTION_NAMES } from "@/li
 
 type Props = { params: Promise<{ slug: string }> };
 
+/** Only the prerendered slugs exist; any other path is a real 404, not a 200 "not found" page. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getPublishedInsights().map(({ slug }) => ({ slug }));
 }

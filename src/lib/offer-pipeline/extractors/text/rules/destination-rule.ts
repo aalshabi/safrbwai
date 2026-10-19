@@ -115,14 +115,36 @@ const DESTINATION_MARKER = /(?:إلى|الى|الوجهة\s*[:：]|وجهة\s*[:
 const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
 
 /**
+ * A place the traveller only passes through: "via Kuala Lumpur", «عبر إسطنبول»,
+ * «ترانزيت في الدوحة», "layover in Doha".
+ */
+const TRANSIT_MARKER =
+  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|through|(?:layover|stopover|transit|connection|connecting)(?:\s+(?:in|at|through|via))?))\s*$/iu;
+
+/**
+ * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul".
+ * Only a Saudi departure city marks a route; "Dubai – Abu Dhabi" stays a
+ * two-city trip and keeps the usual ranking.
+ */
+const DASH = "(?:[–—→]|\\s-\\s)";
+const SAUDI_ALIASES = DESTINATIONS.filter((entry) => entry.countryCode === "SA" && entry.kind !== "country")
+  .flatMap((entry) => entry.aliases)
+  .map((alias) => alias.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+const ROUTE_TO = new RegExp(`(?:${SAUDI_ALIASES.join("|")})\\s*${DASH}\\s*$`, "u");
+const ROUTE_FROM = new RegExp(`^\\s*${DASH}\\s*\\p{L}`, "u");
+
+/**
  * "من الرياض إلى تبليسي" names two cities. The one after "إلى" is where the
  * traveller is going; the one after "من" is where they leave from and must
- * never be reported as the destination.
+ * never be reported as the destination. In a dashed route the first city is
+ * the origin and the second the destination. A transit point ranks -1.
  */
-function markerRank(haystack: string, index: number): number {
+function markerRank(haystack: string, index: number, length: number, saudi = false): number {
   const before = haystack.slice(Math.max(0, index - 24), index);
-  if (DESTINATION_MARKER.test(before)) return 2;
+  if (TRANSIT_MARKER.test(before)) return -1;
+  if (DESTINATION_MARKER.test(before) || ROUTE_TO.test(before)) return 2;
   if (ORIGIN_MARKER.test(before)) return 0;
+  if (saudi && ROUTE_FROM.test(haystack.slice(index + length, index + length + 4))) return 0;
   return 1;
 }
 
@@ -145,6 +167,11 @@ function findCanonical(text: string): Match | null {
   let country: Match | null = null;
 
   for (const entry of DESTINATIONS) {
+    // A place named as a transit point anywhere is not where the traveller is
+    // going, even where it reappears as «مطار إسطنبول» in the same offer —
+    // unless the offer also names it with a destination marker.
+    const ranks = entry.aliases.flatMap((alias) => occurrences(haystack, alias.toLowerCase()).map((i) => markerRank(haystack, i, alias.length, entry.countryCode === "SA")));
+    if (ranks.includes(-1) && !ranks.includes(2)) continue;
     for (const alias of entry.aliases) {
       const needle = alias.toLowerCase();
       // Scan every occurrence: the first may sit inside a longer word.
@@ -154,9 +181,9 @@ function findCanonical(text: string): Match | null {
         if (!startsOnAWordBoundary(haystack, index, needle)) continue;
         if (entry.kind === "country" && namesACarrier(haystack, index, needle.length)) continue;
 
-        const marker = markerRank(haystack, index);
-        // Where the traveller leaves from is never where they are going.
-        if (marker === 0) continue;
+        const marker = markerRank(haystack, index, needle.length, entry.countryCode === "SA" && entry.kind !== "country");
+        // Where the traveller leaves from, or only passes through, is never where they are going.
+        if (marker <= 0) continue;
         if (markerOnly && marker !== 2) continue;
 
         const hit: Match = { entry, index, length: alias.length, marker };
@@ -175,6 +202,15 @@ function findCanonical(text: string): Match | null {
     if (contains(country, city)) return country;
   }
   return city ?? country;
+}
+
+/** Every whole-word index of `needle` in `haystack`. */
+function occurrences(haystack: string, needle: string): number[] {
+  const found: number[] = [];
+  for (let index = haystack.indexOf(needle); index !== -1; index = haystack.indexOf(needle, index + 1)) {
+    if (endsOnAWordBoundary(haystack, index, needle.length) && startsOnAWordBoundary(haystack, index, needle)) found.push(index);
+  }
+  return found;
 }
 
 function contains(outer: Match, inner: Match): boolean {

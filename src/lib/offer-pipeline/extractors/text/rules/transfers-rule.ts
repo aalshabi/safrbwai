@@ -13,6 +13,8 @@ const TRANSFER_WORD = "التوصيل|توصيل|التوديع|توديع|ال�
 
 const EXCLUDE = new RegExp(
   `(?:${TRANSFER_WORD}|transfers?)[^.،\\n]{0,20}?(?:غير\\s*مشمول|غير\\s*شامل|not\\s*included|excluded)` +
+    // «النقل البحري يُدفع عند الوصول», "transfers payable on arrival": paid separately, so not included.
+    `|(?:${TRANSFER_WORD}|transfers?)[^.،\\n]{0,20}?(?:[يت]ُ?دفع|يُ?سدد|تُ?سدد|payable|paid)\\s*(?:عند\\s*الوصول|on\\s*arrival|locally)` +
     `|بدون\\s*(?:${TRANSFER_WORD})|no\\s*transfers?`,
   "i"
 );

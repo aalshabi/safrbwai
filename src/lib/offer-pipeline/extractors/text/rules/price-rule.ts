@@ -71,7 +71,7 @@ const PARTY_WORD_SIZE: Record<string, number> = {
 const PER_PERSON_LABEL =
   /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:للشخص|للفرد|لكل\s+(?:شخص|فرد))|(?:price|cost)\s+per\s+(?:person|pax|travell?er))\s*[:：\-–—]?\s*$/i;
 const PER_NIGHT_LABEL =
-  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:لليلة|لكل\s+ليلة|في\s+الليلة)|(?:nightly|per[-\s]?night)\s*(?:price|cost)?)\s*[:：\-–—]?\s*$/i;
+  /(?:(?:السعر|سعر|التكلفة|تكلفة)\s*(?:لليلة|لكل\s+ليلة|في\s+الليلة|(?:ال)?ليلة(?:\s+الواحدة)?)|(?:nightly|per[-\s]?night)\s*(?:price|cost)?)\s*[:：\-–—]?\s*$/i;
 /**
  * A bare price label — "السعر 6,000 ريال" — with no "النهائي/الإجمالي".
  * Anchored to the end of the clause so "سعر الفندق 3000 ريال" does NOT match:
@@ -445,7 +445,34 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     seen.add(key);
     observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}) });
   }
-  return { observations, components: extractComponents(normalizedText, allMatches) };
+  const components = extractComponents(normalizedText, allMatches);
+  return { observations, components: components.length > 0 ? components : plusComponents(normalizedText, allMatches) };
+}
+
+/**
+ * Amounts the offer itself adds up with "+" right before its total, in one
+ * sentence: «الطيران 2,000 ريال + الفندق 3,000 ريال، الإجمالي 4,000 ريال».
+ * The plus sign is the offer's own statement that these are parts of the total.
+ */
+function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
+  for (const total of matches.filter((match) => match.basis === "total")) {
+    const before = matches.filter((match) => match.index < total.index && match.basis === "unspecified");
+    const chain: PriceMatch[] = [];
+    for (let i = before.length - 1; i >= 0; i--) {
+      const part = before[i];
+      const next = chain[0] ?? total;
+      const gap = normalizedText.slice(part.index + part.length, next.index);
+      // Only a short label sits between itemised amounts: «ريال + الفندق».
+      if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
+      // The last part reaches the total through a label; every other link is a "+".
+      if (chain.length > 0 && !gap.includes("+")) break;
+      chain.unshift(part);
+    }
+    if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {
+      return chain.map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
+    }
+  }
+  return [];
 }
 
 export const priceRule: ExtractionRule = {

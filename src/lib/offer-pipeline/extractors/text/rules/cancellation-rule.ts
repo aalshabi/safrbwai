@@ -16,7 +16,7 @@ import { exact } from "../utils";
 const TAIL_MAX = 120;
 
 const POLICY = new RegExp(
-  `(?:إلغاء\\s*مجاني|الإلغاء\\s*مجاني|قابل\\s*لل(?:إلغاء|استرداد)|غير\\s*قابل\\s*لل(?:إلغاء|استرداد)|غير\\s*مسترد(?:ة)?|سياسة\\s*الإلغاء[^.\\n]{0,${TAIL_MAX}}|رسوم\\s*إلغاء|free\\s*cancellation|non[-\\s]?refundable|refundable|cancellation\\s*policy[^.\\n]{0,${TAIL_MAX}}|cancellation\\s*fees?)`,
+  `(?:إلغاء\\s*مجاني|الإلغاء\\s*مجاني|قابل[ةه]?\\s*لل(?:إلغاء|استرداد)|غير\\s*قابل[ةه]?\\s*لل(?:إلغاء|استرداد)|غير\\s*مسترد(?:ة)?|سياسة\\s*الإلغاء[^.\\n]{0,${TAIL_MAX}}|رسوم\\s*إلغاء|free\\s*cancellation|non[-\\s]?refundable|refundable|cancellation\\s*policy[^.\\n]{0,${TAIL_MAX}}|cancellation\\s*fees?)`,
   "i"
 );
 
