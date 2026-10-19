@@ -317,3 +317,20 @@ describe("tenth review follow-ups", () => {
     }
   });
 });
+
+describe("eleventh review follow-ups", () => {
+  it("does not add per-traveller rates as itemised parts of the total", async () => {
+    const { analysis } = await run("2 adults and 1 child: SAR 2,000 per adult + SAR 1,000 per child, total SAR 5,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("does not read a hotel stop on a routed flight as transit", async () => {
+    const { facts } = await run("رحلة إلى دبي عبر إسطنبول، توقف 3 ساعات في الفندق، السعر 4,000 ريال.");
+    expect(facts.transitDuration).toBeUndefined();
+  });
+
+  it("reads a vocalised airport name as the same airport", async () => {
+    const { facts } = await run("الوصول إلى مطار دُبي والمغادرة من مطار دبي، 4 ليالٍ، السعر 4,000 ريال.");
+    expect(facts.airportChange?.value).not.toBe(true);
+  });
+});

@@ -484,6 +484,12 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (/[.\n!?؟]/.test(gap) || gap.length > 30) break;
       // The last part reaches the total through a label; every other link is a "+".
       if (chain.length > 0 && !gap.includes("+")) break;
+      // A unit rate ("SAR 2,000 per adult + SAR 1,000 per child") counts once
+      // per traveller, so the plain sum says nothing about the total.
+      if (OTHER_PER_UNIT_QUALIFIER.test(normalizedText.slice(part.index + part.length))) {
+        chain.length = 0;
+        break;
+      }
       chain.unshift(part);
     }
     if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {

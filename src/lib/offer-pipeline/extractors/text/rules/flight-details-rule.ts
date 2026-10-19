@@ -76,7 +76,9 @@ const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|lay
  */
 const UNNAMED_STOP =
   /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit))/i;
-const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
+/** A stop "at" a place, or one spent at the hotel («توقف 3 ساعات في الفندق»), is not a flight stop. */
+const SIGHTSEEING_STOP =
+  /توقف\s+عند|زيارة|في\s+(?:ال)?(?:فندق|منتجع|سوق|مول)|\b(?:visit|stop\s+at|(?:at|in)\s+(?:the\s+)?(?:hotel|resort|mall))\b/i;
 
 /** The sentence around `index`: up to the nearest full stop or line break. */
 function sentenceAt(text: string, index: number): string {
@@ -167,7 +169,7 @@ const AFTER_AIRPORT_NAME =
   "و?(?:المغادرة|الإقلاع|مغادرة)|و|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
   // route and terminal qualifiers: «عبر الصالة 1», «مبنى 3», «بوابة»
   "|عبر|الصالة|صالة|المبنى|مبنى|البوابة|بوابة|رقم|رحلة|الرحلة";
-const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\-']+\\s*){1,3})`;
+const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}\\p{M}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\p{M}\\-']+\\s*){1,3})`;
 /** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
 const AR_ARRIVE_DEPART = new RegExp(
   `(?:الوصول|وصول|الهبوط)\\s*(?:إلى|الى|في)\\s*${AR_AIRPORT_NAME}[^.\\n]{0,40}?(?:المغادرة|مغادرة|الإقلاع)\\s*(?:من)\\s*${AR_AIRPORT_NAME}`,
@@ -176,9 +178,10 @@ const AR_ARRIVE_DEPART = new RegExp(
 const EN_ARRIVE_DEPART =
   /arriv(?:e|es|al|ing)\s+(?:at|in|into)\s+((?:[\p{L}\-']+\s+){1,3})airport[^.\n]{0,40}?depart(?:s|ure|ing)?\s+from\s+((?:[\p{L}\-']+\s+){1,3})airport/iu;
 
-/** «مطار دبي الدولي» and «مطار دبي» are one airport. */
+/** «مطار دبي الدولي», «مطار دُبي» and «مطار دبي» are one airport. */
 const airportKey = (name: string) =>
   name
+    .replace(/\p{M}/gu, "")
     .toLowerCase()
     .replace(/(?:^|\s)(?:الدولي|الدولية|international|intl)(?=\s|$)/gu, " ")
     .replace(/(?:^|\s)ال/gu, " ")
