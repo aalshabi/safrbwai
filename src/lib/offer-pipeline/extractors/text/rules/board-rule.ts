@@ -68,7 +68,7 @@ const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 /** The first match of `re` that the offer does not state as excluded. */
 /** A guest or day scope earlier in the same sentence: "For children only, breakfast is included". */
 const SCOPE_BEFORE =
-  /(?:^|[^\p{L}])(?:for\s+(?:adults\b|(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|on\s+(?:the\s+)?(?:first|last|arrival|departure)\s+(?:day|night)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
+  /(?:^|[^\p{L}])(?:for\s+(?:adults\b|(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
 
 const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
 

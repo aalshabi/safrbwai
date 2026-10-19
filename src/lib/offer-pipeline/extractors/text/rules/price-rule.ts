@@ -450,12 +450,13 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   // Several stays («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
   // The nights rule decides what a stay is, so deadlines and penalties never count.
   const severalStays = hasSeveralStays(text);
-  // A discount counts only in a clause that prices something ("discount SAR 200", "after discount total …");
-  // "a 20% spa discount" elsewhere does not change the package total.
+  // A discount counts only in a clause that prices something ("discount SAR 200", "10% discount");
+  // "a 20% spa discount" on a hotel benefit does not change the package total.
+  // Clauses split at commas too, but not inside "2,000".
   const discountStated = normalizedText
     .replace(NO_DISCOUNT, " ")
-    .split(/[.;؛\n]/)
-    .some((clause) => DISCOUNT_STATED.test(clause) && PRICED_CLAUSE.test(clause));
+    .split(/[.;؛،\n]|,(?!\d)/)
+    .some((clause) => DISCOUNT_STATED.test(clause) && (PRICED_CLAUSE.test(clause) || /\d\s*%/.test(clause)) && !BENEFIT_DISCOUNT.test(clause));
   // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
   const surchargeStated = SURCHARGE_STATED.test(normalizedText);
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
@@ -519,12 +520,22 @@ const CONDITIONAL_CHARGE_BEFORE =
 const PARTY_IN_LABEL =
   /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
 const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;
+/** A discount on a hotel benefit rather than on the booking ("20% spa discount", «خصم على المطعم»). */
+const BENEFIT_DISCOUNT =
+  /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
 const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
-/** The clause around an amount: up to the nearest , ; . or line break on either side. */
+/**
+ * The clause around an amount: back to the nearest , ; . or line break, and on to the
+ * nearest ; . or line break. A later comma part that has its own amount belongs to that
+ * amount ("cleaning fee SAR 200, optional tour SAR 500, not included").
+ */
 function clauseAround(text: string, index: number): string {
   const start = text.slice(0, index).search(/[^.,;؛،\n]*$/);
   const rest = text.slice(index).search(/[.;؛\n]/);
-  return text.slice(start, rest === -1 ? text.length : index + rest);
+  const [first, ...later] = text.slice(index, rest === -1 ? text.length : index + rest).split(/(?=[,،](?!\d))/);
+  const ownedLater = later.findIndex((part) => /\d/.test(part));
+  const tail = first + (ownedLater === -1 ? later : later.slice(0, ownedLater)).join("");
+  return text.slice(start, index) + tail;
 }
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 

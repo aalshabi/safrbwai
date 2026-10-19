@@ -841,3 +841,35 @@ describe("forty-first review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("forty-second review follow-ups", () => {
+  it("keeps a required fee before an optional extra in the same sentence", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; cleaning fee SAR 200, optional tour SAR 500, not included; total SAR 1,800");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("still compares a nightly rate beside a comma-joined benefit discount", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000, guests receive a 20% spa discount");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still treats a bare percentage discount as adjusting the total", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; 10% discount; total SAR 1,440.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not confirm breakfast scoped to the first day with 'for'", async () => {
+    const { facts } = await run("Dubai 4 nights. For the first day only, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("does not confirm room only from an exclusion scoped to the first day with 'for'", async () => {
+    const { facts } = await run("Dubai 4 nights. For the first day only, breakfast is not included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("does not take the airport where the traveller changes planes as the destination", async () => {
+    const { facts } = await run("Flight to Nuuk; change planes at Istanbul Airport; 5 nights");
+    expect(facts.destination?.value.value).toBe("Nuuk");
+  });
+});

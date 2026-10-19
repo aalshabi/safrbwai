@@ -42,6 +42,7 @@ const STOP_WORDS = [
   "starting", "per", "hotel", "stay", "on",
   // A transit point is not part of the destination's name ("Nuuk via Istanbul").
   "via", "عبر", "ترانزيت", "transit", "layover", "stopover", "connecting", "connection", "stop", "stopping",
+  "change", "planes",
 ];
 
 /** Phrases where a following "إلى/to" is NOT introducing a destination. */
@@ -123,7 +124,7 @@ const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
  * through Dubai old town" is sightseeing.
  */
 const TRANSIT_MARKER =
-  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+flights?)?(?:\s+(?:in|at|through|via))?|stop(?:s|ping)?\s+(?:over\s+)?(?:in|at)))(?:\s+(?:the|airport|of)\b|\s*(?:ال)?مطار)*\s*$/iu;
+  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|(?:تغيير|تبديل)\s+(?:ال)?طائرة\s+(?:في|ب)|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+flights?)?(?:\s+(?:in|at|through|via))?|stop(?:s|ping)?\s+(?:over\s+)?(?:in|at)|chang(?:e|es|ing)\s+(?:of\s+)?(?:planes?|flights?|aircraft)\s+(?:in|at)))(?:\s+(?:the|airport|of)\b|\s*(?:ال)?مطار)*\s*$/iu;
 
 /**
  * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul",
