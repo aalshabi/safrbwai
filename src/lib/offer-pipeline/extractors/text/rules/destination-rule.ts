@@ -116,10 +116,11 @@ const ORIGIN_MARKER = /(?:^|[^\p{L}])(?:و?من|from)\s*$/iu;
 
 /**
  * A place the traveller only passes through: "via Kuala Lumpur", «عبر إسطنبول»,
- * «ترانزيت في الدوحة», "layover in Doha".
+ * «ترانزيت في الدوحة», "layover in Doha". A bare "through" is not one: "a tour
+ * through Dubai old town" is sightseeing.
  */
 const TRANSIT_MARKER =
-  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|through|(?:layover|stopover|transit|connection|connecting)(?:\s+(?:in|at|through|via))?))\s*$/iu;
+  /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+(?:in|at|through|via))?))\s*$/iu;
 
 /**
  * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul".

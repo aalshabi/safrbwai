@@ -112,7 +112,7 @@ export interface OfferObservations {
      * ("for 2 adults and 2 children").
      */
     party?: { size: number | null; evidence: string };
-    /** A nightly rate stated per room, or in an offer with more than one room: nights alone do not multiply it out. */
+    /** A nightly rate per room, in an offer for several rooms, or one of several stays: nights alone do not multiply it out. */
     roomScoped?: boolean;
   }[];
   currencies?: { code: string; evidence: string }[];

@@ -240,3 +240,20 @@ describe("fifth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("sixth review follow-ups", () => {
+  it("keeps a destination named only after a sightseeing 'through'", async () => {
+    const { facts } = await run("5 nights with a guided tour through Dubai old town, SAR 5,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Dubai");
+  });
+
+  it("keeps an included transfer when the hotel is paid on arrival", async () => {
+    const { facts } = await run("Dubai 4 nights, airport transfers included and hotel paid on arrival, SAR 4,000 total.");
+    expect(facts.transfer?.value).toEqual({ included: true });
+  });
+
+  it("does not multiply one stay's nightly rate by the whole package", async () => {
+    const { analysis } = await run("7 nights total; Hotel A: 4 nights, nightly price SAR 400; Hotel B: 3 nights; package total SAR 3,000.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});

@@ -145,6 +145,8 @@ const PER_PERSON_QUALIFIER = new RegExp(
 );
 const PER_NIGHT_QUALIFIER =
   /^\s*(?:[/\\]\s*(?:ال)?ليلة|[/\\]\s*night\b|[/\\]?\s*(?:لكل\s+ليلة|لليلة|في\s+الليلة|per\s+night))/i;
+/** A stated night count: "4 nights", «5 ليالٍ», «ليلتين». */
+const NIGHT_COUNT = /\d+\s*(?:nights?\b|ليال|ليلة)|ليلتين|ليلتان/gi;
 /** "per room" / «للغرفة» right after a nightly rate. */
 const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
 /**
@@ -444,6 +446,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const seen = new Set<string>();
   const observations: PriceObservation[] = [];
   const multipleRooms = MULTIPLE_ROOMS.test(normalizedText);
+  // Several night counts («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
+  const severalStays = (normalizedText.match(NIGHT_COUNT) ?? []).length > 1;
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;
@@ -455,7 +459,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     }
     seen.add(key);
     const roomScoped =
-      basis === "per_night" && (multipleRooms || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
+      basis === "per_night" &&
+      (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
     observations.push({ amount, currency, basis, evidence, ...(party ? { party } : {}), ...(roomScoped ? { roomScoped } : {}) });
   }
   const components = extractComponents(normalizedText, allMatches);
