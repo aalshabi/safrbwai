@@ -7,6 +7,7 @@
 import type { ExtractedOfferFacts, OfferPrice, OfferPriceBasis } from "@/lib/offer-pipeline/types";
 import type { OfferObservations } from "@/lib/offer-pipeline/analysis/types";
 import type { ExtractionRule, RuleResult } from "../rule";
+import { hasSeveralStays } from "./nights-rule";
 import {
   AMOUNT_PATTERN,
   CURRENCY_ALT,
@@ -145,20 +146,6 @@ const PER_PERSON_QUALIFIER = new RegExp(
 );
 const PER_NIGHT_QUALIFIER =
   /^\s*(?:[/\\]\s*(?:ال)?ليلة|[/\\]\s*night\b|[/\\]?\s*(?:لكل\s+ليلة|لليلة|في\s+الليلة|per\s+night))/i;
-/** A stated night count: "4 nights", «5 ليالٍ», «ليلتين». */
-const NIGHT_COUNT = /\d+\s*(?:nights?\b|ليال|ليلة)|ليلتين|ليلتان/gi;
-/** A night count used as a deadline ("up to 1 night before arrival", «قبل ليلة من الوصول»), not a stay. */
-const DEADLINE_BEFORE = /(?:before|prior\s+to|up\s+to|until|within|قبل|حتى|خلال)\s*$/i;
-const DEADLINE_AFTER = /^\s*(?:before|prior|قبل|من\s+(?:الوصول|موعد))/i;
-
-function stayCounts(text: string): number {
-  return [...text.matchAll(NIGHT_COUNT)].filter(
-    (m) =>
-      !DEADLINE_BEFORE.test(text.slice(Math.max(0, m.index - 20), m.index)) &&
-      !DEADLINE_AFTER.test(text.slice(m.index + m[0].length))
-  ).length;
-}
-
 /** "per room" / «للغرفة» right after a nightly rate. */
 const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
 /**
@@ -458,8 +445,9 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const seen = new Set<string>();
   const observations: PriceObservation[] = [];
   const multipleRooms = MULTIPLE_ROOMS.test(normalizedText);
-  // Several night counts («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
-  const severalStays = stayCounts(normalizedText) > 1;
+  // Several stays («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
+  // The nights rule decides what a stay is, so deadlines and penalties never count.
+  const severalStays = hasSeveralStays(text);
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;

@@ -269,3 +269,15 @@ describe("seventh review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("eighth review follow-ups", () => {
+  it("reads a routed stop written in Arabic-Indic digits", async () => {
+    const { facts } = await run("رحلة عبر إسطنبول، توقف ١٤ ساعة، السعر ٣٬١٠٠ ريال.");
+    expect(facts.transitDuration?.value).toEqual({ minutes: 840 });
+  });
+
+  it("does not count a cancellation penalty as a second stay", async () => {
+    const { analysis } = await run("Dubai 4 nights, nightly price SAR 400, total SAR 2,000, late cancellation penalty: 1 night.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});
