@@ -148,12 +148,13 @@ const PER_NIGHT_QUALIFIER =
 /** "per room" / «للغرفة» right after a nightly rate. */
 const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
 /**
- * A booking for more than one room: «غرفتين», "2 rooms", «3 غرف». A booking
- * names 2–9 rooms; a hotel's own size ("a hotel with 200 rooms", «يضم 150
- * غرفة») is not a booking multiplier.
+ * A booking for more than one room: the dual «غرفتين», or 2–9 rooms tied to
+ * booking wording ("for 2 rooms", «حجز 3 غرف», "2 x rooms") or standing as its
+ * own item in the offer («…، 3 غرف، …»). A count inside a description of the
+ * hotel ("offers 5 rooms") is not a booking multiplier.
  */
 const MULTIPLE_ROOMS =
-  /غرفتين|غرفتان|(?<!(?:with|has|of|يضم|تضم|يحتوي|يحتوي على|فيه|به)\s*)(?:^|[^\d])[2-9]\s*(?:غرف|rooms\b)|\b(?<!(?:with|has|of)\s+)(?:two|three|four|five)\s+rooms\b/i;
+  /غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*[2-9]\s*(?:غرف|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five)\s+rooms\b|[2-9]\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/i;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;

@@ -223,3 +223,20 @@ describe("fourth review follow-ups", () => {
     expect(facts.airportChange).toBeUndefined();
   });
 });
+
+describe("fifth review follow-ups", () => {
+  it("does not read a hotel stop in a routed-flight sentence as transit", async () => {
+    const { facts } = await run("رحلة إلى دبي عبر إسطنبول، توقف في الفندق لمدة 3 ساعات، السعر 4,000 ريال.");
+    expect(facts.transitDuration).toBeUndefined();
+  });
+
+  it("does not compare a nightly rate when meals are included", async () => {
+    const { analysis } = await run("4 nights; nightly room rate SAR 400; breakfast included; breakfast total SAR 200; package total SAR 1,800.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not take a hotel's small inventory as the rooms booked", async () => {
+    const { analysis } = await run("Boutique hotel offers 5 rooms, 4 nights, nightly price SAR 400, total SAR 2,000.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});
