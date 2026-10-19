@@ -29,6 +29,13 @@ const BOARD_SIGNALS: BoardSignal[] = [
 const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
+/** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */
+const MEAL_WORD = "(?:lunch|dinner|meals?|(?:ال)?غداء|(?:ال)?عشاء|(?:ال)?وجبات)";
+const MEAL_LIST = `${MEAL_WORD}(?:\\s*(?:,|،|and|or|&|أو|و)\\s*${MEAL_WORD})*`;
+const NEGATED_MEALS = new RegExp(
+  `(?:\\b(?:no|without)\\s+|(?:بدون|لا\\s+(?:يشمل|تشمل))\\s*)${MEAL_LIST}|${MEAL_LIST}\\s*(?:(?:are|is)\\s+)?(?:not\\s+included|excluded|غير\\s+(?:مشمول|مشمولة|متضمن|متضمنة))`,
+  "giu"
+);
 const OTHER_MEAL = /غداء|عشاء|الوجبات|وجبات|نصف\s*إقامة|إقامة\s*كاملة|lunch|dinner|meals?\b|half[-\s]?board|full[-\s]?board|all[-\s]?inclusive/i;
 
 const PLAN_COMPONENT_GAP = /^\s*(?:[:(]|تشمل|يشمل|شامل[ةه]?|مع|includ\w*|with)?\s*$/iu;
@@ -85,7 +92,7 @@ export const boardRule: ExtractionRule = {
     if (found.length === 0) {
       // An offer whose only meal statement excludes breakfast sells the room only.
       const excluded = BREAKFAST_EXCLUDED.exec(text);
-      if (excluded && !OTHER_MEAL.test(text)) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
+      if (excluded && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };
     }
 

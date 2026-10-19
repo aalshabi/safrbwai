@@ -430,3 +430,27 @@ describe("eighteenth review follow-ups", () => {
     expect(facts.airportChange?.value).not.toBe(true);
   });
 });
+
+describe("nineteenth review follow-ups", () => {
+  it("does not take a transit city named through its airport as the destination", async () => {
+    for (const text of ["Paris 5 nights, flight via the Istanbul airport, SAR 6,000 total.", "باريس 5 ليالٍ، الطيران عبر مطار إسطنبول، السعر 6,000 ريال."]) {
+      const { facts } = await run(text);
+      expect(facts.destination?.value.canonicalValue, text).toBe("Paris");
+    }
+  });
+
+  it("reads room only when every meal is excluded", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast not included; lunch and dinner not included. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("RO");
+  });
+
+  it("still withholds room only when another meal is included", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast not included; dinner included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+
+  it("does not add prefix-labelled traveller rates as parts of the total", async () => {
+    const { analysis } = await run("2 adults and 1 child: Adult SAR 2,000 + Child SAR 1,000, total SAR 5,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+});
