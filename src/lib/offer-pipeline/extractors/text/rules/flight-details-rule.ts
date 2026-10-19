@@ -160,7 +160,7 @@ function stopCountFact(original: string, normalized: string) {
 /** An airport name after «مطار»: up to three words, stopping at a clause break or «و». */
 /** Words that follow an airport name without being part of it: times, days, the next leg. */
 const AFTER_AIRPORT_NAME =
-  "و?(?:المغادرة|الإقلاع|مغادرة)|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
+  "و?(?:المغادرة|الإقلاع|مغادرة)|و|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
   // route and terminal qualifiers: «عبر الصالة 1», «مبنى 3», «بوابة»
   "|عبر|الصالة|صالة|المبنى|مبنى|البوابة|بوابة|رقم|رحلة|الرحلة";
 const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\-']+\\s*){1,3})`;

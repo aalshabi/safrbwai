@@ -197,7 +197,19 @@ function nightOccurrences(text: string): { normalizedText: string; occurrences: 
  */
 export function hasSeveralStays(text: string): boolean {
   const { occurrences } = nightOccurrences(text);
-  return new Set(occurrences.map(({ value }) => value)).size > 1 || occurrences.filter((n) => n.isStay).length > 1;
+  return new Set(occurrences.map(({ value }) => value)).size > 1 || distinctStays(occurrences).size > 1;
+}
+
+/**
+ * One stay mentioned twice ("Hotel A: 4 nights" … "Hotel A stay: 4 nights")
+ * is still one stay; stays that do not say which they are stay separate.
+ */
+function distinctStays(occurrences: NightOccurrence[]): Set<string> {
+  return new Set(
+    occurrences
+      .filter((n) => n.isStay)
+      .map((n, i) => (n.stay ? `${n.stay}\u0000${n.value}` : `#${i}`))
+  );
 }
 
 function readNights(text: string): { observations: NightObservation[]; length?: NightObservation } {
@@ -253,14 +265,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       return true;
     })
     .map(toObservation);
-  // One stay mentioned twice ("Hotel A: 4 nights" … "Hotel A stay: 4 nights")
-  // is still one stay; stays that do not say which they are stay separate.
-  const stays = new Set(
-    occurrences
-      .filter((n) => n.isStay)
-      .map((n, i) => (n.stay ? `${n.stay}\u0000${n.value}` : `#${i}`))
-  );
-  if (stays.size < 2) {
+  if (distinctStays(occurrences).size < 2) {
     // A stated length that is not a stay ("Duration: 7 nights") still wins.
     const stated = occurrences.find((n) => !n.isStay);
     return { observations, length: stated ? toObservation(stated) : observations[0] };

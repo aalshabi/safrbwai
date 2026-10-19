@@ -281,3 +281,22 @@ describe("eighth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("ninth review follow-ups", () => {
+  it("reads a route joined by an unspaced hyphen", async () => {
+    for (const text of ["رحلة الرياض-باريس 5 ليالٍ، السعر 6,000 ريال.", "Flight Riyadh-Paris, 5 nights, SAR 6,000 total."]) {
+      const { facts } = await run(text);
+      expect(facts.destination?.value.canonicalValue, text).toBe("Paris");
+    }
+  });
+
+  it("does not read «و» as part of an airport name", async () => {
+    const { facts } = await run("الوصول إلى مطار دبي و المغادرة من مطار دبي، 4 ليالٍ، السعر 4,000 ريال.");
+    expect(facts.airportChange?.value).not.toBe(true);
+  });
+
+  it("counts one stay restated under the same name once", async () => {
+    const { analysis } = await run("Hotel A: 4 nights; Hotel A stay: 4 nights; nightly price SAR 400; total SAR 2,000.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

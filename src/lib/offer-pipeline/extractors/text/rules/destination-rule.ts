@@ -123,7 +123,8 @@ const TRANSIT_MARKER =
   /(?:(?:^|[^\p{L}])(?:عبر|ترانزيت(?:\s+(?:في|ب))?|توقف(?:\s+(?:في|ب))?|مرورًا\s+ب|بالمرور\s+(?:على|ب))|\b(?:via|(?:layover|stopover|transit|connection|connecting)(?:\s+(?:in|at|through|via))?))\s*$/iu;
 
 /**
- * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul".
+ * A route written with a dash from a Saudi city: «الرياض–باريس», "Jeddah - Istanbul",
+ * «الرياض-باريس». An unspaced hyphen counts only right after a Saudi city.
  * Only a Saudi departure city marks a route; "Dubai – Abu Dhabi" stays a
  * two-city trip and keeps the usual ranking.
  */
@@ -131,8 +132,8 @@ const DASH = "(?:[–—→]|\\s-\\s)";
 const SAUDI_ALIASES = DESTINATIONS.filter((entry) => entry.countryCode === "SA" && entry.kind !== "country")
   .flatMap((entry) => entry.aliases)
   .map((alias) => alias.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-const ROUTE_TO = new RegExp(`(?:${SAUDI_ALIASES.join("|")})\\s*${DASH}\\s*$`, "u");
-const ROUTE_FROM = new RegExp(`^\\s*${DASH}\\s*\\p{L}`, "u");
+const ROUTE_TO = new RegExp(`(?:${SAUDI_ALIASES.join("|")})(?:\\s*${DASH}|-)\\s*$`, "u");
+const ROUTE_FROM = new RegExp(`^(?:\\s*${DASH}|-)\\s*\\p{L}`, "u");
 
 /**
  * "من الرياض إلى تبليسي" names two cities. The one after "إلى" is where the
