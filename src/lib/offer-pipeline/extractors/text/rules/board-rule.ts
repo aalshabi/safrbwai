@@ -34,9 +34,13 @@ const EXCLUDED_PREFIX =
 /** An exclusion closing the clause right after a signal ("إفطار بوفيه غير مشمول"). */
 const EXCLUDED_SUFFIX = /^[^.،,;؛\n]{0,25}?(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|not\s+included|excluded)/i;
 
-/** A meal plan its own clause sells as an optional or paid extra ("إفطار بوفيه اختياري مقابل رسوم إضافية"). */
-const OPTIONAL_EXTRA =
-  /^[^.،,;؛\n]{0,40}?(?:اختياري|رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|عند\s*الطلب|optional|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|on\s*request)/i;
+/** Wording that sells a meal plan as an optional or paid extra. */
+const OPTIONAL_WORD =
+  "اختياري|رسوم\\s*إضافية|بتكلفة\\s*إضافية|مقابل\\s*(?:رسوم|مبلغ)|عند\\s*الطلب|optional|additional\\s*(?:charge|cost|fee)|extra\\s*(?:charge|cost|fee)|on\\s*request";
+/** After the signal in its clause ("إفطار بوفيه اختياري مقابل رسوم إضافية"). */
+const OPTIONAL_EXTRA = new RegExp(`^[^.،,;؛\\n]{0,40}?(?:${OPTIONAL_WORD})`, "i");
+/** Before the signal in its clause ("Optional bed and breakfast", "اختياري: إفطار بوفيه"). */
+const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 
 /** The first match of `re` that the offer does not state as excluded. */
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
@@ -46,6 +50,7 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     if (EXCLUDED_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (EXCLUDED_SUFFIX.test(text.slice(m.index + m[0].length))) continue;
     if (OPTIONAL_EXTRA.test(text.slice(m.index + m[0].length))) continue;
+    if (OPTIONAL_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (inExcludedSection(text, m.index)) continue;
     return m as RegExpExecArray;
   }

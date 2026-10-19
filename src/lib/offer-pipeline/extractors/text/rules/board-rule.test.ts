@@ -58,6 +58,8 @@ describe("board upgrades and buffet breakfast", () => {
 
   it("never reads a breakfast sold as an optional extra as the board", () => {
     expect(boardRule.apply("إفطار بوفيه اختياري مقابل رسوم إضافية").facts.board).toBeUndefined();
+    expect(boardRule.apply("Optional bed and breakfast").facts.board).toBeUndefined();
+    expect(boardRule.apply("اختياري: إفطار بوفيه").facts.board).toBeUndefined();
     expect(boardRule.apply("Buffet: إفطار بوفيه optional, extra charge").facts.board).toBeUndefined();
     expect(boardRule.apply("غرفة مع إفطار بوفيه مفتوح، والجولات اختيارية").facts.board?.value).toBe("BB");
   });
