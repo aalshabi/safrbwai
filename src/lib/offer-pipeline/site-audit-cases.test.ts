@@ -681,3 +681,25 @@ describe("thirty-second review follow-ups", () => {
     }
   });
 });
+
+describe("thirty-third review follow-ups", () => {
+  it("does not read «ل» at the end of a word before a room count as a booking", async () => {
+    const { analysis } = await run("دبي، جناح شامل 3 غرف نوم، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 2,000 ريال.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("reads 'a stop in' as transit", async () => {
+    const { facts } = await run("Paris 5 nights, flight with a stop in Istanbul, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Paris");
+  });
+
+  it("still compares a nightly rate when the discount does not apply", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 500; discount does not apply; total SAR 1,800.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("does not read a breakfast exclusion with an exception as room only", async () => {
+    const { facts } = await run("Dubai 4 nights, breakfast not included for all guests except children, SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("RO");
+  });
+});
