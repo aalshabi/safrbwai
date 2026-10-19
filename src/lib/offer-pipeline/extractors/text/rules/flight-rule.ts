@@ -83,13 +83,17 @@ const INCLUDE = new RegExp(
 // it yields the "inclusion not stated" warning instead of silence.
 const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
-/** The trip's ticket as an item of an included list ("### Included\n- Flights"); a domestic leg is not it. */
+/**
+ * The trip's ticket as an item of an included or excluded list ("### Included\n-
+ * Flights"). A domestic leg is not it either way: excluding «الطيران الداخلي»
+ * says nothing about the international ticket.
+ */
 const LISTED_FLIGHT = new RegExp(`${FLIGHT_WORD}|${EN_FLIGHT}`, "iu");
 
 export const flightRule: ExtractionRule = {
   key: "flight",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(text, LISTED_FLIGHT);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, LISTED_FLIGHT) ?? listedAsIncluded(text, LISTED_FLIGHT);
     if (hit) return { facts: { flight: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

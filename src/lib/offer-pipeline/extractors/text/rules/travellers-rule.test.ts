@@ -47,5 +47,6 @@ describe("travellersRule", () => {
 describe("price tiers", () => {
   it("does not read «لـ4 أشخاص» after a price as the party", () => {
     expect(travellersRule.apply("الأسعار: 12,100 ريال لـ4 أشخاص").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("الأسعار: 18,810 ريال لـ14 أشخاص").facts.travelers).toBeUndefined();
   });
 });

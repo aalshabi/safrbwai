@@ -72,4 +72,10 @@ describe("flightRule", () => {
     expect(included("### الخدمات المشمولة\n- تذاكر الطيران ذهاب وعودة.")).toEqual({ included: true });
     expect(included("### الخدمات المشمولة\n- طيران داخلي: بانكوك ← بوكيت.")).toBeUndefined();
   });
+
+  it("an excluded domestic leg does not override an included trip ticket", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Domestic flights")).toEqual({ included: true });
+    expect(included("### غير مشمول\n- الطيران الداخلي.")).toBeUndefined();
+    expect(included("### غير مشمول\n- تذاكر الطيران الدولية.")).toEqual({ included: false });
+  });
 });
