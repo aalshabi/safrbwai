@@ -454,3 +454,10 @@ describe("nineteenth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_components_mismatch");
   });
 });
+
+describe("twentieth review follow-ups", () => {
+  it("does not add fare-labelled traveller rates as parts of the total", async () => {
+    const { analysis } = await run("2 adults and 1 child: Adult fare SAR 2,000 + Child fare SAR 1,000, total SAR 5,000.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+});

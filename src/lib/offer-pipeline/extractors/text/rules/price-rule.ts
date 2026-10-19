@@ -472,8 +472,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
  * sentence: «الطيران 2,000 ريال + الفندق 3,000 ريال، الإجمالي 4,000 ريال».
  * The plus sign is the offer's own statement that these are parts of the total.
  */
-/** A traveller-type label right before an amount ("Adult SAR 2,000", «الطفل: 1,000») marks a unit rate. */
-const UNIT_LABEL_BEFORE = /(?:adults?|child(?:ren)?|infants?|(?:ال)?بالغ|(?:ال)?طفل|(?:ال)?رضيع|للبالغ|للطفل)\s*[:：]?\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
+/** A traveller-type label right before an amount ("Adult SAR 2,000", "Child fare SAR 1,000", «الطفل: 1,000») marks a unit rate. */
+const UNIT_LABEL_BEFORE = /(?:adults?|child(?:ren)?|infants?|(?:ال)?بالغ|(?:ال)?طفل|(?:ال)?رضيع|للبالغ|للطفل)(?:\s+(?:fare|price|rate|ticket)s?)?\s*[:：]?\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
