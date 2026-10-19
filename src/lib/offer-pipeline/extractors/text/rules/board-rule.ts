@@ -5,7 +5,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { inExcludedSection } from "../signals";
+import { inExcludedSection, pricedSeparately } from "../signals";
 import { exact } from "../utils";
 
 interface BoardSignal {
@@ -34,9 +34,9 @@ const EXCLUDED_PREFIX =
 /** An exclusion closing the clause right after a signal ("إفطار بوفيه غير مشمول"). */
 const EXCLUDED_SUFFIX = /^[^.،,;؛\n]{0,25}?(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|not\s+included|excluded)/i;
 
-/** Wording that sells a meal plan as an optional or paid extra, or at its own price ("إفطار بوفيه بسعر 50 ريال"). */
+/** Wording that sells a meal plan as an optional or paid extra. */
 const OPTIONAL_WORD =
-  "بسعر\\s*\\d|بقيمة\\s*\\d|بمبلغ\\s*\\d|(?:for|at)\\s*(?:usd|sar|aed|eur|\\$)\\s*\\d|اختياري|رسوم\\s*إضافية|بتكلفة\\s*إضافية|مقابل\\s*(?:رسوم|مبلغ)|عند\\s*الطلب|optional|additional\\s*(?:charge|cost|fee)|extra\\s*(?:charge|cost|fee)|on\\s*request";
+  "اختياري|رسوم\\s*إضافية|بتكلفة\\s*إضافية|مقابل\\s*(?:رسوم|مبلغ)|عند\\s*الطلب|optional|additional\\s*(?:charge|cost|fee)|extra\\s*(?:charge|cost|fee)|on\\s*request";
 /** After the signal in its clause ("إفطار بوفيه اختياري مقابل رسوم إضافية"). */
 const OPTIONAL_EXTRA = new RegExp(`^[^.،,;؛\\n]{0,40}?(?:${OPTIONAL_WORD})`, "i");
 /** Before the signal in its clause ("Optional bed and breakfast", "اختياري: إفطار بوفيه"). */
@@ -50,6 +50,9 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     if (EXCLUDED_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (EXCLUDED_SUFFIX.test(text.slice(m.index + m[0].length))) continue;
     if (OPTIONAL_EXTRA.test(text.slice(m.index + m[0].length))) continue;
+    // A meal at its own price ("إفطار بوفيه بسعر ٥٠ ريال") is sold, not included.
+    const rest = text.slice(m.index + m[0].length);
+    if (pricedSeparately(rest.slice(0, rest.search(/[.،,;؛\n]|$/)))) continue;
     if (OPTIONAL_PREFIX.test(text.slice(lineStart, m.index))) continue;
     if (inExcludedSection(text, m.index)) continue;
     return m as RegExpExecArray;

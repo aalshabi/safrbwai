@@ -278,4 +278,8 @@ describe("nightsRule", () => {
     expect(nightsRule.apply("Free cancellation for a 7-night stay").facts.nights?.value).toBe(7);
     expect(nightsRule.apply("إلغاء مجاني لإقامة 7 ليالٍ").facts.nights?.value).toBe(7);
   });
+
+  it("a waived fee that qualifies the stay keeps its length", () => {
+    expect(nightsRule.apply("No cancellation fee for a 7-night stay").facts.nights?.value).toBe(7);
+  });
 });

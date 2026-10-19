@@ -102,4 +102,8 @@ describe("flightRule", () => {
     expect(included("Includes domestic and international flights")).toEqual({ included: true });
     expect(included("### Included\n- Domestic and international flights")).toEqual({ included: true });
   });
+
+  it("a listed flight sold separately is not included", () => {
+    expect(included("### Included\n- Flights available separately for USD 100")).toBeUndefined();
+  });
 });

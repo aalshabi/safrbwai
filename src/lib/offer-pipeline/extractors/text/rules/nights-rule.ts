@@ -96,10 +96,12 @@ const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/i
 const DEADLINE_BEFORE = /(?:قبل|before|prior\s+to)[^.،,;؛\n\d]{0,25}$/iu;
 /**
  * A penalty measured in nights that the count sits in ("Late cancellation
- * penalty: one night", «غرامة الإلغاء: ليلة»). A cancellation benefit that
- * qualifies the stay ("Free cancellation for a 7-night stay") is not one.
+ * penalty: one night", «غرامة الإلغاء: ليلة»): the penalty word is tied to
+ * the count by ":", "of", "is", «قدرها» …. A cancellation benefit that
+ * qualifies the stay ("No cancellation fee for a 7-night stay") is not one.
  */
-const PENALTY_BEFORE = /(?:penalty|fee|charged?|no[-\s]?show|غرامة|رسوم|يُ?خصم|خصم|عدم\s+الحضور)[^.،,;؛\n]*$/iu;
+const PENALTY_BEFORE =
+  /(?:penalty|fee|charge|no[-\s]?show|غرامة|رسوم|يُ?خصم|خصم|عدم\s+الحضور)[^.،,;؛\n]{0,25}?(?::|=|\bof|\bis|\bequals?|قدرها|تعادل|يعادل|بقيمة|هي|هو)\s*$/iu;
 
 /** An option heading ("### الخيار الأول — فنادق 4 نجوم", "Option 2:"). */
 const OPTION_HEADING = /^[\s#*>-]*(?:الخيار|خيار|option)(?!\p{L})/gimu;

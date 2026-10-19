@@ -51,5 +51,7 @@ describe("price tiers", () => {
     expect(travellersRule.apply("الأسعار: 12,100 ريال سعودي لـ4 أشخاص، 16,500 ريال سعودي لـ6 أشخاص").facts.travelers).toBeUndefined();
     expect(travellersRule.apply("Prices: 12,100 SAR for 4 persons").facts.travelers).toBeUndefined();
     expect(travellersRule.apply("Prices: SAR 12,100 for 4 persons").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("$12,100 for 4 persons, $16,500 for 6 persons").facts.travelers).toBeUndefined();
+    expect(travellersRule.apply("12,100 ر.س لـ4 أشخاص").facts.travelers).toBeUndefined();
   });
 });

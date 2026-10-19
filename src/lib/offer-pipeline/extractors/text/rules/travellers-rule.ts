@@ -13,13 +13,18 @@
 
 import type { OfferTravelers } from "@/lib/offer-pipeline/types";
 import type { ExtractionRule, RuleResult } from "../rule";
+import { CURRENCY } from "../signals";
 import { exact, toWesternDigits } from "../utils";
 
 // A count right after a price ("12,100 ريال لـ4 أشخاص", "12,100 ريال سعودي
 // لـ4 أشخاص", "SAR 12,100 for 4 persons") is a price tier, not the party; «عرض لـ 4
 // بالغين» still is. A count never starts inside a longer number, so «لـ14
 // أشخاص» cannot be re-read as «4 أشخاص».
-const ADULTS = /(?<!(?:(?:ريال|دولار|درهم|يورو|sar|usd|aed|eur)(?:\s*(?:سعودي|أمريكي|إماراتي|saudi|us))?|(?:sar|usd|aed|eur|ريال|دولار|درهم|يورو)\s*[\d,.]+)\s*(?:لـ|ل|for)\s*)(?<!\d)(\d{1,2})\s*(?:بالغ(?:ين|ون)?|كبار|راشد(?:ين)?|أشخاص|شخص|adults?|persons?|pax)/i;
+const ADULTS = new RegExp(
+  `(?<!(?:(?:${CURRENCY})(?:\\s*(?:سعودي|أمريكي|إماراتي|saudi|us))?|(?:${CURRENCY})\\s*[\\d,.]+)\\s*(?:لـ|ل|for)\\s*)` +
+    "(?<!\\d)(\\d{1,2})\\s*(?:بالغ(?:ين|ون)?|كبار|راشد(?:ين)?|أشخاص|شخص|adults?|persons?|pax)",
+  "i"
+);
 const CHILDREN = /(?<!\d)(\d{1,2})\s*(?:أطفال|طفل|رضيع|children|child|kids?|infants?)/i;
 
 /** Arabic dual/singular person words whose count is inherent in the word. */

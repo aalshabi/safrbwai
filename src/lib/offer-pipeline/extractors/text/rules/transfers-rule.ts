@@ -5,7 +5,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { detectInclusion, listedAsIncluded, type InclusionMatch } from "../signals";
+import { detectInclusion, listedAsIncluded, pricedSeparately, type InclusionMatch } from "../signals";
 import { exact } from "../utils";
 
 /** The words an Arabic offer uses for ground transport. */
@@ -55,10 +55,6 @@ const LISTED_TRANSFER = new RegExp(`(?:${TRANSFER_WORD})(?!\\s*(?:ال)?جوي)|
 const NOT_PROVIDED =
   /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include/i;
 
-/** A price attached after the transfer ("… available for USD 100", «… بسعر 300 ريال»); a package price before it is not. */
-const PRICED_AFTER =
-  /(?:\bfor|\bat)\s*(?:(?:usd|sar|aed|eur|\$)\s*\d|\d[\d,.]*\s*(?:usd|sar|aed|eur))|(?:بسعر|بقيمة|بمبلغ)\s*\d/i;
-
 /** A clause boundary; a comma or dot between digits ("2,000", "1.5") is part of a number. */
 const CLAUSE_BREAK = /[،;؛!?؟\n]|(?<!\d)[.,]|[.,](?!\d)/g;
 
@@ -91,8 +87,9 @@ function providedInclusion(text: string): InclusionMatch | null {
     if (!found?.value) return found;
     const clause = clauseOf(scanned, found.evidence);
     if (!clause) return found;
+    // A price counts only after the transfer ("… available for USD 100"); a package price before it does not.
     const afterEvidence = scanned.slice(scanned.indexOf(found.evidence, clause.start) + found.evidence.length, clause.end);
-    if (!NOT_PROVIDED.test(scanned.slice(clause.start, clause.end)) && !PRICED_AFTER.test(afterEvidence)) return found;
+    if (!NOT_PROVIDED.test(scanned.slice(clause.start, clause.end)) && !pricedSeparately(afterEvidence)) return found;
     scanned = scanned.slice(0, clause.start) + " ".repeat(clause.end - clause.start) + scanned.slice(clause.end);
   }
   return null;

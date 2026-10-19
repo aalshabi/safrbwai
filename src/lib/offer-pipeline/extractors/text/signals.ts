@@ -14,6 +14,26 @@
  *   so no fact is returned rather than a wrong one.
  */
 
+import { toWesternDigits } from "./utils";
+
+/** Every currency form the price extractor accepts ("ريال", "ر.س", "﷼", "SR", "SAR", "$", "USD" …). */
+export const CURRENCY = String.raw`ريال|﷼|ر\s?\.\s?س|(?<![A-Za-z])SR(?![A-Za-z])|sar|usd|\$|دولار|درهم|aed|يورو|eur|€|£|gbp`;
+
+/**
+ * A price or "sold separately" attached to an item ("for USD 100", "$100",
+ * «بسعر ٣٠٠ ريال», "available separately"). Digits are normalized first, so
+ * Arabic-Indic amounts count too.
+ */
+const SEPARATE_PRICE = new RegExp(
+  `(?:\\bfor|\\bat)\\s*(?:(?:${CURRENCY})\\s*\\d|\\d[\\d,.]*\\s*(?:${CURRENCY}))|(?:بسعر|بقيمة|بمبلغ)\\s*\\d|\\bseparately\\b|بشكل\\s+منفصل`,
+  "i"
+);
+
+/** Whether `text` prices its item separately (see SEPARATE_PRICE). */
+export function pricedSeparately(text: string): boolean {
+  return SEPARATE_PRICE.test(toWesternDigits(text));
+}
+
 export interface InclusionMatch {
   value: boolean;
   evidence: string;
@@ -111,7 +131,7 @@ function listedMention(text: string, mentionRe: RegExp, inSection: (text: string
  */
 export function listedAsIncluded(text: string, mentionRe: RegExp): InclusionMatch | null {
   const item = listedMention(text, mentionRe, inIncludedSection);
-  if (item === null || NEGATIVE_STATUS.test(item) || OPTIONAL_STATUS.test(item)) return null;
+  if (item === null || NEGATIVE_STATUS.test(item) || OPTIONAL_STATUS.test(item) || pricedSeparately(item)) return null;
   return { value: true, evidence: item };
 }
 

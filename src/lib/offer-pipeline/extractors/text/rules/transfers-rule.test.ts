@@ -124,4 +124,8 @@ describe("transfersRule — the wordings a real offer uses", () => {
   it("a package price before the transfer does not make it a paid extra", () => {
     expect(included("Package for USD 1,000 includes airport transfers")).toEqual({ included: true });
   });
+
+  it("an Arabic-digit price on a transfer add-on is a paid extra", () => {
+    expect(included("نقل بالقارب السريع بسعر ٣٠٠ ريال")).toBeUndefined();
+  });
 });

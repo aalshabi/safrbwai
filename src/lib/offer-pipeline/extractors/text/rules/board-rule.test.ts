@@ -67,4 +67,8 @@ describe("board upgrades and buffet breakfast", () => {
   it("a separately priced breakfast is not the board", () => {
     expect(boardRule.apply("إفطار بوفيه بسعر 50 ريال للشخص").facts.board).toBeUndefined();
   });
+
+  it("an Arabic-digit price on breakfast is not the board", () => {
+    expect(boardRule.apply("إفطار بوفيه بسعر ٥٠ ريال للشخص").facts.board).toBeUndefined();
+  });
 });
