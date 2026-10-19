@@ -167,6 +167,19 @@ function findCanonical(text: string): Match | null {
   const haystack = text.toLowerCase();
   let city: Match | null = null;
   let country: Match | null = null;
+  // Where each transit city ends, so its country right after it
+  // ("via Istanbul, Turkey", «عبر إسطنبول، تركيا») is read as part of it.
+  const transitCities = DESTINATIONS.filter((entry) => entry.kind !== "country").flatMap((entry) =>
+    entry.aliases.flatMap((alias) =>
+      occurrences(haystack, alias.toLowerCase())
+        .filter((i) => markerRank(haystack, i, alias.length, entry.countryCode === "SA") === -1)
+        .map((i) => ({ end: i + alias.length, countryCode: entry.countryCode }))
+    )
+  );
+  const qualifiesATransitCity = (entry: (typeof DESTINATIONS)[number], index: number) =>
+    transitCities.some(
+      (city) => city.countryCode === entry.countryCode && city.end <= index && /^\s*[,،(\-–]?\s*$/u.test(haystack.slice(city.end, index))
+    );
 
   for (const entry of DESTINATIONS) {
     // A place named as a transit point is not where the traveller is going.
@@ -183,6 +196,7 @@ function findCanonical(text: string): Match | null {
         if (!endsOnAWordBoundary(haystack, index, needle.length)) continue;
         if (!startsOnAWordBoundary(haystack, index, needle)) continue;
         if (entry.kind === "country" && namesACarrier(haystack, index, needle.length)) continue;
+        if (entry.kind === "country" && qualifiesATransitCity(entry, index)) continue;
 
         const marker = markerRank(haystack, index, needle.length, entry.countryCode === "SA" && entry.kind !== "country");
         // Where the traveller leaves from, or only passes through, is never where they are going.

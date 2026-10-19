@@ -368,3 +368,22 @@ describe("thirteenth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_components_mismatch");
   });
 });
+
+describe("fourteenth review follow-ups", () => {
+  it("does not take a transit city's country as the destination", async () => {
+    for (const text of ["Flight via Istanbul, Turkey, layover 2 hours, SAR 3,000.", "رحلة عبر إسطنبول، تركيا، ترانزيت ساعتين، السعر 3,000 ريال."]) {
+      const { facts } = await run(text);
+      expect(facts.destination?.value.canonicalValue, text).not.toBe("Turkey");
+    }
+  });
+
+  it("still takes a country named on its own as the destination", async () => {
+    const { facts } = await run("Turkey 5 nights, flight via Doha, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Turkey");
+  });
+
+  it("reads two different airport codes as a change", async () => {
+    const { facts } = await run("New York 4 nights: arrive at JFK Airport and depart from LGA Airport, SAR 9,000 total.");
+    expect(facts.airportChange?.value).toBe(true);
+  });
+});

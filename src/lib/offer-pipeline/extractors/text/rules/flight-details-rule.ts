@@ -212,7 +212,8 @@ function differentAirports(first: string, second: string): boolean | undefined {
   const [a, b] = [airportKey(first), airportKey(second)];
   const [knownA, knownB] = [KNOWN_AIRPORTS.get(a), KNOWN_AIRPORTS.get(b)];
   if (knownA && knownB) return knownA !== knownB;
-  if (IATA_CODE.test(a) || IATA_CODE.test(b)) return a === b ? false : undefined;
+  if (IATA_CODE.test(a) && IATA_CODE.test(b)) return a !== b;
+  if (IATA_CODE.test(a) || IATA_CODE.test(b)) return undefined;
   return a !== b;
 }
 
