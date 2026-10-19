@@ -158,12 +158,6 @@ const airportKey = (name: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-/** One name extending the other word by word («دبي» / «دبي الجديد») is read as the same airport. */
-function sameAirport(a: string, b: string): boolean {
-  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
-  return long === short || long.startsWith(`${short} `);
-}
-
 function airportChangeFact(original: string) {
   if (AIRPORT_CHANGE_UNKNOWN.test(original)) return undefined;
   const noChange = NO_AIRPORT_CHANGE.exec(original);
@@ -172,7 +166,8 @@ function airportChangeFact(original: string) {
   if (change?.index !== undefined) return exact(true, change[0].trim());
   // Two different named airports for arrival and departure: the change is stated by the names themselves.
   const pair = AR_ARRIVE_DEPART.exec(original) ?? EN_ARRIVE_DEPART.exec(original);
-  if (pair && !sameAirport(airportKey(pair[1]), airportKey(pair[2]))) return exact(true, pair[0].trim());
+  // Only the generic words airportKey drops are ignored: «مطار دبي آل مكتوم» is another airport.
+  if (pair && airportKey(pair[1]) !== airportKey(pair[2])) return exact(true, pair[0].trim());
   return undefined;
 }
 

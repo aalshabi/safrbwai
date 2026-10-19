@@ -176,8 +176,14 @@ export function detectContradictions(
 
   // A nightly rate times the stated nights should equal the total, unless the
   // total also pays for something else. Checked only when the offer states no
-  // included flight and no per-person price, and reported as a check, not as
-  // a blocking conflict.
+  // included flight, transfer, insurance, visa or taxes and no per-person
+  // price, and reported as a check, not as a blocking conflict.
+  const includesOtherServices =
+    facts.flight?.value.included === true ||
+    facts.transfer?.value.included === true ||
+    facts.taxes?.value.included === true ||
+    facts.insurance?.value === true ||
+    facts.visa?.value === true;
   const uniquePerNight = uniquePrices(obs.prices.filter((price) => price.basis === "per_night"));
   const nights = obs.nights.length === 1 ? obs.nights[0] : undefined;
   if (
@@ -185,7 +191,7 @@ export function detectContradictions(
     uniquePerNight.length === 1 &&
     uniquePerPerson.length === 0 &&
     nights &&
-    facts.flight?.value.included !== true &&
+    !includesOtherServices &&
     uniqueTotals[0].currency === uniquePerNight[0].currency
   ) {
     const total = uniqueTotals[0];

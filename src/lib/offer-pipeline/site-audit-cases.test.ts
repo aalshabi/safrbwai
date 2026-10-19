@@ -165,3 +165,20 @@ describe("review follow-ups", () => {
     expect(facts.airportChange).toBeUndefined();
   });
 });
+
+describe("second review follow-ups", () => {
+  it("keeps an included transfer when another amount is paid on arrival", async () => {
+    const { facts } = await run("Dubai 4 nights, airport transfers included, balance paid on arrival, SAR 4,000 total.");
+    expect(facts.transfer?.value).toEqual({ included: true });
+  });
+
+  it("reads Dubai International and Al Maktoum as two airports", async () => {
+    const { facts } = await run("رحلة عبر دبي، الوصول إلى مطار دبي الدولي والمغادرة من مطار دبي آل مكتوم، السعر 2,000 ريال.");
+    expect(facts.airportChange?.value).toBe(true);
+  });
+
+  it("does not compare a nightly rate when the total includes a transfer", async () => {
+    const { analysis } = await run("باكو 4 ليالٍ، سعر الليلة 400 ريال، شامل الاستقبال والتوديع من المطار، المجموع 2,000 ريال.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+});
