@@ -149,14 +149,15 @@ const PER_NIGHT_QUALIFIER =
 /** "per room" / «للغرفة» right after a nightly rate. */
 const PER_ROOM = /^[^.،,;؛\n]*?(?:للغرفة|لكل\s+غرفة|per\s+room)/i;
 /**
- * A booking for more than one room: the dual «غرفتين», any count tied to
+ * A booking for more than one room: the dual «غرفتين» as a booking («حجز غرفتين», or an
+ * item of its own; «جناح مكون من غرفتين» is one suite's layout), any count tied to
  * booking wording ("for 2 rooms", "book six rooms", «حجز 3 غرف», «لخمس غرف», "2 x rooms"),
  * a room-count label ("Rooms: 2", «عدد الغرف: ٢»),
  * or 2–9 rooms standing as their own item in the offer («…، 3 غرف، …»). A count inside a description of the
  * hotel ("offers 5 rooms") is not a booking multiplier.
  */
 const MULTIPLE_ROOMS =
-  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|اثنتان|اثنان|ثلاث|أربع|اربع|خمس|ست|سبع|ثمان|تسع|عشر)(?![\d\p{L}])|غرفتين|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/iu;
+  /(?:\b(?:number\s+of\s+)?rooms|عدد\s+الغرف|الغرف)\s*[:：]\s*(?:[2-9]|[1-9]\d{1,2}|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|اثنتان|اثنان|ثلاث|أربع|اربع|خمس|ست|سبع|ثمان|تسع|عشر)(?![\d\p{L}])|(?:حجز|ل|عدد\s+الغرف\s*[:：]?)\s*(?:غرفتين|غرفتان)|(?:^|[،,;؛\n]\s*)(?:غرفتين|غرفتان)\s*(?=[،,;؛.\n]|$)|غرفتان|(?:لـ?|حجز|for|book(?:ing)?|reserve)\s*(?:[2-9]|[1-9]\d{1,2})\s*(?:غرف|غرفة|rooms\b)|\b(?:for|book(?:ing)?|reserve)\s+(?:two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s+rooms\b|(?:لـ?|حجز)\s*(?:ثلاث|أربع|اربع|خمس|ست|سبع|ثماني|ثمان|تسع|عشر)\s+غرف|(?:[2-9]|[1-9]\d{1,2})\s*(?:x|×)\s*(?:غرف|rooms?\b)|(?:^|[،,;؛\n]\s*)[2-9]\s*(?:غرف|rooms)\s*(?=[،,;؛.\n]|$)/iu;
 const OTHER_PER_UNIT_QUALIFIER =
   /^\s*[/\\]?\s*(?:للبالغ|للراشد|للطفل|للغرفة|per\s+(?:adult|child|room))/i;
 const CLAUSE_BOUNDARY = /[،,؛;.!?\n]/;
@@ -449,6 +450,11 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   // Several stays («Hotel A: 4 nights … Hotel B: 3 nights») mean a rate may cover one stay only.
   // The nights rule decides what a stay is, so deadlines and penalties never count.
   const severalStays = hasSeveralStays(text);
+  const discountStated = DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
+  // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
+  const otherCharge = allMatches.some(
+    (match) => !matches.some((kept) => kept.amount === match.amount && kept.currency === match.currency)
+  );
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
     if (seen.has(key)) continue;
@@ -462,7 +468,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
     const roomScoped =
       basis === "per_night" &&
       (multipleRooms || severalStays || PER_ROOM.test(normalizedText.slice(index + length, index + length + 30)));
-    const discounted = basis === "per_night" && DISCOUNT_STATED.test(normalizedText.replace(NO_DISCOUNT, " "));
+    const totalAdjusted = basis === "per_night" && (discountStated || otherCharge);
     observations.push({
       amount,
       currency,
@@ -470,7 +476,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       evidence,
       ...(party ? { party } : {}),
       ...(roomScoped ? { roomScoped } : {}),
-      ...(discounted ? { discounted } : {}),
+      ...(totalAdjusted ? { totalAdjusted } : {}),
     });
   }
   const components = extractComponents(normalizedText, allMatches);

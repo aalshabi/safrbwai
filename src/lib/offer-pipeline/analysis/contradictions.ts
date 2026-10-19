@@ -191,8 +191,8 @@ export function detectContradictions(
   const uniquePerNight = uniquePrices(perNightPrices);
   // A rate per room, or several rooms, needs a room count the offer does not give us.
   const roomScoped = perNightPrices.some((price) => price.roomScoped);
-  // A stated discount comes off the total: rate × nights is no longer the price.
-  const discounted = perNightPrices.some((price) => price.discounted);
+  // A stated discount or extra charge changes the total: rate × nights is no longer the price.
+  const totalAdjusted = perNightPrices.some((price) => price.totalAdjusted);
   const nights = obs.nights.length === 1 ? obs.nights[0] : undefined;
   if (
     uniqueTotals.length === 1 &&
@@ -201,7 +201,7 @@ export function detectContradictions(
     nights &&
     !includesOtherServices &&
     !roomScoped &&
-    !discounted &&
+    !totalAdjusted &&
     uniqueTotals[0].currency === uniquePerNight[0].currency
   ) {
     const total = uniqueTotals[0];

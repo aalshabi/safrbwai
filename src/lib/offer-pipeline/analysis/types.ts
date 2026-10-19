@@ -114,8 +114,8 @@ export interface OfferObservations {
     party?: { size: number | null; evidence: string };
     /** A nightly rate per room, in an offer for several rooms, or one of several stays: nights alone do not multiply it out. */
     roomScoped?: boolean;
-    /** A nightly rate in an offer that also states a discount: the total is not rate × nights. */
-    discounted?: boolean;
+    /** A nightly rate in an offer that also states a discount or another charge: the total is not rate × nights. */
+    totalAdjusted?: boolean;
   }[];
   currencies?: { code: string; evidence: string }[];
   /** Itemized subtotals of the trip ("إجمالي الإقامة"), never rival totals. */

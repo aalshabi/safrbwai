@@ -100,9 +100,11 @@ export const boardRule: ExtractionRule = {
 
     if (found.length === 0) {
       // An offer whose only meal statement excludes breakfast sells the room only.
-      const excluded = BREAKFAST_EXCLUDED.exec(text);
-      const scoped = excluded && QUALIFIED_EXCLUSION.test(text.slice(excluded.index + excluded[0].length));
-      if (excluded && !scoped && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
+      // The first exclusion for the whole stay; one for some guests or days ("for children") is skipped.
+      const excluded = [...text.matchAll(new RegExp(BREAKFAST_EXCLUDED.source, "giu"))].find(
+        (m) => !QUALIFIED_EXCLUSION.test(text.slice(m.index + m[0].length))
+      );
+      if (excluded && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };
     }
 

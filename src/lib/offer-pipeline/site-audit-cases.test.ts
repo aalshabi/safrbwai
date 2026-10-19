@@ -597,3 +597,25 @@ describe("twenty-seventh review follow-ups", () => {
     expect(facts.airportChange?.value).toBe(true);
   });
 });
+
+describe("twenty-eighth review follow-ups", () => {
+  it("does not compare a nightly rate when another charge is stated", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; cleaning fee SAR 200; total SAR 1,800.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not read a two-room suite as two booked rooms", async () => {
+    const { analysis } = await run("دبي، جناح مكون من غرفتين، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 2,000 ريال.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still reads «حجز غرفتين» as two rooms", async () => {
+    const { analysis } = await run("دبي، حجز غرفتين، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 3,200 ريال.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("reads room only from an unscoped exclusion after a scoped one", async () => {
+    const { facts } = await run("Dubai 4 nights. Breakfast not included for children only. Breakfast not included. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("RO");
+  });
+});
