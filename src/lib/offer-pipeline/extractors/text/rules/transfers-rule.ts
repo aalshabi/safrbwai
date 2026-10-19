@@ -43,10 +43,27 @@ const INCLUDE = new RegExp(
 
 const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 
+/**
+ * A transfer the line offers for a fee, on request, or says is unavailable
+ * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
+ * الاستقبال في المطار») is not a package inclusion.
+ */
+const NOT_PROVIDED =
+  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable/i;
+
+function lineOf(text: string, evidence: string): string {
+  const at = text.indexOf(evidence);
+  if (at < 0) return evidence;
+  const start = text.lastIndexOf("\n", at - 1) + 1;
+  const end = text.indexOf("\n", at + evidence.length);
+  return text.slice(start, end < 0 ? undefined : end);
+}
+
 export const transfersRule: ExtractionRule = {
   key: "transfer",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE) ?? listedAsIncluded(text, MENTION);
+    const found = detectInclusion(text, INCLUDE, EXCLUDE) ?? listedAsIncluded(text, MENTION);
+    const hit = found?.value && NOT_PROVIDED.test(lineOf(text, found.evidence)) ? null : found;
     if (hit) return { facts: { transfer: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

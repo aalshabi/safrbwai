@@ -81,4 +81,10 @@ describe("transfersRule — the wordings a real offer uses", () => {
     expect(included("### الإقامة\n\n- التنقلات بين المدن.")).toBeUndefined();
     expect(included("الخدمات المشمولة:\n- التنقلات غير مشمولة.")).toEqual({ included: false });
   });
+
+  it("a transfer offered for a fee or unavailable is not an inclusion", () => {
+    expect(included("Seaplane transfers available for an additional charge")).toBeUndefined();
+    expect(included("لا تتوفر خدمة الاستقبال والمساعدة في المطار")).toBeUndefined();
+    expect(included("نقل بالقارب السريع مقابل رسوم إضافية")).toBeUndefined();
+  });
 });
