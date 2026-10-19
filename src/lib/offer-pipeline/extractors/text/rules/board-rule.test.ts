@@ -75,4 +75,8 @@ describe("board upgrades and buffet breakfast", () => {
   it("a breakfast with a price written right after it is not the board", () => {
     expect(boardRule.apply("إفطار بوفيه 50 ريال للشخص").facts.board).toBeUndefined();
   });
+
+  it("a buffet breakfast inside a full-board plan keeps FB", () => {
+    expect(boardRule.apply("إقامة كاملة تشمل إفطار بوفيه وغداء وعشاء").facts.board?.value).toBe("FB");
+  });
 });

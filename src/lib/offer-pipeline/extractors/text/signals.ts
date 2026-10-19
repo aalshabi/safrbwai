@@ -14,10 +14,10 @@
  *   so no fact is returned rather than a wrong one.
  */
 
-import { toWesternDigits } from "./utils";
+import { CURRENCY_ALT, toWesternDigits } from "./utils";
 
-/** Every currency form the price extractor accepts ("ريال", "ر.س", "﷼", "SR", "SAR", "$", "USD" …). */
-export const CURRENCY = String.raw`ريال|﷼|ر\s?\.\s?س|(?<![A-Za-z])SR(?![A-Za-z])|sar|usd|\$|دولار|درهم|aed|يورو|eur|€|£|gbp`;
+/** Every currency form the price extractor accepts: the same alternation, so the two never drift apart. */
+export const CURRENCY = CURRENCY_ALT;
 
 /**
  * A price or "sold separately" attached to an item ("for USD 100", "$100",

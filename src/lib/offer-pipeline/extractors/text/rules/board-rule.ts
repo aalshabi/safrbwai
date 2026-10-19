@@ -76,6 +76,14 @@ export const boardRule: ExtractionRule = {
 
     if (found.length === 0) return { facts: {}, warnings: [] };
 
+    // A buffet or daily breakfast listed inside a stated FB/HB/AI plan («إقامة
+    // كاملة تشمل إفطار بوفيه وغداء وعشاء») is one of its meals, not a rival plan.
+    const plan = found.find((f) => f.code === "FB" || f.code === "HB" || f.code === "AI");
+    const breakfast = found.findIndex((f) => f.code === "BB");
+    if (plan && breakfast >= 0) {
+      const gap = text.slice(plan.index + plan.evidence.length, found[breakfast].index);
+      if (found[breakfast].index > plan.index && gap.length <= 15 && !/[.،,;؛\n]/.test(gap)) found.splice(breakfast, 1);
+    }
     const codes = new Set(found.map((f) => f.code));
     if (codes.size > 1) {
       return {

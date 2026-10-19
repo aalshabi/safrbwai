@@ -282,4 +282,9 @@ describe("nightsRule", () => {
   it("a waived fee that qualifies the stay keeps its length", () => {
     expect(nightsRule.apply("No cancellation fee for a 7-night stay").facts.nights?.value).toBe(7);
   });
+
+  it("a booking deadline before the stay length keeps it", () => {
+    expect(nightsRule.apply("احجز قبل رمضان لمدة 7 ليالٍ").facts.nights?.value).toBe(7);
+    expect(nightsRule.apply("Book before Ramadan for 7 nights").facts.nights?.value).toBe(7);
+  });
 });

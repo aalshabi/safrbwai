@@ -92,8 +92,13 @@ export function extractNightObservations(text: string): NightObservation[] {
 
 /** Words that make a count a deadline rather than a duration. */
 const DEADLINE_AFTER = /^\s*(?:before|prior\s+to|in\s+advance|قبل|مسبق)/iu;
-/** A deadline anchor right before the count in its clause ("before arrival", «قبل الوصول ب»). */
-const DEADLINE_BEFORE = /(?:قبل|before|prior\s+to)[^.،,;؛\n\d]{0,25}$/iu;
+/**
+ * A deadline anchored to the trip right before the count ("before arrival",
+ * «قبل الوصول ب»). A booking deadline before the stay length («احجز قبل رمضان
+ * لمدة 7 ليالٍ») is not one.
+ */
+const DEADLINE_BEFORE =
+  /(?:قبل\s+(?:موعد\s+|تاريخ\s+)?(?:ال)?(?:وصول|مغادرة|سفر|رحلة|دخول|تسجيل)|(?:before|prior\s+to)\s+(?:the\s+)?(?:arrival|departure|check[-\s]?in|travel))[^.،,;؛\n\d]{0,10}$/iu;
 /**
  * A penalty measured in nights that the count sits in ("Late cancellation
  * penalty: one night", «غرامة الإلغاء: ليلة»): the penalty word is tied to
