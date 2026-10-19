@@ -194,3 +194,15 @@ describe("nightly check and rooms", () => {
     expect(codes(analysis)).not.toContain("price_nightly_mismatch");
   });
 });
+
+describe("third review follow-ups", () => {
+  it("does not read a sightseeing stop in another sentence as a flight transit", async () => {
+    const { facts } = await run("رحلة إلى دبي عبر إسطنبول. توقف عند برج خليفة لمدة 3 ساعات. السعر 4,000 ريال.");
+    expect(facts.transitDuration).toBeUndefined();
+  });
+
+  it("does not take a hotel's own size as the rooms booked", async () => {
+    const { analysis } = await run("Hotel with 200 rooms, 4 nights, nightly price SAR 400, total SAR 2,000.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

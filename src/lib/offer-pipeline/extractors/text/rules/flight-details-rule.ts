@@ -70,10 +70,27 @@ function nearestContextDistance(text: string, index: number, pattern: RegExp): n
 /** A flight routed through another city ("via Doha", «عبر إسطنبول»): a bare «توقف ١٤ ساعة» elsewhere in it is that stop. */
 const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|layover|stopover)\b/iu;
 
+const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
+
+/** The sentence around `index`: up to the nearest full stop or line break. */
+function sentenceAt(text: string, index: number): string {
+  const start = Math.max(text.lastIndexOf(".", index - 1), text.lastIndexOf("\n", index - 1)) + 1;
+  const rest = text.slice(index).search(/[.\n]/);
+  return text.slice(start, rest === -1 ? text.length : index + rest);
+}
+
 function hasAviationContext(text: string, index: number): boolean {
   const clause = clauseAt(text, index);
-  // Only ground transport in the stop's own clause marks it as a tour stop.
-  if (ROUTED_VIA.test(text) && !GROUND_STOP_CONTEXT.test(clause.text)) return true;
+  // A routed flight («… عبر إسطنبول، توقف 14 ساعة») names its stop in the same
+  // sentence; a stop "at" a place («توقف عند برج خليفة») or with ground
+  // transport is a sightseeing stop.
+  if (
+    ROUTED_VIA.test(sentenceAt(text, index)) &&
+    !GROUND_STOP_CONTEXT.test(clause.text) &&
+    !SIGHTSEEING_STOP.test(clause.text)
+  ) {
+    return true;
+  }
   const aviationDistance = Math.min(
     nearestContextDistance(clause.text, clause.matchIndex, EXPLICIT_TRANSIT_CONTEXT),
     nearestContextDistance(clause.text, clause.matchIndex, FLIGHT_CONTEXT)
