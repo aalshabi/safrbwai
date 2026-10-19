@@ -4,6 +4,8 @@ import { GUIDE_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
 import { getGuide, getReviewedGuides } from "@/lib/guides";
 import { GuideArticle } from "@/components/guides/guide-article";
+import { RelatedLinks } from "@/components/content/related-links";
+import { getRelatedLinks } from "@/lib/related-content";
 import { articleJsonLd, breadcrumbJsonLd, jsonLdHtml, SECTION_NAMES } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -50,6 +52,7 @@ export default async function GuidePage({ params }: Props) {
     <article className="container py-14 md:py-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(jsonLd)} />
       <GuideArticle guide={guide} />
+      <RelatedLinks links={getRelatedLinks({ kind: "guide", slug: guide.slug })} />
     </article>
   );
 }

@@ -21,7 +21,7 @@ export function GuideList({ guides }: { guides: readonly TravelGuide[] }) {
         {guides.map((guide) => (
           <Card key={guide.slug}>
             <CardContent className="p-6">
-              <h2 className="font-display text-xl font-bold">{guide.title[locale]}</h2>
+              <h2 className="font-display text-xl font-bold"><Link href={`/guides/${guide.slug}`}>{guide.title[locale]}</Link></h2>
               <p className="mt-2 text-sm text-muted-foreground">{guide.description[locale]}</p>
               <p className="mt-3 text-xs text-muted-foreground">{copy.reviewed}: <time dateTime={guide.reviewedAt}>{guide.reviewedAt}</time></p>
               <Link className="mt-4 inline-flex items-center gap-2 font-semibold text-teal" href={`/guides/${guide.slug}`}>

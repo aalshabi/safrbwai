@@ -4,6 +4,8 @@ import { INSIGHT_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
 import { InsightArticle } from "@/components/insights/insight-article";
 import { getInsight, getPublishedInsights } from "@/lib/travel-insights";
+import { RelatedLinks } from "@/components/content/related-links";
+import { getRelatedLinks } from "@/lib/related-content";
 import { articleJsonLd, breadcrumbJsonLd, jsonLdHtml, SECTION_NAMES } from "@/lib/structured-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -51,6 +53,7 @@ export default async function InsightPage({ params }: Props) {
     <article className="container py-14 md:py-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(jsonLd)} />
       <InsightArticle insight={insight} />
+      <RelatedLinks links={getRelatedLinks({ kind: "insight", slug: insight.slug })} />
     </article>
   );
 }
