@@ -17,7 +17,7 @@ const EXCLUDE = new RegExp(
     // The payment must follow the transfer itself, with only its own qualifiers between:
     // «النقل البحري يُدفع عند الوصول», "transfers are payable on arrival" — not "transfers
     // included and hotel paid on arrival".
-    `|(?:${TRANSFER_WORD}|transfers?)(?:\\s+(?:البحري|البحرية|الجوي|بالقارب|بالطائرة\\s*المائية|من\\s*و?\\s*إلى\\s*المطار|المطار|airport|are|is|will\\s+be|to\\s+be))*\\s*(?:[يت]ُ?دفع|يُ?سدد|تُ?سدد|payable|paid)\\s*(?:عند\\s*الوصول|on\\s*arrival|locally)` +
+    `|(?:${TRANSFER_WORD}|transfers?)(?:\\s+(?:البحري|البحرية|الجوي|بالقارب|بالطائرة\\s*المائية|من\\s*و?\\s*إلى\\s*المطار|المطار|airport|are|is|will\\s+be|to\\s+be|by\\s+[a-z]+|(?:to|from)\\s+(?:the\\s+)?[a-z]+|(?:one|each)\\s+way|return))*\\s*(?:[يت]ُ?دفع|يُ?سدد|تُ?سدد|payable|paid)\\s*(?:عند\\s*الوصول|on\\s*arrival|locally)` +
     `|بدون\\s*(?:${TRANSFER_WORD})|no\\s*transfers?`,
   "i"
 );

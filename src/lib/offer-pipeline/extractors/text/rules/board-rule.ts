@@ -31,7 +31,7 @@ const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
 const SCOPED_PLAN =
-  /^\s*(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b|(?:(?:all|both|the)\s+)?adults?|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|(?:for|on|during)\s+[^.,;\n]{0,40}\b(?:except|excluding|but\s+not)\b|[^.,;،\n]{0,40}(?:عدا|باستثناء)|للأطفال|للطفل|للبالغين|للكبار|للرضع|للرضّع|لكبار\s+السن|للمسنين|للمراهقين|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
+  /^\s*(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|(?:for|on|during)\s+[^.,;\n]{0,40}\b(?:except|excluding|but\s+not)\b|[^.,;،\n]{0,40}(?:عدا|باستثناء)|للأطفال|للطفل|للبالغين|للكبار|للرضع|للرضّع|لكبار\s+السن|للمسنين|للمراهقين|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
 /** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
 // "For all guests", "for the entire stay", «للجميع» cover the whole booking and are not a scope,
 // unless an exception follows ("for all guests except children").
@@ -68,7 +68,7 @@ const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 /** The first match of `re` that the offer does not state as excluded. */
 /** A guest or day scope earlier in the same sentence: "For children only, breakfast is included". */
 const SCOPE_BEFORE =
-  /(?:^|[^\p{L}])(?:for\s+(?:(?:(?:all|both|the)\s+)?adults\b|(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
+  /(?:^|[^\p{L}])(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
 
 const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
 
@@ -105,7 +105,7 @@ function scopedBefore(text: string, index: number): boolean {
 
 const COUNT_WORDS: Record<string, number> = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
 const toCount = (word: string) => COUNT_WORDS[word.toLowerCase()] ?? Number(word);
-const COUNTED_ADULTS = /^\s*for\s+(\d+|one|two|three|four|five|six)\s+adults?\b/iu;
+const COUNTED_ADULTS = /^\s*for\s+(?:(\d+|one|two|three|four|five|six|all|both|the)\s+)?adults?\b/iu;
 const PARTY_ADULTS = /\b(\d+|one|two|three|four|five|six)\s+adults?\b/giu;
 const CHILD_IN_PARTY = /\b(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?)\b|أطفال|طفل|رضيع/iu;
 /**
@@ -117,10 +117,17 @@ function fewerAdults(text: string, rest: string): boolean {
   return counted !== null && partOfParty(text, counted[1]);
 }
 
-const PREFIX_ADULTS = /(?:^|[^\p{L}])for\s+(\d+|one|two|three|four|five|six)\s+adults?\b/giu;
-function partOfParty(text: string, count: string): boolean {
+const PREFIX_ADULTS = /(?:^|[^\p{L}])for\s+(?:(\d+|one|two|three|four|five|six|all|both|the)\s+)?adults?\b/giu;
+/**
+ * Whether "for (N/all) adults" covers only part of the party: the offer books children,
+ * or more adults than N. "For adults" with no party stated stays a scope.
+ */
+function partOfParty(text: string, count: string | undefined): boolean {
   if (CHILD_IN_PARTY.test(text)) return true;
-  return [...text.matchAll(PARTY_ADULTS)].some((party) => toCount(party[1]) > toCount(count));
+  const parties = [...text.matchAll(PARTY_ADULTS)];
+  const n = count === undefined ? NaN : toCount(count);
+  if (Number.isNaN(n)) return parties.length === 0;
+  return parties.some((party) => toCount(party[1]) > n);
 }
 
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {

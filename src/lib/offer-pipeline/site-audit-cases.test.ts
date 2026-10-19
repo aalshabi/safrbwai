@@ -1006,3 +1006,20 @@ describe("forty-eighth review follow-ups", () => {
     expect(facts.board?.value).toBe("BB");
   });
 });
+
+describe("forty-ninth review follow-ups", () => {
+  it("confirms breakfast for adults when the booking is adults only", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults; breakfast included for adults. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+
+  it("confirms breakfast from an adults prefix when the booking is adults only", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults. For adults, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+
+  it("does not take a qualified transfer payable on arrival as included", async () => {
+    const { facts } = await run("Maldives 4 nights, SAR 12,000 total. Private airport transfers by speedboat are payable on arrival.");
+    expect(facts.transfer?.value).not.toEqual({ included: true });
+  });
+});
