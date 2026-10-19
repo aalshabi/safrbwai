@@ -97,4 +97,9 @@ describe("flightRule", () => {
     expect(included("### Included\n- Flights available on request")).toBeUndefined();
     expect(included("### Included\n- Flights for an additional charge")).toBeUndefined();
   });
+
+  it("domestic and international flights together include the ticket", () => {
+    expect(included("Includes domestic and international flights")).toEqual({ included: true });
+    expect(included("### Included\n- Domestic and international flights")).toEqual({ included: true });
+  });
 });

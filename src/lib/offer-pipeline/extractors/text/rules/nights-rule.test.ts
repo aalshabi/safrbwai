@@ -254,4 +254,13 @@ describe("nightsRule", () => {
       { value: 5, evidence: "5 ليالٍ" },
     ]);
   });
+
+  it("a cancellation penalty is not a stay length", () => {
+    expect(nightsRule.apply("Duration: 7 nights. Late cancellation penalty: one night.").observations?.nights).toEqual([
+      { value: 7, evidence: "7 nights" },
+    ]);
+    expect(nightsRule.apply("المدة 5 ليالٍ\nغرامة الإلغاء المتأخر: ليلة واحدة").observations?.nights).toEqual([
+      { value: 5, evidence: "5 ليالٍ" },
+    ]);
+  });
 });
