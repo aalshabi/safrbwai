@@ -667,3 +667,17 @@ describe("thirty-first review follow-ups", () => {
     }
   });
 });
+
+describe("thirty-second review follow-ups", () => {
+  it("does not read «ل» at the end of a word as a room-booking preposition", async () => {
+    const { analysis } = await run("دبي، جناح شامل غرفتين نوم، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 2,000 ريال.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("does not read breakfast for infants or seniors as the whole booking's plan", async () => {
+    for (const text of ["دبي 4 ليالٍ، الإفطار مشمول للرضع، السعر 3,000 ريال.", "Dubai 4 nights, breakfast is included for seniors, SAR 3,000 total."]) {
+      const { facts } = await run(text);
+      expect(facts.board?.value, text).not.toBe("BB");
+    }
+  });
+});
