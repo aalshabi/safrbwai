@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { HotelAnalyzer } from "@/components/analyzers/hotel-analyzer";
 import {
   isPreviewDeployment,
@@ -6,12 +7,13 @@ import {
 } from "@/lib/hotel-data/config";
 import { isFeatureEnabled } from "@/lib/product/capabilities";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "بحث هوية الفندق — Hotel identity lookup",
   description:
     "ابحث عن هوية الفندق من مصدر رسمي دون تقييمات أو أسعار أو توصيات. Source-backed hotel identity lookup without ratings, prices, or recommendations.",
-  alternates: { canonical: "/analyze-hotel" },
-};
+  path: "/analyze-hotel",
+  image: "tools",
+});
 
 export default function Page() {
   const enabled =

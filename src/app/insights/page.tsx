@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
 import { InsightList } from "@/components/insights/insight-list";
 import {
   AirportStatusBannerLoader,
@@ -7,11 +8,13 @@ import {
 } from "@/components/airport-status/airport-status-loader";
 import { getPublishedInsights } from "@/lib/travel-insights";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "مرصد السفر العالمي — Global Travel Monitor",
-  description: "مواضيع سفر حديثة موثقة تساعد المسافر على التحقق والاختيار الواعي قبل الحجز.",
-  alternates: { canonical: "/insights" },
-};
+  description:
+    "مواضيع سفر حديثة موثقة بمصادرها، مع حالة المطارات، تساعدك على التحقق من الحجز والاختيار الواعي قبل أن تدفع قيمة رحلتك.",
+  path: "/insights",
+  image: "insights",
+});
 
 export default function InsightsPage() {
   const insights = getPublishedInsights();

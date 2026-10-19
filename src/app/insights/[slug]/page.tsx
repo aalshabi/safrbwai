@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
+import { INSIGHT_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
 import { InsightArticle } from "@/components/insights/insight-article";
 import { getInsight, getPublishedInsights } from "@/lib/travel-insights";
@@ -13,19 +15,14 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const insight = getInsight((await params).slug);
   if (!insight || insight.status !== "published") return {};
-  return {
-    title: `${insight.title.ar} — ${insight.title.en}`,
-    description: insight.description.ar,
-    alternates: { canonical: `/insights/${insight.slug}` },
-    openGraph: {
-      type: "article",
-      title: insight.title.ar,
-      description: insight.description.ar,
-      publishedTime: insight.publishedAt,
-      modifiedTime: insight.reviewedAt,
-      url: `${SITE_URL}/insights/${insight.slug}`,
-    },
-  };
+  const seo = INSIGHT_SEO[insight.slug];
+  return pageMetadata({
+    title: seo?.title ?? insight.title.ar,
+    description: seo?.description ?? insight.description.ar,
+    path: `/insights/${insight.slug}`,
+    image: "insights",
+    article: { publishedTime: insight.publishedAt, modifiedTime: insight.reviewedAt },
+  });
 }
 
 export default async function InsightPage({ params }: Props) {
