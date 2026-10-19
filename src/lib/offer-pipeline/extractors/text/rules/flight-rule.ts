@@ -12,7 +12,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
-import { detectInclusion } from "../signals";
+import { detectInclusion, listedAsIncluded } from "../signals";
 import { exact } from "../utils";
 
 /**
@@ -83,10 +83,13 @@ const INCLUDE = new RegExp(
 // it yields the "inclusion not stated" warning instead of silence.
 const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
+/** The trip's ticket as an item of an included list ("### Included\n- Flights"); a domestic leg is not it. */
+const LISTED_FLIGHT = new RegExp(`${FLIGHT_WORD}|${EN_FLIGHT}`, "iu");
+
 export const flightRule: ExtractionRule = {
   key: "flight",
   apply(text: string): RuleResult {
-    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION);
+    const hit = detectInclusion(text, INCLUDE, EXCLUDE, MENTION) ?? listedAsIncluded(text, LISTED_FLIGHT);
     if (hit) return { facts: { flight: exact({ included: hit.value }, hit.evidence) }, warnings: [] };
 
     if (MENTION.test(text)) {

@@ -5,6 +5,7 @@
  */
 
 import type { ExtractionRule, RuleResult } from "../rule";
+import { inExcludedSection } from "../signals";
 import { exact } from "../utils";
 
 interface BoardSignal {
@@ -26,6 +27,22 @@ const BOARD_SIGNALS: BoardSignal[] = [
 
 const UPGRADE_FROM = /(?:ترقية|upgrade)[^\n.]{0,40}?(?:من|from)\s*([^\n.]{1,40}?)\s*(?:إلى|الى|to)\s/giu;
 
+/** An exclusion opening the clause a signal sits in ("غير مشمول: إفطار بوفيه"). */
+const EXCLUDED_PREFIX =
+  /(?:غير\s*(?:مشمول|مشمولة|شامل|شاملة)|لا\s*(?:يشمل|تشمل)|not\s+included|excluding|excludes?)[^.،,;؛\n]*$|(?:^|\s)(?:غير|لا|not)\s+$/i;
+
+/** The first match of `re` that the offer does not state as excluded. */
+function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
+  const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
+  for (const m of scanned.matchAll(all)) {
+    const lineStart = text.lastIndexOf("\n", m.index - 1) + 1;
+    if (EXCLUDED_PREFIX.test(text.slice(lineStart, m.index))) continue;
+    if (inExcludedSection(text, m.index)) continue;
+    return m as RegExpExecArray;
+  }
+  return null;
+}
+
 export const boardRule: ExtractionRule = {
   key: "board",
   apply(text: string): RuleResult {
@@ -36,7 +53,7 @@ export const boardRule: ExtractionRule = {
       match.replace(from, " ".repeat(from.length))
     );
     for (const { code, re } of BOARD_SIGNALS) {
-      const m = re.exec(scanned);
+      const m = firstIncluded(text, scanned, re);
       if (m) found.push({ code, evidence: text.slice(m.index, m.index + m[0].length), index: m.index });
     }
 

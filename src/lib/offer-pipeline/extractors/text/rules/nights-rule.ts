@@ -91,6 +91,17 @@ export function extractNightObservations(text: string): NightObservation[] {
 }
 
 /**
+ * Whether this count's own item names a hotel ("ليلتان: `Royal Kandyan Hotel`").
+ * Only the rest of this item counts ("| Hotel A: …" belongs to the next
+ * count), and an item holding a later count ("7 nights: Hotel A: 4 nights")
+ * gives that hotel to the later count, whose label it is.
+ */
+function hotelAfter(after: string): boolean {
+  const item = after.split(/[\n|;؛]/)[0];
+  return HOTEL_AFTER.test(item) && !new RegExp(NIGHTS.source, NIGHTS.flags.replace("g", "")).test(item);
+}
+
+/**
  * The offer's night counts, and the one that states the package's length.
  * Separate stays with no total that collapses them ("Hotel A: 4 nights",
  * "Hotel B: 4 nights") span their sum, not any one of them, so none of them
@@ -131,8 +142,7 @@ function readNights(text: string): { observations: NightObservation[]; length?: 
       evidence: text.slice(match.index, end),
       onStayLine,
       onTotalLine: TOTAL_LINE.test(label),
-      // Only the rest of this item: "| Hotel A: …" belongs to the next count.
-      isStay: onStayLine || STAY_AFTER.test(after) || HOTEL_AFTER.test(after.split(/[|;؛]/)[0]),
+      isStay: onStayLine || STAY_AFTER.test(after) || hotelAfter(after),
       stay: stayName(label, after),
     });
   }

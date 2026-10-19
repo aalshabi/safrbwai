@@ -220,4 +220,9 @@ describe("nightsRule", () => {
     const text = "المدة: 6 ليالٍ\n- كاندي، ليلتان: Royal Hotel\n- نواراليا، ليلتان: Fort Hotel\n- بنتوتة، ليلتان: Beach Hotel\n- 6 ليالٍ في الفنادق المذكورة أو ما يماثلها.";
     expect(nightsRule.apply(text).observations?.nights).toEqual([{ value: 6, evidence: "6 ليالٍ" }]);
   });
+
+  it("gives a hotel to the later count on the same line, not to the total", () => {
+    const r = nightsRule.apply("7 nights: Hotel A: 4 nights | Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
+  });
 });

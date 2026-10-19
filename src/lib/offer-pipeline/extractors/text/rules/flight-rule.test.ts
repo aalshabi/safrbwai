@@ -66,4 +66,10 @@ describe("flightRule", () => {
     expect(r.facts).toEqual({});
     expect(r.warnings).toEqual([]);
   });
+
+  it("a ticket listed under an included heading is included; a domestic leg is not", () => {
+    expect(included("### Included\n- Flights\n- Hotel")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران ذهاب وعودة.")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- طيران داخلي: بانكوك ← بوكيت.")).toBeUndefined();
+  });
 });

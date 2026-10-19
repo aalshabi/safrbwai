@@ -43,4 +43,10 @@ describe("board upgrades and buffet breakfast", () => {
   it("reads a buffet breakfast as bed and breakfast", () => {
     expect(boardRule.apply("غرفة بإطلالة بحرية وإفطار بوفيه مفتوح").facts.board?.value).toBe("BB");
   });
+
+  it("never reads a breakfast the offer excludes as the board", () => {
+    expect(boardRule.apply("غير مشمول: إفطار بوفيه").facts.board).toBeUndefined();
+    expect(boardRule.apply("### غير مشمول\n- إفطار بوفيه يومي.").facts.board).toBeUndefined();
+    expect(boardRule.apply("السعر غير شامل الإفطار").facts.board).toBeUndefined();
+  });
 });
