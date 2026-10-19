@@ -458,7 +458,9 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const otherCharge = allMatches.some(
     (match) =>
       !matches.includes(match) &&
-      !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency)
+      !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency) &&
+      // A charge due only on cancellation, no-show or as a deposit is not in the total.
+      !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index))
   );
   for (const { amount, currency, basis, evidence, party, index, length } of matches) {
     const key = `${amount}\u0000${currency}\u0000${basis}`;
@@ -504,7 +506,9 @@ const NO_DISCOUNT =
 const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|traveller|traveler|seat)|للواحد|لكل\s+(?:واحد|تذكرة|مسافر))/iu;
 // Only a tax or a booking-type fee: a cancellation fee of 100% is a penalty, not part of the total.
 const SURCHARGE_STATED =
-  /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:plus|\+)\s*\d+(?:\.\d+)?\s*[%٪]|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
+  /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
+const CONDITIONAL_CHARGE_BEFORE =
+  /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.;؛\n]{0,30}$/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -551,7 +555,7 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
     // An item added before the first amount ("Taxes + Flight SAR 2,000 + …") is unpriced too.
     if (chain.length > 0) {
       const before = normalizedText.slice(0, chain[0].index);
-      if (before.slice(before.search(/[^.\n!?؟]*$/)).includes("+")) continue;
+      if (before.slice(before.search(/[^.\n!?؟;؛،,]*$/)).includes("+")) continue;
     }
     if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {
       return chain.map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));

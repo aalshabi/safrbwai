@@ -749,3 +749,27 @@ describe("thirty-sixth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("thirty-seventh review follow-ups", () => {
+  it("still compares a nightly rate when the other amount is a cancellation fee", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000; cancellation fee SAR 500.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("reads a guest scope written before the meal statement", async () => {
+    const included = await run("Dubai 4 nights. For children only, breakfast is included. SAR 3,000 total.");
+    expect(included.facts.board?.value).not.toBe("BB");
+    const excluded = await run("Dubai 4 nights. For children only, breakfast is not included. SAR 3,000 total.");
+    expect(excluded.facts.board?.value).not.toBe("RO");
+  });
+
+  it("does not let a party count's plus sign reject a breakdown", async () => {
+    const { analysis } = await run("2 adults + 1 child; Flight SAR 2,000 + Hotel SAR 3,000, total SAR 6,000.");
+    expect(codes(analysis)).toContain("price_components_mismatch");
+  });
+
+  it("still compares a nightly rate beside an unrelated plus percentage", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000; loyalty members earn +10% points.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

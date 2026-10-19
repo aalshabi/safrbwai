@@ -66,6 +66,15 @@ const OPTIONAL_EXTRA = new RegExp(`^[^.،,;؛\\n]{0,40}?(?:${OPTIONAL_WORD})`, "
 const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 
 /** The first match of `re` that the offer does not state as excluded. */
+/** A guest or day scope earlier in the same sentence: "For children only, breakfast is included". */
+const SCOPE_BEFORE =
+  /(?:^|[^\p{L}])(?:for\s+(?:children|kids|infants|babies|toddlers|teens|teenagers|seniors|elderly|adults)\b|on\s+(?:the\s+)?(?:first|last|arrival|departure)\s+(?:day|night)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
+
+const sentenceBefore = (text: string, index: number) => {
+  const before = text.slice(0, index);
+  return before.slice(before.search(/[^.!?؟;؛\n]*$/));
+};
+
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
   const all = new RegExp(re.source, re.flags.includes("g") ? re.flags : re.flags + "g");
   for (const m of scanned.matchAll(all)) {
@@ -81,7 +90,7 @@ function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArr
     // A plan for some guests or days only ("with breakfast for children only",
     // «شامل الإفطار للأطفال», "on the first day") is not the booking's board;
     // a later unscoped mention still is.
-    if (SCOPED_PLAN.test(rest)) continue;
+    if (SCOPED_PLAN.test(rest) || SCOPE_BEFORE.test(sentenceBefore(text, m.index))) continue;
     return m as RegExpExecArray;
   }
   return null;
@@ -105,7 +114,9 @@ export const boardRule: ExtractionRule = {
       // An offer whose only meal statement excludes breakfast sells the room only.
       // The first exclusion for the whole stay; one for some guests or days ("for children") is skipped.
       const excluded = [...text.matchAll(new RegExp(BREAKFAST_EXCLUDED.source, "giu"))].find(
-        (m) => !QUALIFIED_EXCLUSION.test(text.slice(m.index + m[0].length))
+        (m) =>
+          !QUALIFIED_EXCLUSION.test(text.slice(m.index + m[0].length)) &&
+          !SCOPE_BEFORE.test(sentenceBefore(text, m.index))
       );
       if (excluded && !OTHER_MEAL.test(text.replace(NEGATED_MEALS, " "))) return { facts: { board: exact("RO", excluded[0]) }, warnings: [] };
       return { facts: {}, warnings: [] };
