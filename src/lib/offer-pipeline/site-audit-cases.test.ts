@@ -737,3 +737,15 @@ describe("thirty-fifth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_components_mismatch");
   });
 });
+
+describe("thirty-sixth review follow-ups", () => {
+  it("does not sum a breakdown that starts with an unpriced item", async () => {
+    const { analysis } = await run("Taxes + Flight SAR 2,000 + Hotel SAR 3,000, total SAR 5,750.");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("still compares a nightly rate when the only percentage is a cancellation fee", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; total SAR 2,000; cancellation fee 100%.");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

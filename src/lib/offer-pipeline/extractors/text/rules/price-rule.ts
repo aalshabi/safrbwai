@@ -502,8 +502,9 @@ const NO_DISCOUNT =
   /\b(?:no|without)\s+(?:discounts?|promo(?:tion)?\s+codes?|coupons?)\b|\bdiscounts?\s+(?:(?:is|are)\s+)?not\s+(?:applicable|available|included|applied)|\bdiscounts?\s+(?:(?:does|do|will)\s+not|doesn'?t|don'?t|won'?t)\s+apply|\bnot\s+eligible\s+for\s+(?:a\s+|any\s+)?discounts?|(?:لا\s+(?:يوجد|يشمل|تشمل)\s+(?:أي\s+)?|بدون\s+)(?:ال)?(?:خصم|تخفيض)|(?:ال)?(?:خصم|تخفيض)\s+غير\s+(?:متاح|متوفر|مشمول|مطبق)/giu;
 /** "SAR 2,000 each", "per ticket", «للواحد»: a rate multiplied by a count the chain does not see. */
 const UNIT_RATE_AFTER = /^\s*(?:each|apiece|per\s+(?:ticket|unit|item|guest|traveller|traveler|seat)|للواحد|لكل\s+(?:واحد|تذكرة|مسافر))/iu;
+// Only a tax or a booking-type fee: a cancellation fee of 100% is a penalty, not part of the total.
 const SURCHARGE_STATED =
-  /\d\s*[%٪]|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
+  /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:plus|\+)\s*\d+(?:\.\d+)?\s*[%٪]|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -546,6 +547,11 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
         break;
       }
       chain.unshift(part);
+    }
+    // An item added before the first amount ("Taxes + Flight SAR 2,000 + …") is unpriced too.
+    if (chain.length > 0) {
+      const before = normalizedText.slice(0, chain[0].index);
+      if (before.slice(before.search(/[^.\n!?؟]*$/)).includes("+")) continue;
     }
     if (chain.length >= 2 && chain.some((part, i) => i > 0 && normalizedText.slice(chain[i - 1].index, part.index).includes("+"))) {
       return chain.map(({ amount, currency, evidence }) => ({ amount, currency, evidence }));
