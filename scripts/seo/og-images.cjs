@@ -1,9 +1,26 @@
 // Renders the section share images (1200×630) in public/og with the site's own
-// fonts. Usage: start the app (`npm run build && npx next start -p 3100`), then
-//   [PLAYWRIGHT_MODULE=...] node scripts/seo/og-images.cjs http://localhost:3100
-// The images are committed; rerun only when the wording or branding changes.
-const { chromium } = require(process.env.PLAYWRIGHT_MODULE || "playwright");
+// fonts. The images are committed; rerun only when the wording or branding changes.
+//
+// Playwright is deliberately not a project dependency: package.json and the
+// lockfile feed every build, homepage included. Provision it for one run
+// without touching either file:
+//   npm install --no-save playwright@1.56.1 && npx playwright install chromium
+//   npm run build && npx next start -p 3100
+//   node scripts/seo/og-images.cjs http://localhost:3100
+// Or point PLAYWRIGHT_MODULE at an existing Playwright install.
+const { chromium } = loadPlaywright();
 const path = require("path");
+
+function loadPlaywright() {
+  const name = process.env.PLAYWRIGHT_MODULE || "playwright";
+  try {
+    return require(name);
+  } catch (error) {
+    if (error.code !== "MODULE_NOT_FOUND") throw error;
+    console.error(`Cannot load ${name}. Run: npm install --no-save playwright@1.56.1 && npx playwright install chromium`);
+    process.exit(1);
+  }
+}
 
 const CARDS = {
   site: { title: "سافر بوعي", line: "قبل لا تدفع… افهم قرار سفرك" },
