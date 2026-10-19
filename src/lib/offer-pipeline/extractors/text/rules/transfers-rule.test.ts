@@ -128,4 +128,9 @@ describe("transfersRule — the wordings a real offer uses", () => {
   it("an Arabic-digit price on a transfer add-on is a paid extra", () => {
     expect(included("نقل بالقارب السريع بسعر ٣٠٠ ريال")).toBeUndefined();
   });
+
+  it("a transfer with a price written right after it is a paid extra", () => {
+    expect(included("Seaplane transfers USD 100")).toBeUndefined();
+    expect(included("Seaplane transfers $100")).toBeUndefined();
+  });
 });

@@ -27,15 +27,15 @@ const FLIGHT_NOUN =
   "الطيران|طيران|الرحلة\\s*الجوية|رحلة\\s*جوية|(?:التذاكر|تذاكر|التذكرة|تذكرة)\\s*(?:ال)?(?:طيران|جوية|الجوية)";
 
 /**
- * A domestic flight («الطيران الداخلي», "domestic flights") is a leg inside the
+ * A domestic flight («الطيران الداخلي/المحلي», "domestic/local flights") is a leg inside the
  * destination, not the trip's air ticket, so it never answers "is the flight
  * included" — reading it that way would overstate what the price covers.
  */
-const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?داخلي)`;
+const FLIGHT_WORD = `(?:${FLIGHT_NOUN})(?!\\s*(?:ال)?(?:داخلي|محلي))`;
 // A route qualifier may sit between ("domestic connecting flights"), but not
 // "international": "domestic and international flights" includes the ticket.
 const EN_FLIGHT =
-  "(?<!(?:domestic|internal)(?:\\s+(?!international\\b)[a-z-]+){0,2}\\s)(?:flights?|airfare|air\\s*tickets?)";
+  "(?<!(?:domestic|internal|local)(?:\\s+(?!international\\b)[a-z-]+){0,2}\\s)(?:flights?|airfare|air\\s*tickets?)";
 
 /**
  * After «مع» only a definite flight noun is an inclusion ("مع الطيران",

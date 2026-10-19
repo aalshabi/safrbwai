@@ -21,11 +21,12 @@ export const CURRENCY = String.raw`ريال|﷼|ر\s?\.\s?س|(?<![A-Za-z])SR(?![
 
 /**
  * A price or "sold separately" attached to an item ("for USD 100", "$100",
- * «بسعر ٣٠٠ ريال», "available separately"). Digits are normalized first, so
+ * "USD 100", «بسعر ٣٠٠ ريال», «50 ريال», "available separately"). Callers pass
+ * only the text that belongs to the item, never a package price before it. Digits are normalized first, so
  * Arabic-Indic amounts count too.
  */
 const SEPARATE_PRICE = new RegExp(
-  `(?:\\bfor|\\bat)\\s*(?:(?:${CURRENCY})\\s*\\d|\\d[\\d,.]*\\s*(?:${CURRENCY}))|(?:بسعر|بقيمة|بمبلغ)\\s*\\d|\\bseparately\\b|بشكل\\s+منفصل`,
+  `(?:${CURRENCY})\\s*\\d|\\d[\\d,.]*\\s*(?:${CURRENCY})|(?:بسعر|بقيمة|بمبلغ)\\s*\\d|\\bseparately\\b|بشكل\\s+منفصل`,
   "i"
 );
 

@@ -106,4 +106,9 @@ describe("flightRule", () => {
   it("a listed flight sold separately is not included", () => {
     expect(included("### Included\n- Flights available separately for USD 100")).toBeUndefined();
   });
+
+  it("an excluded local leg does not override an included trip ticket", () => {
+    expect(included("### Included\n- International flights\n\n### Not included\n- Local flights")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران الدولية.\n\n### غير مشمول\n- الطيران المحلي.")).toEqual({ included: true });
+  });
 });
