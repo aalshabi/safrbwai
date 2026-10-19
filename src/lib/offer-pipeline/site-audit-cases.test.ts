@@ -300,3 +300,20 @@ describe("ninth review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("tenth review follow-ups", () => {
+  it("reads a routed stop with the duration written first", async () => {
+    const { facts } = await run("رحلة عبر إسطنبول، 14 ساعة توقف، السعر 3,100 ريال.");
+    expect(facts.transitDuration?.value).toEqual({ minutes: 840 });
+  });
+
+  it("reads a spelled-out booked room count", async () => {
+    for (const text of [
+      "Dubai, book six rooms, 4 nights, nightly price SAR 400, total SAR 9,600.",
+      "دبي، حجز ست غرف، 4 ليالٍ، سعر الليلة 400 ريال، الإجمالي 9,600 ريال.",
+    ]) {
+      const { analysis } = await run(text);
+      expect(codes(analysis), text).not.toContain("price_nightly_mismatch");
+    }
+  });
+});

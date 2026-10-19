@@ -70,8 +70,12 @@ function nearestContextDistance(text: string, index: number, pattern: RegExp): n
 /** A flight routed through another city ("via Doha", «عبر إسطنبول»): a bare «توقف ١٤ ساعة» elsewhere in it is that stop. */
 const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|layover|stopover)\b/iu;
 
-/** A stop whose duration follows at once, naming no place: «توقف 14 ساعة», "layover 7 hours". */
-const UNNAMED_STOP = /^(?:ترانزيت|توقف|التوقف|layover|stopover|transit)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]/i;
+/**
+ * A stop whose duration sits right beside it, naming no place: «توقف 14 ساعة»,
+ * «14 ساعة توقف», "layover 7 hours", "7 hours layover".
+ */
+const UNNAMED_STOP =
+  /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit))/i;
 const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
 
 /** The sentence around `index`: up to the nearest full stop or line break. */
