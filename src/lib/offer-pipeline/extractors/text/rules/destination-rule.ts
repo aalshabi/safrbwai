@@ -147,11 +147,26 @@ const ROUTE_FROM = new RegExp(`^(?:\\s*${DASH}|-)\\s*\\p{L}`, "u");
  */
 function markerRank(haystack: string, index: number, length: number, saudi = false): number {
   const before = haystack.slice(Math.max(0, index - 24), index);
-  if (TRANSIT_MARKER.test(before)) return -1;
+  if (TRANSIT_MARKER.test(before) || inTransitList(haystack, index)) return -1;
   if (DESTINATION_MARKER.test(before) || ROUTE_TO.test(before)) return 2;
   if (ORIGIN_MARKER.test(before)) return 0;
   if (saudi && ROUTE_FROM.test(haystack.slice(index + length, index + length + 4))) return 0;
   return 1;
+}
+
+/** A city joined by "and"/"or" to a transit city ("via Istanbul and Singapore", «عبر إسطنبول وسنغافورة») is a transit too. */
+function inTransitList(haystack: string, index: number): boolean {
+  const joined = haystack.slice(Math.max(0, index - 60), index).match(/^(.*?)(?:\s+(?:and|or|&)\s+|\s+(?:أو\s*|و))$/su);
+  if (!joined) return false;
+  const words = joined[1].split(/\s+/);
+  // The listed transit city is one to three words long.
+  for (let n = 1; n <= Math.min(3, words.length - 1); n++) {
+    const city = words.slice(-n).join(" ");
+    if (/[\d,،;؛.]/.test(city)) break;
+    const rest = words.slice(0, -n).join(" ");
+    if (TRANSIT_MARKER.test(rest.slice(-24))) return true;
+  }
+  return false;
 }
 
 /** Better = stronger marker first, then the longer alias. */

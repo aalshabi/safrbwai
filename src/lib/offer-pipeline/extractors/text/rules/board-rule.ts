@@ -31,12 +31,12 @@ const BREAKFAST_EXCLUDED =
   /(?:ال)?إفطار\s*غير\s*(?:مشمول|شامل)[ةه]?|breakfast\s+(?:is\s+)?not\s+included|\b(?:no|excluding|without)\s+breakfast/iu;
 /** Any other meal the offer mentions; with one, a breakfast exclusion says nothing about the board. */
 const SCOPED_PLAN =
-  /^\s*(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b|adults?|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|(?:for|on|during)\s+[^.,;\n]{0,40}\b(?:except|excluding|but\s+not)\b|[^.,;،\n]{0,40}(?:عدا|باستثناء)|للأطفال|للطفل|للبالغين|للكبار|للرضع|للرضّع|لكبار\s+السن|للمسنين|للمراهقين|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
+  /^\s*(?:for\s+(?:(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b|(?:(?:all|both|the)\s+)?adults?|the\s+first|one\s+(?:day|night))|on\s+(?:the\s+)?(?:first|last|arrival|departure)|(?:for|on|during)\s+[^.,;\n]{0,30}\bonly\b|(?:for|on|during)\s+[^.,;\n]{0,40}\b(?:except|excluding|but\s+not)\b|[^.,;،\n]{0,40}(?:عدا|باستثناء)|للأطفال|للطفل|للبالغين|للكبار|للرضع|للرضّع|لكبار\s+السن|للمسنين|للمراهقين|في\s+(?:اليوم|أول|آخر)|يوم(?![\p{L}])|عدا|ما\s+عدا|إلا|[^.,;،\n]{0,30}فقط\s+لل)/iu;
 /** An exclusion limited to some guests or days ("for children", «يوم المغادرة») says nothing about the whole stay. */
 // "For all guests", "for the entire stay", «للجميع» cover the whole booking and are not a scope,
 // unless an exception follows ("for all guests except children").
 const QUALIFIED_EXCLUSION =
-  /^\s*(?:(?:for|on|during)\s+(?!(?:all|every(?:one|body)?|the\s+(?:entire|whole|full)|(?:the\s+)?(?:whole|entire)\s+stay)\b(?![^.,;\n]*\b(?:except|excluding|but\s+not)\b))|except|unless|لل(?!(?:جميع|كل)(?![^.,;،\n]*(?:عدا|باستثناء|إلا)))|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
+  /^\s*(?:(?:for|on|during)\s+(?!(?:all(?!\s+(?:the\s+)?adults?\b)|every(?:one|body)?|the\s+(?:entire|whole|full)|(?:the\s+)?(?:whole|entire)\s+stay)\b(?![^.,;\n]*\b(?:except|excluding|but\s+not)\b))|except|unless|لل(?!(?:جميع|كل)(?![^.,;،\n]*(?:عدا|باستثناء|إلا)))|للأطفال|في\s+يوم|يوم|عدا|ما\s+عدا|إلا)/iu;
 /** Meals the offer itself excludes ("lunch and dinner not included", «بدون غداء أو عشاء») name no other plan. */
 const MEAL_WORD = "(?:lunch|dinner|meals?|(?:ال)?غداء|(?:ال)?عشاء|(?:ال)?وجبات)";
 const MEAL_LIST = `${MEAL_WORD}(?:\\s*(?:,|،|and|or|&|أو|و)\\s*${MEAL_WORD})*`;
@@ -68,7 +68,7 @@ const OPTIONAL_PREFIX = new RegExp(`(?:${OPTIONAL_WORD})[^.،,;؛\\n]*$`, "i");
 /** The first match of `re` that the offer does not state as excluded. */
 /** A guest or day scope earlier in the same sentence: "For children only, breakfast is included". */
 const SCOPE_BEFORE =
-  /(?:^|[^\p{L}])(?:for\s+(?:adults\b|(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
+  /(?:^|[^\p{L}])(?:for\s+(?:(?:(?:all|both|the)\s+)?adults\b|(?:(?:\d+|one|two|three|four|five)\s+)?(?:child(?:ren)?|kids?|infants?|bab(?:y|ies)|toddlers?|teens?|teenagers?|seniors?|elderly)\b)|(?:on|for|during)\s+(?:the\s+)?(?:first|last|arrival|departure)(?:\s+(?:\d+|two|three))?\s+(?:days?|nights?)|للأطفال|للطفل|للبالغين|للكبار|للرضع|لكبار\s+السن|للمسنين|للمراهقين|(?:في\s+)?يوم\s+(?:الوصول|المغادرة))/iu;
 
 const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
 

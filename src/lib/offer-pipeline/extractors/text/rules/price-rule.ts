@@ -456,9 +456,12 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const discountStated = normalizedText
     .replace(NO_DISCOUNT, " ")
     .split(/[.;؛،\n]|,(?!\d)/)
-    .some((clause) => DISCOUNT_STATED.test(clause) && (PRICED_CLAUSE.test(clause) || /\d\s*%/.test(clause)) && !BENEFIT_DISCOUNT.test(clause));
+    .some((clause) => DISCOUNT_STATED.test(clause) && (PRICED_CLAUSE.test(clause) || /\d\s*%/.test(clause)) && !BENEFIT_ITEM.test(clause));
   // A percentage or a tax added on top ("plus VAT 15%", «+ الضريبة») changes the total too.
-  const surchargeStated = SURCHARGE_STATED.test(normalizedText);
+  // A surcharge on a hotel benefit ("restaurant purchases incur a service charge 15%") is not.
+  const surchargeStated = normalizedText
+    .split(/[.;؛،\n]|,(?!\d)/)
+    .some((clause) => SURCHARGE_STATED.test(clause) && !BENEFIT_ITEM.test(clause));
   // Any other amount in the offer ("cleaning fee SAR 200", "deposit SAR 500") may be part of the total.
   // An amount the offer states again as its total is the same total, not another charge.
   const otherCharge = allMatches.some(
@@ -524,8 +527,8 @@ const CONDITIONAL_CHARGE_AFTER =
 const PARTY_IN_LABEL =
   /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
 const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;
-/** A discount on a hotel benefit rather than on the booking ("20% spa discount", «خصم على المطعم»). */
-const BENEFIT_DISCOUNT =
+/** A hotel benefit rather than the booking: "20% spa discount", "restaurant service charge 15%", «خصم على المطعم». */
+const BENEFIT_ITEM =
   /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
 const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
 /**

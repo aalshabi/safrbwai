@@ -897,3 +897,36 @@ describe("forty-fourth review follow-ups", () => {
     expect(codes(analysis)).not.toContain("price_components_mismatch");
   });
 });
+
+describe("forty-fifth review follow-ups", () => {
+  it("still compares a nightly rate beside a surcharge on a hotel benefit", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000; restaurant purchases incur a service charge 15%");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still treats a package VAT surcharge as adjusting the total", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; plus VAT 15%; total SAR 1,840.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not confirm breakfast stated for all adults only", async () => {
+    const { facts } = await run("Dubai 4 nights, 2 adults and 1 child; breakfast included for all adults. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("does not confirm breakfast from an all-adults prefix", async () => {
+    const { facts } = await run("Dubai 4 nights. For all adults, breakfast is included. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("keeps every city in a 'via … and …' list out of the destination", async () => {
+    const { facts } = await run("Rome 5 nights, flight via Istanbul and Singapore");
+    expect(facts.destination?.value.value).toBe("Rome");
+  });
+
+  it("keeps an Arabic transit list out of the destination", async () => {
+    const { facts } = await run("روما 5 ليالي، الطيران عبر إسطنبول وسنغافورة");
+    expect(facts.destination?.value.canonicalValue).not.toBe("Singapore");
+    expect(facts.destination?.value.canonicalValue).not.toBe("Istanbul");
+  });
+});
