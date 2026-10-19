@@ -468,6 +468,8 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
   const otherCharge = allMatches.some(
     (match) =>
       !matches.includes(match) &&
+      // An amount in another currency ("total SAR 2,000 (USD 533)") is a conversion, not a charge.
+      matches.some((kept) => kept.currency === match.currency) &&
       !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency) &&
       // A charge due only on cancellation, no-show or as a deposit is not in the total.
       !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index)) &&
@@ -530,9 +532,9 @@ const PARTY_IN_LABEL =
 const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;
 /** A hotel benefit rather than the booking: "20% spa discount", "restaurant service charge 15%", «خصم على المطعم». */
 const BENEFIT_ITEM =
-  /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
+  /\b(?:spa|restaurants?|dining|food|drinks?|beverages?|bar|laundry|massages?|treatments?|golf|shops?|boutiques?|excursions?|activit(?:y|ies)|tours?|check-?(?:in|out)|minibar|room\s+service|parking|upgrades?)\b|سبا|مطعم|المطعم|المطاعم|مشروبات|المشروبات|مغسلة|المغسلة|مساج|جولات|الجولات|أنشطة|الأنشطة/iu;
 const PACKAGE_SURCHARGE = new RegExp(
-  `^\\s*(?:\\+|plus\\b|excl|vat\\b|tax|service\\s+charge|\\d+(?:\\.\\d+)?\\s*[%٪]|(?:ال)?ضريبة|رسوم|زائد|غير\\s+شامل)|${PRICED_CLAUSE.source}|\\b(?:prices|rates|fares?|package|booking)\\b|الأسعار|الباقة|الحجز`,
+  `^\\s*(?:\\+|plus\\b|excl|vat\\b|tax|\\d+(?:\\.\\d+)?\\s*[%٪]\\s*(?:vat|tax|ضريبة)|(?:ال)?ضريبة|زائد|غير\\s+شامل)|${PRICED_CLAUSE.source}|\\b(?:prices|rates|fares?|package|booking)\\b|الأسعار|الباقة|الحجز`,
   "iu"
 );
 const OPTIONAL_CHARGE = /\boptional\b|\bnot\s+included\b|\bexcluded\b|\bat\s+extra\s+cost\b|اختياري|غير\s+(?:مشمول|شامل)/iu;
@@ -550,7 +552,7 @@ function clauseAround(text: string, index: number): string {
   return text.slice(start, index) + tail;
 }
 const INCLUDED_UNPRICED =
-  /\b(?:including|incl\.?|inclusive\s+of|with|plus)\s+(?:all\s+)?(?:taxes|tax|vat|fees?|charges?|service|transfers?|breakfast|meals?|insurance|visas?)\b|(?:شامل(?:ة|اً|ا)?|يشمل|تشمل|مع)\s+(?:ال)?(?:ضريبة|ضرائب|رسوم|نقل|تأمين|تأشيرة|إفطار)|بما\s+في(?:ها|\s+ذلك)/iu;
+  /\b(?:including|incl\.?|inclusive\s+of)\s+(?!(?:the\s+)?(?:total|sum|above)\b)\p{L}|\b(?:with|plus)\s+(?:all\s+)?(?:taxes|tax|vat|fees?|charges?|service|transfers?|breakfast|lunch|dinner|meals?|insurance|visas?|tickets?)\b|(?:شامل(?:ة|اً|ا)?|يشمل|تشمل)\s+(?!(?:ال)?(?:إجمالي|مجموع)(?![\p{L}]))\p{L}|مع\s+(?:ال)?(?:ضريبة|ضرائب|رسوم|نقل|تأمين|تأشيرة|إفطار|غداء|عشاء)|بما\s+في(?:ها|\s+ذلك)/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {

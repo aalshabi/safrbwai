@@ -952,3 +952,30 @@ describe("forty-sixth review follow-ups", () => {
     expect(facts.board?.value).toBe("BB");
   });
 });
+
+describe("forty-seventh review follow-ups", () => {
+  it("does not take a total restated in another currency as an extra charge", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000 (USD 533)");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still compares a nightly rate beside a percentage-first surcharge on another service", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000; 15% service charge applies to late checkout");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+
+  it("still treats a percentage-first VAT as adjusting the total", async () => {
+    const { analysis } = await run("Dubai 4 nights; nightly price SAR 400; 15% VAT extra; total SAR 1,840.");
+    expect(codes(analysis)).not.toContain("price_nightly_mismatch");
+  });
+
+  it("does not compare parts with a total that includes an unpriced named meal", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, including dinner, total SAR 5,750");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+
+  it("does not compare parts with a total that includes any unpriced item", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, incl. entry tickets, total SAR 5,750");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+});
