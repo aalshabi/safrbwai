@@ -334,3 +334,20 @@ describe("eleventh review follow-ups", () => {
     expect(facts.airportChange?.value).not.toBe(true);
   });
 });
+
+describe("twelfth review follow-ups", () => {
+  it("does not read a stop placed in town as the routed flight's stop", async () => {
+    const { facts } = await run("رحلة إلى دبي عبر إسطنبول، توقف 3 ساعات في وسط المدينة، السعر 4,000 ريال.");
+    expect(facts.transitDuration).toBeUndefined();
+  });
+
+  it("still reads a routed stop spent at the airport", async () => {
+    const { facts } = await run("رحلة عبر إسطنبول، توقف 14 ساعة في المطار، السعر 3,100 ريال.");
+    expect(facts.transitDuration?.value).toEqual({ minutes: 840 });
+  });
+
+  it("does not take a transit city's qualified airport as the destination", async () => {
+    const { facts } = await run("Paris 5 nights, flight via Istanbul, transfer at Istanbul International Airport, SAR 6,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Paris");
+  });
+});

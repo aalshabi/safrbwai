@@ -209,8 +209,11 @@ function findCanonical(text: string): Match | null {
 }
 
 /** «مطار إسطنبول», "Istanbul airport". */
+/** "Istanbul Airport", "Istanbul International Airport", "Istanbul New Airport". */
+const AIRPORT_AFTER = /^\s*(?:[\p{L}.]+\s+){0,2}airport\b/iu;
+
 function namesAnAirport(haystack: string, index: number, length: number): boolean {
-  return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || /^\s*airport/.test(haystack.slice(index + length));
+  return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || AIRPORT_AFTER.test(haystack.slice(index + length));
 }
 
 /** Every whole-word index of `needle` in `haystack`. */

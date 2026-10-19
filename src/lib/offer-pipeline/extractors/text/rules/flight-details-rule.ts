@@ -76,9 +76,14 @@ const ROUTED_VIA = /(?:^|[^\p{L}])(?:عبر|ترانزيت)\s+\p{L}|\b(?:via|lay
  */
 const UNNAMED_STOP =
   /^(?:(?:ترانزيت|توقف|التوقف|layover|stopover|transit)\s*(?:لمدة|for)?\s*[\d٠-٩۰-۹]|[\d٠-٩۰-۹]+(?:[.٫][\d٠-٩۰-۹]+)?\s*(?:ساعة|ساعات|دقيقة|دقائق|hours?|hrs?|minutes?|mins?)\s*(?:ترانزيت|توقف|layover|stopover|transit))/i;
-/** A stop "at" a place, or one spent at the hotel («توقف 3 ساعات في الفندق»), is not a flight stop. */
-const SIGHTSEEING_STOP =
-  /توقف\s+عند|زيارة|في\s+(?:ال)?(?:فندق|منتجع|سوق|مول)|\b(?:visit|stop\s+at|(?:at|in)\s+(?:the\s+)?(?:hotel|resort|mall))\b/i;
+const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i;
+/**
+ * A stop placed somewhere after its duration («توقف 3 ساعات في الفندق», «… في
+ * وسط المدينة», "in the old town") names its place, so it is not the routed
+ * flight's unnamed stop. Only the airport itself keeps it a flight stop.
+ */
+const PLACED_STOP =
+  /(?:^|[^\p{L}])(?:في|داخل|عند|at|in|inside)\s+(?!(?:ال)?مطار|(?:ال)?صالة|(?:the\s+)?(?:airport|terminal))/iu;
 
 /** The sentence around `index`: up to the nearest full stop or line break. */
 function sentenceAt(text: string, index: number): string {
@@ -91,11 +96,12 @@ function sentenceAt(text: string, index: number): string {
 function hasAviationContext(text: string, index: number): boolean {
   const clause = clauseAt(text, index);
   // A routed flight («… عبر إسطنبول، توقف 14 ساعة») names its stop in the same
-  // sentence; a stop "at" a place («توقف عند برج خليفة») or with ground
-  // transport is a sightseeing stop.
+  // sentence; a stop "at" or "in" a place («توقف عند برج خليفة», «توقف 3
+  // ساعات في وسط المدينة») or with ground transport is not that stop.
   if (
     ROUTED_VIA.test(sentenceAt(text, index)) &&
     UNNAMED_STOP.test(text.slice(index)) &&
+    !PLACED_STOP.test(clause.text.slice(clause.matchIndex)) &&
     !GROUND_STOP_CONTEXT.test(clause.text) &&
     !SIGHTSEEING_STOP.test(clause.text)
   ) {
