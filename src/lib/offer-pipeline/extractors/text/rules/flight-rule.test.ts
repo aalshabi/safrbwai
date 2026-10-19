@@ -83,4 +83,9 @@ describe("flightRule", () => {
     expect(included("### Included\n- Flights\n\n### Not included\n- Flight upgrades")).toEqual({ included: true });
     expect(included("### الخدمات المشمولة\n- تذاكر الطيران.\n\n### غير مشمول\n- ترقية مقعد الطيران.")).toEqual({ included: true });
   });
+
+  it("a listed ticket that details an add-on is still the ticket", () => {
+    expect(included("### Included\n- Flights with 20 kg baggage")).toEqual({ included: true });
+    expect(included("### الخدمات المشمولة\n- تذاكر الطيران مع أمتعة 20 كجم.")).toEqual({ included: true });
+  });
 });

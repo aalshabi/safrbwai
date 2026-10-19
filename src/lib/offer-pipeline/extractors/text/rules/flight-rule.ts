@@ -83,7 +83,12 @@ const INCLUDE = new RegExp(
 // it yields the "inclusion not stated" warning instead of silence.
 const MENTION = new RegExp(`${FLIGHT_NOUN}|flights?|airfare`, "i");
 
-/** Add-ons sold with a flight: an item about one ("Flight upgrades", «ترقية مقعد الطيران») is not the ticket. */
+/**
+ * Add-ons sold with a flight. An item about one is not the ticket: the add-on
+ * comes first («ترقية مقعد الطيران») or names the flight's own extra right
+ * after it ("Flight upgrades"). A ticket that details an add-on ("Flights with
+ * 20 kg baggage", «تذاكر الطيران مع أمتعة 20 كجم») is still the ticket.
+ */
 const FLIGHT_ADDON = "upgrades?|ترقية|seats?|مقعد|مقاعد|meals?|وجبة|وجبات|baggage|luggage|أمتعة|حقائب|lounge|صالة";
 
 /**
@@ -92,7 +97,7 @@ const FLIGHT_ADDON = "upgrades?|ترقية|seats?|مقعد|مقاعد|meals?|و�
  * says nothing about the international ticket.
  */
 const LISTED_FLIGHT = new RegExp(
-  `(?<!(?:${FLIGHT_ADDON})[^\\n]*)(?:${FLIGHT_WORD}|${EN_FLIGHT})(?![^\\n]*(?:${FLIGHT_ADDON}))`,
+  `(?<!(?:${FLIGHT_ADDON})[^\\n]*)(?:${FLIGHT_WORD}|${EN_FLIGHT})(?!\\s*(?:${FLIGHT_ADDON}))`,
   "iu"
 );
 
