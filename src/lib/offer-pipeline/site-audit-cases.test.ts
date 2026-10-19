@@ -206,3 +206,20 @@ describe("third review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("fourth review follow-ups", () => {
+  it("keeps a destination that later appears after a transit-like word", async () => {
+    const { facts } = await run("Dubai 5 nights, guided tour through Dubai old town, SAR 5,000 total.");
+    expect(facts.destination?.value.canonicalValue).toBe("Dubai");
+  });
+
+  it("stops a sightseeing stop after an exclamation mark from counting as transit", async () => {
+    const { facts } = await run("رحلة إلى دبي عبر إسطنبول! توقف في الفندق لمدة 3 ساعات. السعر 4,000 ريال.");
+    expect(facts.transitDuration).toBeUndefined();
+  });
+
+  it("stops an airport name before a terminal qualifier", async () => {
+    const { facts } = await run("رحلة عبر دبي، الوصول إلى مطار دبي الدولي عبر الصالة 1 والمغادرة من مطار دبي الدولي، السعر 2,000 ريال.");
+    expect(facts.airportChange).toBeUndefined();
+  });
+});

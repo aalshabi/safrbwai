@@ -167,11 +167,12 @@ function findCanonical(text: string): Match | null {
   let country: Match | null = null;
 
   for (const entry of DESTINATIONS) {
-    // A place named as a transit point anywhere is not where the traveller is
-    // going, even where it reappears as «مطار إسطنبول» in the same offer —
-    // unless the offer also names it with a destination marker.
+    // A place named as a transit point is not where the traveller is going.
+    // Only the marked occurrence is dropped, plus its airport mentions
+    // («مطار إسطنبول» after «عبر إسطنبول»); "Dubai 5 nights … through Dubai old
+    // town" keeps Dubai.
     const ranks = entry.aliases.flatMap((alias) => occurrences(haystack, alias.toLowerCase()).map((i) => markerRank(haystack, i, alias.length, entry.countryCode === "SA")));
-    if (ranks.includes(-1) && !ranks.includes(2)) continue;
+    const transitPoint = ranks.includes(-1) && !ranks.includes(2);
     for (const alias of entry.aliases) {
       const needle = alias.toLowerCase();
       // Scan every occurrence: the first may sit inside a longer word.
@@ -184,6 +185,7 @@ function findCanonical(text: string): Match | null {
         const marker = markerRank(haystack, index, needle.length, entry.countryCode === "SA" && entry.kind !== "country");
         // Where the traveller leaves from, or only passes through, is never where they are going.
         if (marker <= 0) continue;
+        if (transitPoint && namesAnAirport(haystack, index, needle.length)) continue;
         if (markerOnly && marker !== 2) continue;
 
         const hit: Match = { entry, index, length: alias.length, marker };
@@ -202,6 +204,11 @@ function findCanonical(text: string): Match | null {
     if (contains(country, city)) return country;
   }
   return city ?? country;
+}
+
+/** «مطار إسطنبول», "Istanbul airport". */
+function namesAnAirport(haystack: string, index: number, length: number): boolean {
+  return /(?:مطار|airport)\s*$/u.test(haystack.slice(Math.max(0, index - 8), index)) || /^\s*airport/.test(haystack.slice(index + length));
 }
 
 /** Every whole-word index of `needle` in `haystack`. */

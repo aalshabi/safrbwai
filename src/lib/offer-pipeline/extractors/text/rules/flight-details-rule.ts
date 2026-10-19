@@ -74,8 +74,9 @@ const SIGHTSEEING_STOP = /توقف\s+عند|زيارة|\b(?:visit|stop\s+at)\b/i
 
 /** The sentence around `index`: up to the nearest full stop or line break. */
 function sentenceAt(text: string, index: number): string {
-  const start = Math.max(text.lastIndexOf(".", index - 1), text.lastIndexOf("\n", index - 1)) + 1;
-  const rest = text.slice(index).search(/[.\n]/);
+  const before = text.slice(0, index);
+  const start = Math.max(...[".", "!", "?", "؟", "\n"].map((mark) => before.lastIndexOf(mark))) + 1;
+  const rest = text.slice(index).search(/[.!?؟\n]/);
   return text.slice(start, rest === -1 ? text.length : index + rest);
 }
 
@@ -156,7 +157,9 @@ function stopCountFact(original: string, normalized: string) {
 /** An airport name after «مطار»: up to three words, stopping at a clause break or «و». */
 /** Words that follow an airport name without being part of it: times, days, the next leg. */
 const AFTER_AIRPORT_NAME =
-  "و?(?:المغادرة|الإقلاع|مغادرة)|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة";
+  "و?(?:المغادرة|الإقلاع|مغادرة)|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
+  // route and terminal qualifiers: «عبر الصالة 1», «مبنى 3», «بوابة»
+  "|عبر|الصالة|صالة|المبنى|مبنى|البوابة|بوابة|رقم|رحلة|الرحلة";
 const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\-']+\\s*){1,3})`;
 /** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
 const AR_ARRIVE_DEPART = new RegExp(
