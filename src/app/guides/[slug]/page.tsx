@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/page-metadata";
+import { GUIDE_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
 import { getGuide, getReviewedGuides } from "@/lib/guides";
 import { GuideArticle } from "@/components/guides/guide-article";
@@ -12,11 +14,13 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const guide = getGuide((await params).slug);
   if (!guide || guide.status !== "reviewed") return {};
-  return {
-    title: `${guide.title.ar} — ${guide.title.en}`,
-    description: guide.description.ar,
-    alternates: { canonical: `/guides/${guide.slug}` },
-  };
+  const seo = GUIDE_SEO[guide.slug];
+  return pageMetadata({
+    title: seo?.title ?? guide.title.ar,
+    description: seo?.description ?? guide.description.ar,
+    path: `/guides/${guide.slug}`,
+    image: "guides",
+  });
 }
 
 export default async function GuidePage({ params }: Props) {
