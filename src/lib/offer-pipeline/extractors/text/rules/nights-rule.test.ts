@@ -240,4 +240,9 @@ describe("nightsRule", () => {
     const r = nightsRule.apply("7 nights with hotel accommodation | Hotel A: 4 nights | Hotel B: 3 nights");
     expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 nights" }]);
   });
+
+  it("package breakfast after the total does not make it a stay", () => {
+    const r = nightsRule.apply("7 ليالٍ شامل الإفطار\n- Hotel A: 4 nights\n- Hotel B: 3 nights");
+    expect(r.observations?.nights).toEqual([{ value: 7, evidence: "7 ليالٍ" }]);
+  });
 });

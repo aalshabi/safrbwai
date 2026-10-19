@@ -47,12 +47,13 @@ const MENTION = new RegExp(`${TRANSFER_WORD}|transfers?`, "i");
 const LISTED_TRANSFER = new RegExp(`(?:${TRANSFER_WORD})(?!\\s*(?:ال)?جوي)|transfers?`, "i");
 
 /**
- * A transfer its own clause offers for a fee, on request, or says is unavailable
+ * A transfer its own clause offers for a fee, on request, says is unavailable,
+ * or says the package does not include («لا تشمل الباقة خدمة الاستقبال …»)
  * ("Seaplane transfers available for an additional charge", «لا تتوفر خدمة
  * الاستقبال في المطار») is not a package inclusion.
  */
 const NOT_PROVIDED =
-  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable/i;
+  /رسوم\s*إضافية|بتكلفة\s*إضافية|مقابل\s*(?:رسوم|مبلغ)|اختياري|عند\s*الطلب|لا\s*[تي]توفر|لا\s*[تي](?:شمل|تضمن)|غير\s*(?:متوفر|متاح)|additional\s*(?:charge|cost|fee)|extra\s*(?:charge|cost|fee)|optional|on\s*request|not\s*available|unavailable|does\s*not\s*include|doesn['’]t\s*include/i;
 
 /** The span of the clause holding `evidence`: "Airport transfers included; excursions optional" → "Airport transfers included". */
 function clauseOf(text: string, evidence: string): { start: number; end: number } | null {

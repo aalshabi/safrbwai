@@ -105,4 +105,9 @@ describe("transfersRule — the wordings a real offer uses", () => {
   it("air transport listed as included is not a ground transfer", () => {
     expect(included("### الخدمات المشمولة\n- النقل الجوي الداخلي (تذاكر طيران).")).toBeUndefined();
   });
+
+  it("a clause that says the package does not include the service is not an inclusion", () => {
+    expect(included("لا تشمل الباقة خدمة الاستقبال والمساعدة في المطار")).toBeUndefined();
+    expect(included("The package does not include seaplane transfers")).toEqual({ included: false });
+  });
 });

@@ -32,7 +32,7 @@ const STAY_AFTER = /^\s*(?:في|ب|\bin\b|\bat\b)/iu;
  * stars or its board ("- باتومي، 3 ليالٍ: New Wave Hotel 4★، شامل الإفطار").
  */
 const HOTEL_AFTER =
-  /^[^\n]*(?:★|نجوم|نجمة|فندق|منتجع|فيلا|شامل\s+الإفطار|\bhotel\b|\bresort\b|\binn\b|\blodge\b|\bvilla\b)/iu;
+  /^[^\n]*(?:★|نجوم|نجمة|فندق|منتجع|فيلا|\bhotel\b|\bresort\b|\binn\b|\blodge\b|\bvilla\b)/iu;
 
 /**
  * The label in front of a count: the text since the previous count or the
