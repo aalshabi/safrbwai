@@ -406,3 +406,15 @@ describe("sixteenth review follow-ups", () => {
     expect(facts.destination?.value.canonicalValue).toBe("Turkey");
   });
 });
+
+describe("seventeenth review follow-ups", () => {
+  it("leaves a claimed airport change unresolved when the same airport is named twice", async () => {
+    const { facts } = await run("New York 4 nights, requires an airport change: arrive at JFK Airport and depart from JFK Airport, SAR 9,000 total.");
+    expect(facts.airportChange).toBeUndefined();
+  });
+
+  it("reads airport names longer than three words", async () => {
+    const { facts } = await run("New York 4 nights: arrive at John F Kennedy International Airport and depart from LaGuardia Airport, SAR 9,000 total.");
+    expect(facts.airportChange?.value).toBe(true);
+  });
+});

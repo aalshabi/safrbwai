@@ -170,20 +170,20 @@ function stopCountFact(original: string, normalized: string) {
   return undefined;
 }
 
-/** An airport name after «مطار»: up to three words, stopping at a clause break or «و». */
+/** An airport name after «مطار»: up to six words («الأمير محمد بن عبدالعزيز الدولي»), stopping at a clause break or «و». */
 /** Words that follow an airport name without being part of it: times, days, the next leg. */
 const AFTER_AIRPORT_NAME =
   "و?(?:المغادرة|الإقلاع|مغادرة)|و|في|يوم|اليوم|الساعة|ساعة|صباح|مساء|ظهر|عصر|ليل|فجر|بعد|قبل|عند|ثم|على|من|إلى|الى|حيث|لمدة" +
   // route and terminal qualifiers: «عبر الصالة 1», «مبنى 3», «بوابة»
   "|عبر|الصالة|صالة|المبنى|مبنى|البوابة|بوابة|رقم|رحلة|الرحلة";
-const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}\\p{M}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\p{M}\\-']+\\s*){1,3})`;
+const AR_AIRPORT_NAME = `مطار\\s+((?:(?!(?:${AFTER_AIRPORT_NAME})(?![\\p{L}\\p{M}]))(?!(?:صباح|مساء|ظهر|ليل)[\\p{L}]*)[\\p{L}\\p{M}\\-']+\\s*){1,6})`;
 /** «الوصول إلى مطار صبيحة … المغادرة من مطار إسطنبول» — arriving and leaving through two named airports. */
 const AR_ARRIVE_DEPART = new RegExp(
   `(?:الوصول|وصول|الهبوط)\\s*(?:إلى|الى|في)\\s*${AR_AIRPORT_NAME}[^.\\n]{0,40}?(?:المغادرة|مغادرة|الإقلاع)\\s*(?:من)\\s*${AR_AIRPORT_NAME}`,
   "u"
 );
 const EN_ARRIVE_DEPART =
-  /arriv(?:e|es|al|ing)\s+(?:at|in|into)\s+((?:[\p{L}\-']+\s+){1,3})airport[^.\n]{0,40}?depart(?:s|ure|ing)?\s+from\s+((?:[\p{L}\-']+\s+){1,3})airport/iu;
+  /arriv(?:e|es|al|ing)\s+(?:at|in|into)\s+((?:[\p{L}\-'.]+\s+){1,6})airport[^.\n]{0,40}?depart(?:s|ure|ing)?\s+from\s+((?:[\p{L}\-'.]+\s+){1,6})airport/iu;
 
 /** «مطار دبي الدولي», «مطار دُبي» and «مطار دبي» are one airport. */
 const airportKey = (name: string) =>
@@ -227,7 +227,8 @@ function airportChangeFact(original: string) {
   // "No airport change" beside two different named airports contradicts itself: neither is confirmed.
   if (noChange?.index !== undefined) return namedChange ? undefined : exact(false, noChange[0].trim());
   const change = AIRPORT_CHANGE.exec(original);
-  if (change?.index !== undefined) return exact(true, change[0].trim());
+  // …and "airport change" beside the same airport named twice does too.
+  if (change?.index !== undefined) return namedChange === false ? undefined : exact(true, change[0].trim());
   if (pair && namedChange) return exact(true, pair[0].trim());
   return undefined;
 }
