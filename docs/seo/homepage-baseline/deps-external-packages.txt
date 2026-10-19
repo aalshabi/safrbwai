@@ -1,0 +1,10 @@
+@radix-ui/react-slot
+@supabase/ssr
+class-variance-authority
+clsx
+lucide-react
+next
+next-themes
+react
+sonner
+tailwind-merge

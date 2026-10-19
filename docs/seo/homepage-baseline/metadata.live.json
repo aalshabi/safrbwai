@@ -1,0 +1,289 @@
+{
+  "headings": [
+    {
+      "tag": "h3",
+      "text": "المنتج"
+    },
+    {
+      "tag": "h3",
+      "text": "الشركة"
+    },
+    {
+      "tag": "h3",
+      "text": "قانوني"
+    },
+    {
+      "tag": "h1",
+      "text": "قبل لا تدفع… افهم قرار سفرك."
+    },
+    {
+      "tag": "h2",
+      "text": "الإصدار الأول"
+    },
+    {
+      "tag": "h2",
+      "text": "لماذا سافر بوعي؟"
+    },
+    {
+      "tag": "h2",
+      "text": "ثلاثة مواضيع تستحق انتباهك الآن"
+    },
+    {
+      "tag": "h3",
+      "text": "هل حجزت من موقع الفندق الرسمي فعلًا؟"
+    },
+    {
+      "tag": "h3",
+      "text": "فندق فائز عالميًا… هل هو الأنسب لرحلتك؟"
+    },
+    {
+      "tag": "h3",
+      "text": "الذكاء الاصطناعي خطط رحلتك… من يراجع الأخطاء؟"
+    },
+    {
+      "tag": "h2",
+      "text": "شاهد الفكرة بسرعة، ثم احفظ التفاصيل"
+    },
+    {
+      "tag": "h3",
+      "text": "فيديوهات مختارة على تيك توك"
+    },
+    {
+      "tag": "h3",
+      "text": "تجارب الوجهات قبل الترشيح"
+    },
+    {
+      "tag": "h3",
+      "text": "تجارب الفنادق كما هي"
+    },
+    {
+      "tag": "h3",
+      "text": "نصائح من مسافر لمسافر"
+    },
+    {
+      "tag": "h3",
+      "text": "مواضيع مختارة على X"
+    },
+    {
+      "tag": "h3",
+      "text": "دليل تايلاند 2026"
+    },
+    {
+      "tag": "h3",
+      "text": "كاراكوي في الخريف والمطر"
+    },
+    {
+      "tag": "h3",
+      "text": "كيرلا: وجهة تجمع أكثر من تجربة"
+    },
+    {
+      "tag": "h2",
+      "text": "حالة الأدوات"
+    },
+    {
+      "tag": "h3",
+      "text": "تحليل عرض سفر"
+    },
+    {
+      "tag": "h3",
+      "text": "أدلة مراجعة العرض"
+    },
+    {
+      "tag": "h3",
+      "text": "بحث هوية الفندق"
+    },
+    {
+      "tag": "h2",
+      "text": "كيف تعمل مراجعة العرض النصي؟"
+    },
+    {
+      "tag": "h3",
+      "text": "ألصق نص العرض"
+    },
+    {
+      "tag": "h3",
+      "text": "راجع النتيجة"
+    },
+    {
+      "tag": "h3",
+      "text": "تحقق قبل الالتزام"
+    },
+    {
+      "tag": "h2",
+      "text": "مبادئ مراجعة العرض"
+    },
+    {
+      "tag": "h3",
+      "text": "حقائق مؤكدة"
+    },
+    {
+      "tag": "h3",
+      "text": "معلومات ناقصة"
+    },
+    {
+      "tag": "h3",
+      "text": "تناقضات واضحة"
+    },
+    {
+      "tag": "h3",
+      "text": "أسئلة مقترحة"
+    },
+    {
+      "tag": "h3",
+      "text": "تحقق رسمي"
+    },
+    {
+      "tag": "h2",
+      "text": "راجع عرض سفرك النصي"
+    }
+  ],
+  "html": {
+    "dir": "rtl",
+    "lang": "ar"
+  },
+  "jsonld": [
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "description": "A tool that helps travelers review information stated in travel offers before booking.",
+      "inLanguage": [
+        "ar",
+        "en"
+      ],
+      "name": "SafrBwai — سافر بوعي"
+    }
+  ],
+  "links": [
+    {
+      "href": "/manifest.webmanifest",
+      "rel": "manifest"
+    },
+    {
+      "href": "https://www.safrbwai.com",
+      "rel": "canonical"
+    },
+    {
+      "href": "https://www.safrbwai.com",
+      "hreflang": "ar",
+      "rel": "alternate"
+    },
+    {
+      "href": "https://www.safrbwai.com",
+      "hreflang": "en",
+      "rel": "alternate"
+    },
+    {
+      "href": "/icon.svg?571acb6d5ce8dc2a",
+      "rel": "icon",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "href": "/apple-icon.png?f7246ac3b09c9614",
+      "rel": "apple-touch-icon",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "meta": [
+    {
+      "charset": "utf-8"
+    },
+    {
+      "content": "width=device-width, initial-scale=1",
+      "name": "viewport"
+    },
+    {
+      "content": "",
+      "name": "next-size-adjust"
+    },
+    {
+      "content": "#ffffff",
+      "media": "(prefers-color-scheme: light)",
+      "name": "theme-color"
+    },
+    {
+      "content": "#0D1B3A",
+      "media": "(prefers-color-scheme: dark)",
+      "name": "theme-color"
+    },
+    {
+      "content": "سافر بوعي أداة تساعدك على مراجعة المعلومات الواردة في عروض السفر واتخاذ قرار أوضح قبل الحجز. SafrBwai helps you review the information stated in travel offers and make a clearer decision before booking.",
+      "name": "description"
+    },
+    {
+      "content": "Abdullah Travel Lab",
+      "name": "author"
+    },
+    {
+      "content": "سافر بوعي,SafrBwai,تحليل عرض سفر نصي,قرار السفر,مراجعة عرض السفر,travel decisions,text travel offer,rule-based analysis",
+      "name": "keywords"
+    },
+    {
+      "content": "Abdullah Travel Lab",
+      "name": "creator"
+    },
+    {
+      "content": "index, follow",
+      "name": "robots"
+    },
+    {
+      "content": "yes",
+      "name": "apple-mobile-web-app-capable"
+    },
+    {
+      "content": "yes",
+      "name": "mobile-web-app-capable"
+    },
+    {
+      "content": "سافر بوعي",
+      "name": "apple-mobile-web-app-title"
+    },
+    {
+      "content": "default",
+      "name": "apple-mobile-web-app-status-bar-style"
+    },
+    {
+      "content": "سافر بوعي — SafrBwai",
+      "property": "og:title"
+    },
+    {
+      "content": "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
+      "property": "og:description"
+    },
+    {
+      "content": "https://www.safrbwai.com",
+      "property": "og:url"
+    },
+    {
+      "content": "SafrBwai",
+      "property": "og:site_name"
+    },
+    {
+      "content": "ar_SA",
+      "property": "og:locale"
+    },
+    {
+      "content": "en_US",
+      "property": "og:locale:alternate"
+    },
+    {
+      "content": "website",
+      "property": "og:type"
+    },
+    {
+      "content": "summary_large_image",
+      "name": "twitter:card"
+    },
+    {
+      "content": "سافر بوعي — SafrBwai",
+      "name": "twitter:title"
+    },
+    {
+      "content": "أداة لمراجعة المعلومات الواردة في عروض السفر قبل الحجز. A tool for reviewing information stated in travel offers before booking.",
+      "name": "twitter:description"
+    }
+  ],
+  "source": "https://www.safrbwai.com/ (live, via Vercel fetch, 2026-10-19)",
+  "title": "سافر بوعي — SafrBwai | قبل لا تدفع، افهم قرار سفرك"
+}

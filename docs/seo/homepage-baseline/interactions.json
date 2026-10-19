@@ -1,0 +1,850 @@
+{
+  "browser": "chromium 141.0.7390.37",
+  "desktop": {
+    "buttons": [
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "Switch language",
+        "region": "header",
+        "tag": "button",
+        "text": "EN",
+        "type": null,
+        "visible": true
+      },
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "Toggle theme",
+        "region": "header",
+        "tag": "button",
+        "text": "",
+        "type": null,
+        "visible": true
+      },
+      {
+        "ariaExpanded": "false",
+        "ariaLabel": "القائمة",
+        "region": "header",
+        "tag": "button",
+        "text": "",
+        "type": null,
+        "visible": false
+      },
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "افتح مساعد سافر بوعي",
+        "region": "other",
+        "tag": "button",
+        "text": "افتح مساعد سافر بوعي",
+        "type": "button",
+        "visible": true
+      }
+    ],
+    "links": [
+      {
+        "ariaLabel": "سافر بوعي",
+        "href": "/",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "سافر بوعي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "حلّل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "#how",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "تعرّف على الأدوات",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/privacy",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "سياسة الخصوصية",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/terms",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "الشروط والأحكام",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/verify-hotel-booking-site",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/award-winning-hotel-fit",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/ai-trip-planning-human-review",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "عرض جميع المواضيع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "زيارة حساب تيك توك",
+        "visible": true
+      },
+      {
+        "ariaLabel": "تجارب الوجهات قبل الترشيح — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي تجارب الوجهات قبل الترشيح مشاهد وتجارب واقعية تساعدك على تكوين صورة أوضح عن الوجهة قبل التخطيط. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": "تجارب الفنادق كما هي — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي تجارب الفنادق كما هي ملاحظات عملية عن الفندق والموقع والتجربة بعيدًا عن الصور التسويقية وحدها. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": "نصائح من مسافر لمسافر — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي نصائح من مسافر لمسافر اختصارات وتنبيهات تساعدك على تقليل الأخطاء والتكاليف غير المتوقعة. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "https://x.com/SafrBwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "زيارة حساب X",
+        "visible": true
+      },
+      {
+        "ariaLabel": "دليل تايلاند 2026 — فتح الموضوع الأصلي",
+        "href": "https://x.com/SafrBwai/status/2050941925461529038",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "موضوع مثبت دليل تايلاند 2026 دليل للعائلات والعرسان والميزانية المحدودة، مع أخطاء مكلفة ينبغي تجنبها. فتح الموضوع الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": "كاراكوي في الخريف والمطر — فتح المنشور الأصلي",
+        "href": "https://x.com/SafrBwai/status/2106058301876097401",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "كاراكوي في الخريف والمطر لقطة من أجواء كاراكوي في إسطنبول عندما يغيّر الخريف والمطر تجربة المكان. فتح المنشور الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": "كيرلا: وجهة تجمع أكثر من تجربة — فتح الموضوع الأصلي",
+        "href": "https://x.com/SafrBwai/status/2085437614832939399",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "ثريد سفر كيرلا: وجهة تجمع أكثر من تجربة موضوع يجمع ملامح الوجهة وتجاربها لمساعدة المسافر على فهمها قبل بناء البرنامج. فتح الموضوع الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر متاح تحليل نصي حتمي متاح الآن.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض متاح ثلاثة أدلة عملية موثقة تساعدك قبل الدفع.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق متاح ابحث بالاسم والمدينة عن هوية الفندق من Google Maps، دون تقييمات أو أسعار أو توصيات.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "حلّل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": "سافر بوعي",
+        "href": "/",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "سافر بوعي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/#about",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "من نحن",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/privacy",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "الخصوصية",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/terms",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "الشروط",
+        "visible": true
+      }
+    ]
+  },
+  "desktop_menu": [],
+  "mobile": {
+    "buttons": [
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "Switch language",
+        "region": "header",
+        "tag": "button",
+        "text": "EN",
+        "type": null,
+        "visible": true
+      },
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "Toggle theme",
+        "region": "header",
+        "tag": "button",
+        "text": "",
+        "type": null,
+        "visible": true
+      },
+      {
+        "ariaExpanded": "false",
+        "ariaLabel": "القائمة",
+        "region": "header",
+        "tag": "button",
+        "text": "",
+        "type": null,
+        "visible": true
+      },
+      {
+        "ariaExpanded": null,
+        "ariaLabel": "افتح مساعد سافر بوعي",
+        "region": "other",
+        "tag": "button",
+        "text": "افتح مساعد سافر بوعي",
+        "type": "button",
+        "visible": true
+      }
+    ],
+    "links": [
+      {
+        "ariaLabel": "سافر بوعي",
+        "href": "/",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "سافر بوعي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "header",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": false
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "حلّل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "#how",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "تعرّف على الأدوات",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/privacy",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "سياسة الخصوصية",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/terms",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "الشروط والأحكام",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/verify-hotel-booking-site",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/award-winning-hotel-fit",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights/ai-trip-planning-human-review",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "اقرأ الموضوع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "عرض جميع المواضيع",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "زيارة حساب تيك توك",
+        "visible": true
+      },
+      {
+        "ariaLabel": "تجارب الوجهات قبل الترشيح — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي تجارب الوجهات قبل الترشيح مشاهد وتجارب واقعية تساعدك على تكوين صورة أوضح عن الوجهة قبل التخطيط. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": "تجارب الفنادق كما هي — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي تجارب الفنادق كما هي ملاحظات عملية عن الفندق والموقع والتجربة بعيدًا عن الصور التسويقية وحدها. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": "نصائح من مسافر لمسافر — تصفح الفيديوهات",
+        "href": "https://www.tiktok.com/@safrbwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "من الحساب الرسمي نصائح من مسافر لمسافر اختصارات وتنبيهات تساعدك على تقليل الأخطاء والتكاليف غير المتوقعة. تصفح الفيديوهات",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "https://x.com/SafrBwai",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "زيارة حساب X",
+        "visible": true
+      },
+      {
+        "ariaLabel": "دليل تايلاند 2026 — فتح الموضوع الأصلي",
+        "href": "https://x.com/SafrBwai/status/2050941925461529038",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "موضوع مثبت دليل تايلاند 2026 دليل للعائلات والعرسان والميزانية المحدودة، مع أخطاء مكلفة ينبغي تجنبها. فتح الموضوع الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": "كاراكوي في الخريف والمطر — فتح المنشور الأصلي",
+        "href": "https://x.com/SafrBwai/status/2106058301876097401",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "كاراكوي في الخريف والمطر لقطة من أجواء كاراكوي في إسطنبول عندما يغيّر الخريف والمطر تجربة المكان. فتح المنشور الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": "كيرلا: وجهة تجمع أكثر من تجربة — فتح الموضوع الأصلي",
+        "href": "https://x.com/SafrBwai/status/2085437614832939399",
+        "region": "main",
+        "rel": "noreferrer",
+        "target": "_blank",
+        "text": "ثريد سفر كيرلا: وجهة تجمع أكثر من تجربة موضوع يجمع ملامح الوجهة وتجاربها لمساعدة المسافر على فهمها قبل بناء البرنامج. فتح الموضوع الأصلي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر متاح تحليل نصي حتمي متاح الآن.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض متاح ثلاثة أدلة عملية موثقة تساعدك قبل الدفع.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق متاح ابحث بالاسم والمدينة عن هوية الفندق من Google Maps، دون تقييمات أو أسعار أو توصيات.",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "main",
+        "rel": null,
+        "target": null,
+        "text": "حلّل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": "سافر بوعي",
+        "href": "/",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "سافر بوعي",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-offer",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "تحليل عرض سفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/guides",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "أدلة مراجعة العرض",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/analyze-hotel",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "بحث هوية الفندق",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/#about",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "من نحن",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/insights",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "مرصد السفر",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/privacy",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "الخصوصية",
+        "visible": true
+      },
+      {
+        "ariaLabel": null,
+        "href": "/terms",
+        "region": "footer",
+        "rel": null,
+        "target": null,
+        "text": "الشروط",
+        "visible": true
+      }
+    ]
+  },
+  "mobile_menu": [
+    {
+      "header_links_visible_after_open": [
+        {
+          "ariaLabel": "سافر بوعي",
+          "href": "/",
+          "region": "header",
+          "rel": null,
+          "target": null,
+          "text": "سافر بوعي",
+          "visible": true
+        },
+        {
+          "ariaLabel": null,
+          "href": "/analyze-offer",
+          "region": "header",
+          "rel": null,
+          "target": null,
+          "text": "تحليل عرض سفر",
+          "visible": true
+        },
+        {
+          "ariaLabel": null,
+          "href": "/guides",
+          "region": "header",
+          "rel": null,
+          "target": null,
+          "text": "أدلة مراجعة العرض",
+          "visible": true
+        },
+        {
+          "ariaLabel": null,
+          "href": "/analyze-hotel",
+          "region": "header",
+          "rel": null,
+          "target": null,
+          "text": "بحث هوية الفندق",
+          "visible": true
+        },
+        {
+          "ariaLabel": null,
+          "href": "/insights",
+          "region": "header",
+          "rel": null,
+          "target": null,
+          "text": "مرصد السفر",
+          "visible": true
+        }
+      ],
+      "toggle": {
+        "ariaExpandedAfter": "true",
+        "ariaExpandedBefore": "false",
+        "label": "القائمة"
+      },
+      "visible_buttons_after_open": [
+        {
+          "ariaExpanded": null,
+          "ariaLabel": "Switch language",
+          "region": "header",
+          "tag": "button",
+          "text": "EN",
+          "type": null,
+          "visible": true
+        },
+        {
+          "ariaExpanded": null,
+          "ariaLabel": "Toggle theme",
+          "region": "header",
+          "tag": "button",
+          "text": "",
+          "type": null,
+          "visible": true
+        },
+        {
+          "ariaExpanded": "true",
+          "ariaLabel": "القائمة",
+          "region": "header",
+          "tag": "button",
+          "text": "",
+          "type": null,
+          "visible": true
+        },
+        {
+          "ariaExpanded": null,
+          "ariaLabel": "افتح مساعد سافر بوعي",
+          "region": "other",
+          "tag": "button",
+          "text": "افتح مساعد سافر بوعي",
+          "type": "button",
+          "visible": true
+        }
+      ]
+    }
+  ],
+  "note": "visible=false means present in DOM but not rendered/clipped (e.g. mobile menu links inside max-h-0 container, desktop nav hidden on mobile). Language/theme toggles were not clicked.",
+  "source": "local next start of commit a091568 (http://127.0.0.1:3917/), NOT live"
+}
