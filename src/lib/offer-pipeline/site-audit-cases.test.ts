@@ -885,3 +885,15 @@ describe("forty-third review follow-ups", () => {
     expect(codes(analysis)).toContain("price_nightly_mismatch");
   });
 });
+
+describe("forty-fourth review follow-ups", () => {
+  it("keeps a meal's own scope when 'for all guests' belongs to a later service", async () => {
+    const { facts } = await run("Dubai 4 nights. For children only, breakfast is included, while airport transfer is included for all guests. SAR 3,000 total.");
+    expect(facts.board?.value).not.toBe("BB");
+  });
+
+  it("does not compare parts with a total that includes an unpriced item", async () => {
+    const { analysis } = await run("Flight SAR 2,000 + Hotel SAR 3,000, including taxes, total SAR 5,750");
+    expect(codes(analysis)).not.toContain("price_components_mismatch");
+  });
+});

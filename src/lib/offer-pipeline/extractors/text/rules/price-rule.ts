@@ -541,6 +541,8 @@ function clauseAround(text: string, index: number): string {
   const tail = first + (ownedLater === -1 ? later : later.slice(0, ownedLater)).join("");
   return text.slice(start, index) + tail;
 }
+const INCLUDED_UNPRICED =
+  /\b(?:including|incl\.?|inclusive\s+of|with|plus)\s+(?:all\s+)?(?:taxes|tax|vat|fees?|charges?|service|transfers?|breakfast|meals?|insurance|visas?)\b|(?:شامل(?:ة|اً|ا)?|يشمل|تشمل|مع)\s+(?:ال)?(?:ضريبة|ضرائب|رسوم|نقل|تأمين|تأشيرة|إفطار)|بما\s+في(?:ها|\s+ذلك)/iu;
 const DISCOUNT_BEFORE = /(?:discount|خصم|تخفيض|حسم)[^+\d]*$|[-−]\s*(?:[a-z]{3}|ريال|ر\.س\.?)?\s*$/iu;
 
 function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceComponent[] {
@@ -557,6 +559,11 @@ function plusComponents(normalizedText: string, matches: PriceMatch[]): PriceCom
       if (chain.length > 0 && !gap.includes("+")) break;
       // An item added with no amount ("+ taxes") is a part the chain cannot price.
       if ((gap.match(/\+/g)?.length ?? 0) > (chain.length > 0 ? 1 : 0)) {
+        chain.length = 0;
+        break;
+      }
+      // A total "including taxes" adds an item the chain cannot price.
+      if (chain.length === 0 && INCLUDED_UNPRICED.test(gap)) {
         chain.length = 0;
         break;
       }

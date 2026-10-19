@@ -90,7 +90,11 @@ function scopedBefore(text: string, index: number): boolean {
   const sentence = before.slice(before.search(/[^.!?؟;؛\n]*$/));
   const scopes = [...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu"))];
   const last = scopes.at(-1);
-  if (!last || WHOLE_BOOKING.test(text.slice(index))) return false;
+  if (!last) return false;
+  // "for all guests" counts only in the meal's own clause, not for a later service.
+  const after = text.slice(index);
+  const ownClause = after.slice(0, after.search(SCOPE_END) === -1 ? after.length : after.search(SCOPE_END));
+  if (WHOLE_BOOKING.test(ownClause)) return false;
   const between = sentence.slice(last.index + last[0].length);
   return !MEAL_MENTION.test(between) && !SCOPE_END.test(between);
 }
