@@ -27,6 +27,13 @@ The legal pages remain approved by the Product Owner. They are not an independen
 - Vercel Preview deployments are never indexable. On them, `robots.txt` disallows everything and the sitemap is empty.
 - The site origin for canonical links, the sitemap, and `robots.txt` comes from `NEXT_PUBLIC_SITE_URL`, falling back to `https://www.safrbwai.com`, never to localhost.
 
+### Changes after launch
+
+- **2026-10-19, SEO phase 2 (plan item WP9, approved by the Product Owner with the phase):**
+  - `robots.txt` now disallows only `/api/`. `/admin`, `/auth` and `/dashboard` are crawlable so that search engines can read the `noindex, nofollow` those pages already carry; while they were disallowed, the `noindex` was never seen and the bare URLs could still be indexed from external links.
+  - Access control is unchanged: middleware still guards `/admin` and `/dashboard`.
+  - The sitemap dates each guide and insight by its review date. It also lists `/insights` and each published insight, which were added after launch.
+
 ## Launch gate evidence
 
 | Gate item | Evidence |
