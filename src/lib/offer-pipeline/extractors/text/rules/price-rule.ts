@@ -467,6 +467,7 @@ function extractPrices(text: string): { observations: PriceObservation[]; compon
       !matches.some((kept) => kept.basis === "total" && kept.amount === match.amount && kept.currency === match.currency) &&
       // A charge due only on cancellation, no-show or as a deposit is not in the total.
       !CONDITIONAL_CHARGE_BEFORE.test(normalizedText.slice(Math.max(0, match.index - 40), match.index)) &&
+      !CONDITIONAL_CHARGE_AFTER.test(normalizedText.slice(match.index + match.length, match.index + match.length + 40)) &&
       // An optional or excluded extra ("Optional tour SAR 500, not included") is outside the total.
       !OPTIONAL_CHARGE.test(clauseAround(normalizedText, match.index))
   );
@@ -517,6 +518,9 @@ const SURCHARGE_STATED =
   /\b(?:vat|tax(?:es)?|service\s+charges?|(?:service|booking|resort|city|tourism)\s+fees?)\s*(?:of\s+)?\d+(?:\.\d+)?\s*[%٪]|\d+(?:\.\d+)?\s*[%٪]\s*(?:vat|tax|service)|(?:ضريبة|رسوم)[^.،,\n]{0,15}\d+\s*[%٪]|\d+\s*[%٪]\s*(?:ضريبة|رسوم)|\b(?:plus|excl(?:uding|usive\s+of)?\.?)\s+(?:vat|tax(?:es)?|fees?|service\s+charges?)|\+\s*(?:vat|tax(?:es)?|fees?)|(?:\+|زائد|غير\s+شامل(?:ة)?)\s*(?:ال)?(?:ضريبة|رسوم)/iu;
 const CONDITIONAL_CHARGE_BEFORE =
   /(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)[^.,;؛،\n]{0,30}$/iu;
+/** The same labels written after the amount: "SAR 500 cancellation fee applies". */
+const CONDITIONAL_CHARGE_AFTER =
+  /^[^.,;؛،\n\d]{0,20}?(?:cancell?ation|penalty|no[-\s]?show|refund|deposit|change\s+fee|غرامة|إلغاء|الإلغاء|عربون|دفعة\s+مقدمة)/iu;
 const PARTY_IN_LABEL =
   /\b(?:for|per)\s+[\d٠-٩]+\s*(?:people|persons?|adults?|guests?|pax|travell?ers?|rooms?|nights?)\b|ل?[\d٠-٩]+\s*(?:أشخاص|شخص|أفراد|بالغين|ليال[يٍ]?|ليلة)/giu;
 const PRICED_CLAUSE = /\d[\d,٬]*\s*(?:[a-z]{3}\b|ريال|ر\.س)|\b[a-z]{3}\s*\d|\b(?:total|price|rate)\b|إجمالي|الإجمالي|سعر/iu;

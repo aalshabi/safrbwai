@@ -873,3 +873,15 @@ describe("forty-second review follow-ups", () => {
     expect(facts.destination?.value.value).toBe("Nuuk");
   });
 });
+
+describe("forty-third review follow-ups", () => {
+  it("ends a guest scope at another service clause before a booking-wide meal", async () => {
+    const { facts } = await run("Dubai 4 nights. For children only, airport transfer is included, but breakfast is included for all guests. SAR 3,000 total.");
+    expect(facts.board?.value).toBe("BB");
+  });
+
+  it("does not count an amount-first cancellation fee as part of the total", async () => {
+    const { analysis } = await run("4 nights; nightly price SAR 400; total SAR 2,000; SAR 500 cancellation fee applies");
+    expect(codes(analysis)).toContain("price_nightly_mismatch");
+  });
+});

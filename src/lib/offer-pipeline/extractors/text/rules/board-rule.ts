@@ -72,6 +72,14 @@ const SCOPE_BEFORE =
 
 const MEAL_MENTION = /breakfast|lunch|dinner|meals?|إفطار|فطور|غداء|عشاء|وجبات/iu;
 
+/** A contrast or another service between a scope and the meal ends the scope ("For children only, transfer is included, but …"). */
+const SCOPE_END =
+  /\b(?:but|however|whereas|while|transfers?|tours?|wi-?fi|parking|flights?|visas?|insurance)\b|لكن|بينما|أما|نقل|توصيل|جولة|جولات|تأشيرة|تأمين|طيران|واي\s*فاي/iu;
+
+/** "for all guests", «لجميع النزلاء»: the meal is stated for the whole booking. */
+const WHOLE_BOOKING =
+  /^[^.!?؟;؛\n]*?(?:\bfor\s+(?:all|every)\s+(?:guests?|travell?ers?|passengers?|occupants?|members?)\b|\bfor\s+everyone\b|لجميع\s+(?:النزلاء|الضيوف|المسافرين|الأفراد)|للجميع)/iu;
+
 /**
  * Whether a guest/day scope earlier in the sentence belongs to this meal
  * statement: it does unless another meal is named between them ("For
@@ -82,8 +90,9 @@ function scopedBefore(text: string, index: number): boolean {
   const sentence = before.slice(before.search(/[^.!?؟;؛\n]*$/));
   const scopes = [...sentence.matchAll(new RegExp(SCOPE_BEFORE.source, "giu"))];
   const last = scopes.at(-1);
-  if (!last) return false;
-  return !MEAL_MENTION.test(sentence.slice(last.index + last[0].length));
+  if (!last || WHOLE_BOOKING.test(text.slice(index))) return false;
+  const between = sentence.slice(last.index + last[0].length);
+  return !MEAL_MENTION.test(between) && !SCOPE_END.test(between);
 }
 
 function firstIncluded(text: string, scanned: string, re: RegExp): RegExpExecArray | null {
