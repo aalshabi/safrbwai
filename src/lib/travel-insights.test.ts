@@ -2,10 +2,10 @@ import { describe, expect, it } from "vitest";
 import { getPublishedInsights } from "./travel-insights";
 
 describe("published travel insights", () => {
-  it("publishes the three reviewed topics in priority order", () => {
+  it("publishes the reviewed topics in priority order", () => {
     const insights = getPublishedInsights();
-    expect(insights).toHaveLength(3);
-    expect(insights.map(({ priority }) => priority)).toEqual([1, 2, 3]);
+    expect(insights).toHaveLength(6);
+    expect(insights.map(({ priority }) => priority)).toEqual([1, 2, 3, 4, 5, 6]);
     expect(insights.every(({ status }) => status === "published")).toBe(true);
   });
 
@@ -18,6 +18,7 @@ describe("published travel insights", () => {
       )).toBe(true);
       expect(insight.sources.length).toBeGreaterThanOrEqual(2);
       expect(insight.sources.every(({ href }) => href.startsWith("https://"))).toBe(true);
+      expect(insight.sources.every(({ publishedAt }) => publishedAt === undefined || /^\d{4}-\d{2}-\d{2}$/.test(publishedAt))).toBe(true);
     }
   });
 });

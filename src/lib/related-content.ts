@@ -38,6 +38,18 @@ export const RELATED_CONTENT: Readonly<Record<string, readonly ContentRef[]>> = 
     { kind: "guide", slug: "transit-and-baggage" },
     { kind: "guide", slug: "total-price-and-inclusions" },
   ],
+  "insight:flight-cancelled-saudi-airports-rights": [
+    { kind: "guide", slug: "cancellation-and-changes" },
+    { kind: "guide", slug: "transit-and-baggage" },
+  ],
+  "insight:schengen-2026-ees-etias-saudi-travelers": [
+    { kind: "guide", slug: "transit-and-baggage" },
+    { kind: "insight", slug: "ai-trip-planning-human-review" },
+  ],
+  "insight:japan-trip-hidden-taxes-2026": [
+    { kind: "guide", slug: "total-price-and-inclusions" },
+    { kind: "insight", slug: "verify-hotel-booking-site" },
+  ],
 };
 
 export type RelatedLink = { href: string; kind: ContentRef["kind"]; title: (TravelGuide | TravelInsight)["title"] };

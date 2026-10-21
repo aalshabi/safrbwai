@@ -95,9 +95,11 @@ export function InsightArticle({ insight }: { insight: TravelInsight }) {
                 <span>{source.label[locale]} — {source.publisher}</span>
                 <ExternalLink className="mt-1 size-4 shrink-0" aria-hidden />
               </a>
-              <p className="mt-2 text-xs text-muted-foreground">
-                <time dateTime={source.publishedAt}>{source.publishedAt}</time>
-              </p>
+              {source.publishedAt && (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  <time dateTime={source.publishedAt}>{source.publishedAt}</time>
+                </p>
+              )}
             </li>
           ))}
         </ul>
