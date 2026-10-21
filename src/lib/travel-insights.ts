@@ -545,6 +545,13 @@ export function getPublishedInsights(): readonly TravelInsight[] {
   );
 }
 
+/** The newest published insights for the homepage; same-day articles keep their priority order. */
+export function getLatestInsights(count: number): readonly TravelInsight[] {
+  return [...getPublishedInsights()]
+    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt) || a.priority - b.priority)
+    .slice(0, count);
+}
+
 export function getInsight(slug: string): TravelInsight | undefined {
   return TRAVEL_INSIGHTS.find((insight) => insight.slug === slug);
 }

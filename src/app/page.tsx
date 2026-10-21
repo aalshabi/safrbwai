@@ -7,7 +7,7 @@ import { CTA } from "@/components/home/cta";
 import { ProductStageNotice } from "@/components/shared/product-stage-notice";
 import { LatestInsights } from "@/components/home/latest-insights";
 import { SocialHighlights } from "@/components/home/social-highlights";
-import { getPublishedInsights } from "@/lib/travel-insights";
+import { getLatestInsights } from "@/lib/travel-insights";
 
 // Neutral structured data for the travel-offer review tool.
 const HOME_JSON_LD = {
@@ -20,7 +20,7 @@ const HOME_JSON_LD = {
 };
 
 export default function HomePage() {
-  const insights = getPublishedInsights().slice(0, 3);
+  const insights = getLatestInsights(3);
 
   return (
     <>
