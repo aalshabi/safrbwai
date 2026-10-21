@@ -20,7 +20,7 @@ const HOME_JSON_LD = {
 };
 
 export default function HomePage() {
-  const insights = getPublishedInsights();
+  const insights = getPublishedInsights().slice(0, 3);
 
   return (
     <>
