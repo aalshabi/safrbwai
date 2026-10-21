@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { isNewsletterEnabled } from "@/lib/newsletter/config";
+import { NewsletterSignup } from "@/components/newsletter/newsletter-signup";
 import { pageMetadata } from "@/lib/page-metadata";
 import { INSIGHT_SEO } from "@/lib/seo-copy";
 import { notFound } from "next/navigation";
@@ -56,6 +58,7 @@ export default async function InsightPage({ params }: Props) {
     <article className="container py-14 md:py-20">
       <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(jsonLd)} />
       <InsightArticle insight={insight} />
+      {isNewsletterEnabled() && <NewsletterSignup />}
       <RelatedLinks links={getRelatedLinks({ kind: "insight", slug: insight.slug })} />
     </article>
   );

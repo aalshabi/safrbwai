@@ -73,6 +73,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
         p: "جمع الملاحظات غير مفعّل. نقيس عدد الزيارات بشكل مجمّع عبر Vercel Web Analytics دون ملفات تعريف الارتباط (cookies): الصفحة المزارة، والموقع الذي جئت منه، والبلد، ونوع الجهاز والمتصفح ونظام التشغيل، ومعاملات الحملة (utm). نحذف بقية معاملات الرابط قبل الإرسال، فلا يدخل في هذا القياس نص العرض أو الرابط الذي تطلب قراءته أو النتيجة أو أي بيانات تُدخلها. ويحتوي التطبيق أيضًا على واجهة قياس لأحداث محددة (بدء التحليل واكتماله وفشله ونسخ المخرجات) إرسالها الخارجي معطّل حاليًا، ولا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
       },
       {
+        h: "نشرة واتساب (اختيارية)",
+        p: "إذا اشتركت في نشرة مرصد السفر، نجمع رقم جوالك ووقت موافقتك فقط، لنرسل لك المواضيع الجديدة على واتساب. يُحفظ الرقم في حساب واتساب للأعمال التابع لسكاي العالمية للسفر (منشأة مالك الموقع) على منصة Wati، ومنه تُرسل النشرة، ولا يُستخدم لغرض آخر ولا يُشارك مع أي جهة أخرى. لا نسجّل الرقم في سجلات التشغيل. تستطيع إلغاء الاشتراك في أي وقت بالرد «إلغاء» على أي رسالة، ولطلب حذف رقمك أرسل «احذف رقمي» في المحادثة نفسها.",
+      },
+      {
         h: "تفضيلات المتصفح",
         p: "قد تبقى تفضيلات اللغة والمظهر محليًا في متصفحك لتطبيق اختيارك عند الزيارات اللاحقة.",
       },
@@ -136,6 +140,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       {
         h: "Feedback and analytics",
         p: "Feedback collection is disabled. We count visits in aggregate with Vercel Web Analytics, without cookies: the page visited, the site you came from, country, device type, browser and operating system, and campaign (utm) parameters. All other link parameters are removed before sending, so offer text, a link you ask us to read, results and anything you enter never reach this measurement. The application also includes a measurement interface for four allowlisted events (analysis start, completion, failure, and useful-output copy) whose external transmission is currently disabled; offer text, evidence, results, names, contact information, and payment details cannot enter that payload.",
+      },
+      {
+        h: "WhatsApp newsletter (optional)",
+        p: "If you subscribe to the Travel Monitor newsletter, we collect only your mobile number and the time you agreed, to send you new stories on WhatsApp. The number is kept in the WhatsApp Business account of Sky Global Travel (the site owner's business) on the Wati platform, which sends the newsletter; it is not used for anything else or shared with anyone else. We do not record the number in operational logs. You can unsubscribe at any time by replying «إلغاء» to any message, and to have your number deleted, send «احذف رقمي» in the same chat.",
       },
       {
         h: "Browser preferences",

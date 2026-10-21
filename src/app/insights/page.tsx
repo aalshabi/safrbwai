@@ -7,6 +7,8 @@ import {
   AirportStatusSidebarLoader,
 } from "@/components/airport-status/airport-status-loader";
 import { getPublishedInsights } from "@/lib/travel-insights";
+import { isNewsletterEnabled } from "@/lib/newsletter/config";
+import { NewsletterSignup } from "@/components/newsletter/newsletter-signup";
 import { itemListJsonLd, jsonLdHtml } from "@/lib/structured-data";
 
 export const metadata: Metadata = pageMetadata({
@@ -35,6 +37,7 @@ export default function InsightsPage() {
           <AirportStatusBannerLoader className="mb-8 md:hidden" />
           <AirportStatusCardLoader className="mb-10 hidden md:block xl:hidden" />
           <InsightList insights={insights} />
+          {isNewsletterEnabled() && <NewsletterSignup />}
         </div>
         <div className="hidden xl:block">
           <AirportStatusSidebarLoader />
