@@ -9,9 +9,11 @@ export interface NewsletterStore {
 export const NEWSLETTER_ATTRIBUTE = "safrbwai_newsletter";
 
 /**
- * Adds the number as a Wati contact (v1 addContact) with the newsletter
- * attribute, the consent time and the source, so broadcasts can target it.
- * Only the phone number is sent; no name, IP or page data.
+ * Adds the number as a Wati contact (v1 addContact), then sets the newsletter
+ * attribute, the consent time and the source with updateContactAttributes, so
+ * a number Wati already knows (an earlier customer chat) is subscribed too.
+ * addContact may refuse an existing contact; only the attribute update must
+ * succeed. Only the phone number is sent; no name, IP or page data.
  */
 export class WatiNewsletterStore implements NewsletterStore {
   constructor(
@@ -21,21 +23,27 @@ export class WatiNewsletterStore implements NewsletterStore {
   ) {}
 
   async subscribe(phone: string, consentedAt: Date): Promise<void> {
-    const response = await this.fetchImpl(`${this.config.endpoint}/api/v1/addContact/${phone}`, {
+    const body = JSON.stringify({
+      customParams: [
+        { name: NEWSLETTER_ATTRIBUTE, value: "subscribed" },
+        { name: "newsletter_consent_at", value: consentedAt.toISOString() },
+        { name: "newsletter_source", value: "safrbwai.com" },
+      ],
+    });
+    await this.post(`addContact/${phone}`, body).catch(() => undefined);
+    const response = await this.post(`updateContactAttributes/${phone}`, body);
+    if (!response.ok) throw new Error(`Wati updateContactAttributes failed with status ${response.status}`);
+  }
+
+  private post(path: string, body: string): Promise<Response> {
+    return this.fetchImpl(`${this.config.endpoint}/api/v1/${path}`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${this.config.token}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        customParams: [
-          { name: NEWSLETTER_ATTRIBUTE, value: "subscribed" },
-          { name: "newsletter_consent_at", value: consentedAt.toISOString() },
-          { name: "newsletter_source", value: "safrbwai.com" },
-        ],
-      }),
+      body,
       signal: AbortSignal.timeout(this.timeoutMs),
     });
-    if (!response.ok) throw new Error(`Wati addContact failed with status ${response.status}`);
   }
 }

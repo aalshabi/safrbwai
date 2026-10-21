@@ -36,12 +36,16 @@ describe("newsletter config", () => {
 });
 
 describe("WatiNewsletterStore", () => {
-  it("adds the number with the newsletter attribute and consent time, and nothing else", async () => {
+  it("adds the number, then sets the newsletter attribute and consent time, and nothing else", async () => {
     const fetchImpl = vi.fn(async () => new Response("{}", { status: 200 }));
     const store = new WatiNewsletterStore({ endpoint: "https://live.example/123", token: "secret" }, fetchImpl as unknown as typeof fetch);
     await store.subscribe("966501234567", new Date("2026-10-21T20:00:00Z"));
-    const [url, init] = fetchImpl.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe("https://live.example/123/api/v1/addContact/966501234567");
+    const calls = fetchImpl.mock.calls as unknown as [string, RequestInit][];
+    expect(calls.map(([url]) => url)).toEqual([
+      "https://live.example/123/api/v1/addContact/966501234567",
+      "https://live.example/123/api/v1/updateContactAttributes/966501234567",
+    ]);
+    const [, init] = calls[1];
     expect((init.headers as Record<string, string>).authorization).toBe("Bearer secret");
     expect(JSON.parse(init.body as string)).toEqual({
       customParams: [
@@ -52,7 +56,13 @@ describe("WatiNewsletterStore", () => {
     });
   });
 
-  it("throws when Wati does not confirm", async () => {
+  it("subscribes a number Wati already has even when addContact refuses it", async () => {
+    const fetchImpl = vi.fn(async (url: string) => new Response("{}", { status: url.includes("addContact") ? 400 : 200 }));
+    const store = new WatiNewsletterStore({ endpoint: "https://live.example/123", token: "t" }, fetchImpl as unknown as typeof fetch);
+    await expect(store.subscribe("966501234567", new Date())).resolves.toBeUndefined();
+  });
+
+  it("throws when Wati does not confirm the attributes", async () => {
     const fetchImpl = vi.fn(async () => new Response("no", { status: 401 }));
     const store = new WatiNewsletterStore({ endpoint: "https://live.example/123", token: "t" }, fetchImpl as unknown as typeof fetch);
     await expect(store.subscribe("966501234567", new Date())).rejects.toThrow();
@@ -99,6 +109,27 @@ describe("POST /api/newsletter", () => {
     expect((await handle(post({ phone: "0501234567", consent: true, name: "x" }))).status).toBe(400);
     expect((await handle(post("not json"))).status).toBe(400);
     expect((await handle(post({ phone: "0501234567", consent: true }, { "content-type": "text/plain" }))).status).toBe(400);
+    expect(store!.subscribe).not.toHaveBeenCalled();
+  });
+
+  it("stops reading a body that grows past the limit without a content-length", async () => {
+    const { store, handle } = setup();
+    let pulled = 0;
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled++;
+        controller.enqueue(new Uint8Array(512).fill(32));
+        if (pulled > 100) controller.close();
+      },
+    });
+    const request = new Request("https://safrbwai.test/api/newsletter", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body,
+      duplex: "half",
+    } as RequestInit);
+    expect((await handle(request)).status).toBe(400);
+    expect(pulled).toBeLessThan(10);
     expect(store!.subscribe).not.toHaveBeenCalled();
   });
 
