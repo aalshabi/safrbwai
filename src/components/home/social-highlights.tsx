@@ -98,7 +98,7 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
           href={SOCIAL_PROFILES[platform]}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 text-sm font-bold text-teal hover:underline"
+          className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-teal hover:underline"
         >
           {copy.profile}
           <ArrowLeft className="size-4 ltr:rotate-180" aria-hidden />

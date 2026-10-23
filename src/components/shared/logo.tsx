@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 export function Logo({ className, showText = true }: { className?: string; showText?: boolean }) {
   const { t } = useLanguage();
   return (
-    <Link href="/" className={cn("flex items-center gap-2.5", className)} aria-label={t.brand.name}>
+    <Link href="/" className={cn("flex min-h-11 items-center gap-2.5", className)} aria-label={t.brand.name}>
       <span className="relative grid h-9 w-9 place-items-center rounded-xl bg-navy shadow-lg shadow-navy/25">
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" aria-hidden>
           {/* stylised compass / eye — "conscious travel" */}

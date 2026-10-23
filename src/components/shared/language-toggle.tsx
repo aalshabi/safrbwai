@@ -11,7 +11,7 @@ export function LanguageToggle() {
       variant="ghost"
       size="sm"
       onClick={toggleLocale}
-      className="gap-1.5 font-semibold"
+      className="h-11 gap-1.5 font-semibold"
       aria-label="Switch language"
     >
       <Languages className="size-4" />

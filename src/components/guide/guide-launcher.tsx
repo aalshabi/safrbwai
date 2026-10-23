@@ -17,10 +17,11 @@ export const GuideLauncher = React.forwardRef<HTMLButtonElement, GuideLauncherPr
         type="button"
         onClick={onOpen}
         aria-label={label}
-        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] end-3 z-50 size-12 rounded-full px-0 shadow-xl sm:end-6 sm:w-auto sm:px-4"
+        variant="outline"
+        title={label}
+        className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] end-3 z-50 size-12 rounded-full bg-background px-0 text-teal shadow-md sm:end-6"
       >
         <CircleHelp className="size-5 shrink-0" aria-hidden />
-        <span className="hidden sm:inline">{label}</span>
       </Button>
     );
   }

@@ -38,7 +38,7 @@ export function Hero() {
           </div>
 
           <h1
-            className="enter-up font-display text-4xl font-extrabold leading-[1.15] text-white md:text-6xl"
+            className="enter-up text-balance font-display text-4xl font-extrabold leading-[1.15] text-white md:text-6xl"
             style={{ animationDelay: "80ms" }}
           >
             {t.hero.title}

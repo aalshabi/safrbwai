@@ -38,7 +38,7 @@ export function InsightCard({ insight, index }: { insight: TravelInsight; index:
           </p>
           <Link
             href={`/insights/${insight.slug}`}
-            className="mt-4 inline-flex items-center gap-2 font-bold text-teal"
+            className="mt-4 inline-flex min-h-11 items-center gap-2 font-bold text-teal"
           >
             {copy.read}
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1 ltr:rotate-180 ltr:group-hover:translate-x-1" aria-hidden />
