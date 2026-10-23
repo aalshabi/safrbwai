@@ -129,9 +129,9 @@ describe("formatSummaryForCopy", () => {
 
     expect(text).toContain("مراجعة عرض السفر");
     expect(confirmedSection).toContain("- الوجهة: دبي");
-    expect(confirmedSection).toContain("- عدد الليالي: ٥");
-    expect(confirmedSection).toContain("- السعر: ٣٬٢٠٠ SAR");
-    expect(confirmedSection).toContain("- مدة الترانزيت: ٧ ساعات");
+    expect(confirmedSection).toContain("- عدد الليالي: 5");
+    expect(confirmedSection).toContain("- السعر: 3,200 SAR");
+    expect(confirmedSection).toContain("- مدة الترانزيت: 7 ساعات");
     expect(confirmedSection).not.toContain("سياسة الإلغاء");
   });
 

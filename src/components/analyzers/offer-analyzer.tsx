@@ -312,7 +312,7 @@ export function OfferAnalyzer() {
 
   return (
     <>
-      <PageHeader icon={Tag} title={v1.title} subtitle={v1.subtitle} />
+      <PageHeader icon={Tag} title={v1.title} subtitle={v1.subtitle} compact />
 
       {/* Screen-reader announcements for the async state changes. The full error
           text (incl. the rate-limit message) is announced by the role="alert"
@@ -321,10 +321,9 @@ export function OfferAnalyzer() {
         {phase === "submitting" ? v2.srSubmitting : phase === "success" ? v2.srSuccess : phase === "error" ? v2.srError : ""}
       </div>
 
-      <div className="container mt-4 pb-20 sm:-mt-4">
+      <div className="container relative mt-4 pb-20 sm:-mt-4">
         {phase === "input" && (
           <>
-            <ProductStageNotice />
             <Card className="mx-auto max-w-2xl shadow-xl">
               <CardContent className="p-6 md:p-8">
                 <form onSubmit={onStart} className="space-y-5">
@@ -352,6 +351,8 @@ export function OfferAnalyzer() {
                     <Sparkles className="size-4" />
                     {v1.startAnalysis}
                   </Button>
+
+                  <ProductStageNotice />
                 </form>
               </CardContent>
             </Card>
@@ -442,6 +443,7 @@ export function OfferAnalyzer() {
                         type="button"
                         size="sm"
                         variant="outline"
+                        className="h-11"
                         onClick={copyErrorRequestId}
                         aria-label={v2.errors.copyRequestId}
                       >

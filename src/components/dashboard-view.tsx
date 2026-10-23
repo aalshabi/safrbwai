@@ -128,7 +128,7 @@ export function DashboardView() {
                           <p className="truncate font-medium text-foreground">{item.title}</p>
                           <p className="text-xs text-muted-foreground">
                             {new Date(item.createdAt).toLocaleDateString(
-                              locale === "ar" ? "ar-SA" : "en-US"
+                              locale === "ar" ? "ar-SA-u-nu-latn" : "en-US"
                             )}
                           </p>
                         </div>

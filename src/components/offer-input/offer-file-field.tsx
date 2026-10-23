@@ -83,8 +83,8 @@ export function OfferFileField({
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">{file.name}</p>
-            <p className="ltr-nums text-xs text-muted-foreground">
-              {v.selected} · {formatSize(file.size)}
+            <p className="text-xs text-muted-foreground">
+              {v.selected} · <span className="ltr-nums">{formatSize(file.size)}</span>
             </p>
           </div>
           <Button type="button" variant="ghost" size="icon" onClick={() => onFile(null)} aria-label={v.remove}>

@@ -62,7 +62,7 @@ export function TravelOfferReview({
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <Row label={r.inputType}>{typeLabels[input.type]}</Row>
+          {input.type !== "text" && <Row label={r.inputType}>{typeLabels[input.type]}</Row>}
 
           {input.type === "text" && (
             <Row label={r.content}>
@@ -107,12 +107,6 @@ export function TravelOfferReview({
               )}
             </>
           )}
-
-          <Row label={r.inputTime}>
-            <span className="ltr-nums">
-              {new Date(input.createdAt).toLocaleString(locale === "ar" ? "ar-SA" : "en-US")}
-            </span>
-          </Row>
 
           <Row label={r.statusLabel}>
             <span className="inline-flex items-start gap-2 rounded-lg border border-teal/30 bg-teal/5 px-3 py-2 text-teal-700 dark:text-teal-300">

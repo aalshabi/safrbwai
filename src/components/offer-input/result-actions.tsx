@@ -114,7 +114,7 @@ export function ResultCopyAction({
         data-guide-id={kind === "questions" ? "copy-questions" : "copy-summary"}
         variant="outline"
         size="sm"
-        className="w-full sm:w-auto"
+        className="h-11 w-full sm:w-auto"
         disabled={isCopying}
         onClick={handleCopy}
       >

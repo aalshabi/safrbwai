@@ -65,6 +65,19 @@ describe("OfferAnalysisResult", () => {
     expect(screen.getByText("ما سياسة الإلغاء والتعديل؟")).toBeTruthy();
   });
 
+  it("puts what is missing first: missing chips lead, the missing section is open and precedes the confirmed facts", () => {
+    const { container } = renderResult();
+    const chips = [...container.querySelectorAll('section[aria-labelledby="oa-completeness"] li')].map((li) => li.textContent);
+    expect(chips).toHaveLength(3);
+    expect(chips[0]).not.toContain("السعر النهائي");
+    const details = [...container.querySelectorAll("details")];
+    const missing = details.find((el) => el.textContent?.includes(d.analyzeOffer.v2.result.missingTitle));
+    const confirmed = details.find((el) => el.textContent?.includes(d.analyzeOffer.v2.result.confirmedTitle));
+    expect(missing?.open).toBe(true);
+    expect(confirmed?.open).toBe(false);
+    expect(details.indexOf(missing!)).toBeLessThan(details.indexOf(confirmed!));
+  });
+
   it("shows completeness as present / required with the counted fields", () => {
     const { container } = renderResult();
     expect(screen.getByText(d.analyzeOffer.v2.result.completenessTitle)).toBeTruthy();
