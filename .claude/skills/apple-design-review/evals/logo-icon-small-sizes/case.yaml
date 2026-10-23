@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: logo-icon-small-sizes
+expected_outcome: |
+  An Arabic review of the compass-style mark judged at favicon and app-icon sizes, with measured
+  contrast of the teal mark on the navy tile, the risks of thin strokes and small details at
+  16-32 px, a one-color/dark-light check, and a short prioritized list of fixes that respect the
+  existing brand.
+context:
+  scaffold_script: place-files.sh

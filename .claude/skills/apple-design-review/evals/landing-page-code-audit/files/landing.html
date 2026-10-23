@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nimbus — Cloud notes</title>
+<link href="https://fonts.googleapis.com/css2?family=Lobster&family=Montserrat:wght@300;800&family=Roboto+Mono&display=swap" rel="stylesheet">
+<style>
+  body { margin: 0; font-family: "Montserrat", sans-serif; font-size: 13px; font-weight: 300; color: #9aa3b2; background: #ffffff; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; background: linear-gradient(90deg, #ff6a00, #ee0979, #7f00ff); }
+  .logo { font-family: "Lobster", cursive; font-size: 28px; color: #fff; }
+  .icon-btn { width: 22px; height: 22px; border: none; background: transparent; padding: 0; }
+  .hero { text-align: center; padding: 24px 12px 70px; }
+  .hero h1 { font-size: 46px; font-weight: 800; color: #1d1d1f; margin: 0 0 6px; text-transform: uppercase; letter-spacing: 3px; }
+  .hero p { max-width: 1100px; margin: 0 auto 18px; line-height: 1.2; }
+  .badge { display: inline-block; font-family: "Roboto Mono", monospace; font-size: 10px; background: #ffe600; color: #ffffff; padding: 2px 6px; border-radius: 3px; margin: 0 4px 12px; }
+  .cta { display: inline-block; padding: 14px 30px; border-radius: 30px; font-size: 16px; font-weight: 800; color: #fff; text-decoration: none; margin: 4px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+  .cta.primary { background: #ee0979; }
+  .cta.also-primary { background: #7f00ff; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 13px 37px; padding: 0 9px; }
+  .card { border: 1px solid #f1f1f1; border-radius: 18px; padding: 22px 15px 9px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .card:nth-child(2) { border-radius: 4px; padding: 30px; }
+  .card .inner { border-radius: 18px; background: #f7f7f7; padding: 8px; }
+  .card h3 { font-size: 21px; color: #1d1d1f; margin: 0 0 4px; }
+  .card h3.alt { font-family: "Lobster", cursive; font-size: 24px; }
+  .card img { width: 32px; }
+  footer { margin-top: 90px; padding: 8px; font-size: 11px; color: #c4c4c4; text-align: center; }
+  a { color: #9aa3b2; text-decoration: none; }
+</style>
+</head>
+<body>
+<header>
+  <span class="logo">Nimbus</span>
+  <nav>
+    <button class="icon-btn" aria-label="Search"><svg width="22" height="22"><circle cx="9" cy="9" r="6" stroke="#fff" fill="none" stroke-width="1"/></svg></button>
+    <button class="icon-btn"><svg width="22" height="22"><rect x="3" y="3" width="16" height="16" fill="#fff"/></svg></button>
+    <a href="#">Pricing</a> <a href="#">Blog</a> <a href="#">Login</a>
+  </nav>
+</header>
+<section class="hero">
+  <span class="badge">NEW</span><span class="badge">AI POWERED</span><span class="badge">50% OFF</span><span class="badge">TRUSTED</span>
+  <h1>The smartest, fastest, most secure, collaborative, AI-powered cloud notes app for teams and individuals everywhere</h1>
+  <p>Nimbus helps you capture ideas, organize projects, collaborate with your team, sync across every device you own, search everything instantly, and keep your data encrypted end to end so you never have to worry about anything ever again while staying productive all day long.</p>
+  <a class="cta primary" href="#">Start free trial</a>
+  <a class="cta also-primary" href="#">Book a demo</a>
+</section>
+<section class="features">
+  <div class="card"><img src="cloud.png"><h3>Sync</h3><div class="inner">Everywhere, instantly.</div></div>
+  <div class="card"><img src="lock.png"><h3 class="alt">Secure</h3><div class="inner">Encrypted end to end.</div></div>
+  <div class="card"><img src="bolt.png"><h3>Fast</h3><div class="inner">Search in milliseconds.</div></div>
+</section>
+<footer>© 2026 Nimbus Inc. · <a href="#">Privacy</a> · <a href="#">Terms</a></footer>
+</body>
+</html>

@@ -1,0 +1,8 @@
+schema_version: "1.1"
+name: landing-page-code-audit
+expected_outcome: |
+  An English review of landing.html that measures the low-contrast body and badge text, flags the
+  two competing primary calls to action, the 22 px icon buttons, the three unrelated font
+  families and the inconsistent card styling, and opens with a short prioritized list of fixes.
+context:
+  scaffold_script: place-files.sh

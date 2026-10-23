@@ -1,0 +1,9 @@
+schema_version: "1.1"
+name: arabic-rtl-screenshot-review
+expected_outcome: |
+  An Arabic, prioritized review of the mobile offer page screenshot that catches the RTL problems
+  (top bar laid out left-to-right, back arrow direction, the mixed Arabic/Latin price line), the
+  low-contrast list text and chips, the three equally weighted actions, small text and touch
+  targets, and says what a static screenshot cannot show.
+context:
+  scaffold_script: place-files.sh
