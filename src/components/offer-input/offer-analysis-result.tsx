@@ -69,17 +69,19 @@ function FoldableSection({
   icon: Icon,
   title,
   count,
+  defaultOpen = false,
   children,
 }: {
   guideId?: string;
   icon: LucideIcon;
   title: string;
   count?: number;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <details data-guide-id={guideId} className="group rounded-xl border border-border">
-      <summary className="flex cursor-pointer items-center gap-2 rounded-xl px-4 py-3 font-display text-base font-bold text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    <details data-guide-id={guideId} open={defaultOpen} className="group rounded-xl border border-border">
+      <summary className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl px-4 py-3 font-display text-base font-bold text-foreground hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <Icon className="size-4 shrink-0 text-teal" aria-hidden />
         <span>{title}</span>
         {count !== undefined && <span className="ltr-nums text-xs font-normal text-muted-foreground">({count})</span>}
@@ -141,7 +143,7 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
             <h2 className="font-display text-lg font-bold text-foreground">
               {r.title}
             </h2>
-            <p className="mt-1 text-xs text-muted-foreground">{r.note}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{r.note}</p>
           </div>
           <ResultCopyAction analysis={analysis} kind="summary" />
         </div>
@@ -156,20 +158,23 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
         {/* Completeness — present / required with the counted fields */}
         <Section id="oa-completeness" icon={ClipboardCheck} title={r.completenessTitle}>
           <div className="rounded-xl border border-border bg-muted/30 p-4">
-            <p className="ltr-nums font-display text-xl font-bold text-foreground">
-              {formatNumber(analysis.completeness.present, locale)} {r.completenessOf}{" "}
-              {formatNumber(analysis.completeness.required, locale)}
+            <p className="font-display text-xl font-bold text-foreground">
+              <span className="ltr-nums">{formatNumber(analysis.completeness.present, locale)}</span> {r.completenessOf}{" "}
+              <span className="ltr-nums">{formatNumber(analysis.completeness.required, locale)}</span>
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">{r.completenessCaption}</p>
             <ul className="mt-3 flex flex-wrap gap-2">
-              {analysis.completeness.fields.map((f) => {
+              {/* Missing fields first: they are what the traveller needs to ask about. */}
+              {[...analysis.completeness.fields].sort((a, b) => Number(a.present) - Number(b.present)).map((f) => {
                 const label = labelByKey.get(f.key);
                 const Icon = f.present ? CheckCircle2 : XCircle;
                 return (
                   <li
                     key={f.key}
                     className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
-                      f.present ? "border-teal/30 bg-teal/5 text-teal-700 dark:text-teal-300" : "border-border text-muted-foreground"
+                      f.present
+                        ? "border-teal/30 bg-teal/5 text-teal-700 dark:text-teal-300"
+                        : "border-amber-500/50 bg-amber-500/10 font-semibold text-amber-800 dark:text-amber-300"
                     }`}
                   >
                     <Icon className="size-3.5" aria-hidden />
@@ -202,6 +207,22 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
             </ol>
           </Section>
         )}
+
+        {/* Missing fields — open by default, ahead of the confirmed detail */}
+        <FoldableSection guideId="result-missing" icon={XCircle} title={r.missingTitle} count={analysis.missingFields.length} defaultOpen={analysis.missingFields.length > 0}>
+          {analysis.missingFields.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{r.missingEmpty}</p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {analysis.missingFields.map((m) => (
+                <li key={m.key} className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
+                  {localizeBi(m.label, locale)}
+                  <span className="text-muted-foreground">· {requirementLabel[m.requirement]}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </FoldableSection>
 
         {/* Confirmed facts (secondary detail — collapsed) */}
         <FoldableSection guideId="result-confirmed" icon={ClipboardCheck} title={r.confirmedTitle} count={analysis.confirmedFacts.length}>
@@ -247,22 +268,6 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
               );
             })}
           </ul>
-        </FoldableSection>
-
-        {/* Missing fields (secondary detail — collapsed) */}
-        <FoldableSection guideId="result-missing" icon={XCircle} title={r.missingTitle} count={analysis.missingFields.length}>
-          {analysis.missingFields.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{r.missingEmpty}</p>
-          ) : (
-            <ul className="flex flex-wrap gap-2">
-              {analysis.missingFields.map((m) => (
-                <li key={m.key} className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
-                  {localizeBi(m.label, locale)}
-                  <span className="text-muted-foreground">· {requirementLabel[m.requirement]}</span>
-                </li>
-              ))}
-            </ul>
-          )}
         </FoldableSection>
 
         {/* Contradictions */}

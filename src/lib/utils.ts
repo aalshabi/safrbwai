@@ -20,5 +20,5 @@ export function scoreLabelKey(score: number): "excellent" | "good" | "caution" |
 }
 
 export function formatNumber(n: number, locale: string): string {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-SA" : "en-US").format(n);
+  return new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-latn" : "en-US").format(n);
 }

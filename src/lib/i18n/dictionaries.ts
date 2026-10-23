@@ -319,14 +319,14 @@ export const dictionaries = {
         tabUpload: "رفع ملف",
         tabPaste: "لصق نص",
         dropTitle: "اسحب وأفلت الملف هنا",
-        dropHint: "PDF أو صورة أو لقطة واتساب · حتى ١٠ ميجابايت",
+        dropHint: "PDF أو صورة أو لقطة واتساب · حتى 10 ميجابايت",
         browse: "اختر ملفاً",
         selected: "الملف المحدد",
         remove: "إزالة",
         extractCta: "جرّب الأداة",
         extracting: "لحظة…",
         formatError: "صيغة غير مدعومة. ارفع PDF أو صورة.",
-        sizeError: "الملف أكبر من ١٠ ميجابايت.",
+        sizeError: "الملف أكبر من 10 ميجابايت.",
         needInput: "ارفع ملفاً أو الصق نص العرض أولاً.",
       },
       deep: {
@@ -380,6 +380,7 @@ export const dictionaries = {
           placeholder:
             "مثال: فندق في دبي لمدة 5 ليالٍ، لشخصين، شامل الإفطار، مع تذاكر الطيران، والسعر الإجمالي 8,500 ريال…",
           chars: "حرف",
+          minHint: "{n} حرفًا على الأقل",
           loadSample: "تحميل نص تجريبي",
           sampleBadge: "هذا مثال توضيحي فقط",
           sample:
@@ -580,7 +581,7 @@ export const dictionaries = {
         errors: {
           title: "تعذّر تحليل العرض",
           badRequest: "الطلب غير صالح. رجاءً عدّل الإدخال وحاول مجددًا.",
-          tooLarge: "النص أطول من الحد المسموح (١٥٬٠٠٠ حرف).",
+          tooLarge: "النص أطول من الحد المسموح (15,000 حرف).",
           unsupportedMedia: "نوع المحتوى غير مدعوم.",
           notAnalyzable: "النص قصير جدًا أو لا يحتوي معلومات كافية للتحليل.",
           sourceNotSupported: "هذا المصدر غير مدعوم حاليًا. المتاح الآن هو النص فقط.",
@@ -1094,6 +1095,7 @@ export const dictionaries = {
           placeholder:
             "e.g. a hotel in Dubai for 5 nights, for two people, breakfast included, with flight tickets, total price SAR 8,500…",
           chars: "chars",
+          minHint: "At least {n} characters",
           loadSample: "Load sample text",
           sampleBadge: "This is an illustrative example only",
           sample:

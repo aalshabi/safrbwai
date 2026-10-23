@@ -37,7 +37,7 @@ export function TextOfferInput({
     <div>
       <div className="mb-2 flex items-center justify-between">
         <Label htmlFor="offer-text">{v.label}</Label>
-        <Button type="button" variant="ghost" size="sm" className="gap-1.5 text-xs" onClick={() => onChange(v.sample)}>
+        <Button type="button" variant="ghost" size="sm" className="h-11 gap-1.5 text-xs" onClick={() => onChange(v.sample)}>
           <FileText className="size-3.5" />
           {v.loadSample}
         </Button>
@@ -56,9 +56,18 @@ export function TextOfferInput({
         maxLength={OFFER_LIMITS.textMax + 500}
       />
       <div className="mt-1.5 flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{v.sampleBadge}</span>
-        <span className={cn("ltr-nums", over ? "font-semibold text-red-600" : "text-muted-foreground")}>
-          {formatNumber(len, locale)} / {formatNumber(OFFER_LIMITS.textMax, locale)} {v.chars}
+        <span className="text-muted-foreground">
+          {value === v.sample
+            ? v.sampleBadge
+            : value.trim().length < OFFER_LIMITS.textMin
+              ? v.minHint.replace("{n}", formatNumber(OFFER_LIMITS.textMin, locale))
+              : ""}
+        </span>
+        <span className={cn(over ? "font-semibold text-red-600" : "text-muted-foreground")}>
+          <span className="ltr-nums">
+            {formatNumber(len, locale)} / {formatNumber(OFFER_LIMITS.textMax, locale)}
+          </span>{" "}
+          {v.chars}
         </span>
       </div>
       <FieldError id="offer-text-error" message={message} />

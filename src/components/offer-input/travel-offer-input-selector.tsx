@@ -46,7 +46,7 @@ export function TravelOfferInputSelector({
             disabled={disabled}
             onClick={() => onSelect(m)}
             className={cn(
-              "flex min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+              "flex min-h-11 min-w-0 flex-col items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               active
                 ? "border-teal bg-teal/10 text-teal-600 dark:text-teal-300"
                 : disabled

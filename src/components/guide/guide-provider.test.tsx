@@ -74,7 +74,8 @@ describe("SafrBwai Guide", () => {
     fireEvent.click(screen.getByRole("button", { name: "السابق" }));
     expect(screen.getByRole("heading", { name: "النتائج إرشادية" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "إعادة الجولة" }));
-    expect(screen.getByText("الخطوة ١ من ٥")).toBeTruthy();
+    // Shown in the progress bar and announced by the live region, now in the same digits.
+    expect(screen.getAllByText("الخطوة 1 من 5")).toHaveLength(2);
   });
 
   it("records a skip without reading page text", async () => {

@@ -132,7 +132,7 @@ export function buildAdminData(
     const trend = 1 + (13 - i) * 0.012;
     const value = Math.round((900 + rng() * 700) * weekend * trend);
     visitorSeries.push({
-      label: new Intl.DateTimeFormat(locale === "ar" ? "ar-SA" : "en-US", {
+      label: new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-nu-latn" : "en-US", {
         day: "numeric",
         month: "short",
       }).format(d),
