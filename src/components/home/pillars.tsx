@@ -20,7 +20,7 @@ export function Pillars() {
           {t.pillars.items.map((p, i) => (
             <Reveal key={p.title} index={i}>
               <div className="group h-full rounded-2xl border border-border bg-gradient-to-b from-card to-muted/30 p-6 transition-all hover:border-teal/40">
-                <div className="mb-4 font-display text-3xl font-extrabold text-teal/30 ltr-nums transition-colors group-hover:text-teal">
+                <div className="mb-4 font-display text-3xl font-extrabold text-teal ltr-nums">
                   {String(i + 1).padStart(2, "0")}
                 </div>
                 <h3 className="font-display text-base font-bold text-foreground">{p.title}</h3>

@@ -56,12 +56,10 @@ export function Navbar() {
                 <Link
                   href={link.route}
                   className={cn(
-                    "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
-                    link.key === "textOfferAnalysis"
-                      ? "bg-teal-600 text-white hover:bg-teal-700"
-                      : active
-                        ? "text-teal"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    "flex min-h-11 items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold transition-colors",
+                    active
+                      ? "bg-teal/10 text-teal"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <span>{link.title[locale]}</span>

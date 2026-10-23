@@ -4,7 +4,6 @@ import { Features } from "@/components/home/features";
 import { HowItWorks } from "@/components/home/how-it-works";
 import { Pillars } from "@/components/home/pillars";
 import { CTA } from "@/components/home/cta";
-import { ProductStageNotice } from "@/components/shared/product-stage-notice";
 import { LatestInsights } from "@/components/home/latest-insights";
 import { SocialHighlights } from "@/components/home/social-highlights";
 import { getLatestInsights } from "@/lib/travel-insights";
@@ -29,9 +28,6 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(HOME_JSON_LD) }}
       />
       <Hero />
-      <div className="container pt-8">
-        <ProductStageNotice />
-      </div>
       <Benefits />
       <LatestInsights insights={insights} />
       <SocialHighlights />
