@@ -97,3 +97,38 @@ export const SOCIAL_HIGHLIGHTS: Readonly<Record<SocialPlatform, readonly SocialH
   ],
 };
 
+
+/**
+ * Official embeds, loaded only after the visitor asks for them (click to load):
+ * nothing is fetched from X or TikTok while the page is just being read.
+ */
+export const X_EMBED_ORIGIN = "https://platform.twitter.com";
+export const TIKTOK_EMBED_ORIGIN = "https://www.tiktok.com";
+export const TIKTOK_PROFILE_EMBED = `${TIKTOK_EMBED_ORIGIN}/embed/@safrbwai`;
+
+const X_POST = /^https:\/\/x\.com\/SafrBwai\/status\/(\d+)$/;
+
+export function xPostId(href: string): string | null {
+  return X_POST.exec(href)?.[1] ?? null;
+}
+
+export function xEmbedUrl(id: string, locale: Locale, theme: "light" | "dark"): string {
+  const params = new URLSearchParams({ id, lang: locale, theme, dnt: "true" });
+  return `${X_EMBED_ORIGIN}/embed/Tweet.html?${params}`;
+}
+
+/** Height from the resize message X's embed posts to its parent page, if that is what this is. */
+export function xEmbedHeight(data: unknown): number | null {
+  let message = data;
+  if (typeof message === "string") {
+    try {
+      message = JSON.parse(message);
+    } catch {
+      return null;
+    }
+  }
+  const embed = (message as { "twttr.embed"?: { method?: unknown; params?: unknown } } | null)?.["twttr.embed"];
+  if (!embed || embed.method !== "twttr.private.resize" || !Array.isArray(embed.params)) return null;
+  const height = (embed.params[0] as { height?: unknown } | undefined)?.height;
+  return typeof height === "number" && Number.isFinite(height) && height > 0 ? Math.ceil(height) : null;
+}
