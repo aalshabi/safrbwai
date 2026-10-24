@@ -43,13 +43,12 @@ const CARD =
  * The platform's own player, mounted only after the visitor clicks: until then
  * the browser makes no request to X or TikTok.
  */
-function EmbedFrame({ src, title, height, resizeOrigin, className }: {
+function EmbedFrame({ src, title, height, resizeOrigin }: {
   src: string;
   title: string;
   height: number;
   /** Origin whose resize messages may set the frame height (X posts them). */
   resizeOrigin?: string;
-  className?: string;
 }) {
   const ref = React.useRef<HTMLIFrameElement>(null);
   const [frameHeight, setFrameHeight] = React.useState(height);
@@ -71,7 +70,8 @@ function EmbedFrame({ src, title, height, resizeOrigin, className }: {
       src={src}
       title={title}
       style={{ height: frameHeight }}
-      className={cn("w-full rounded-2xl border-0 bg-background", className)}
+      // Reaches into the card padding: the embeds need ~300px to lay out well.
+      className="-mx-3 mt-5 w-[calc(100%+1.5rem)] rounded-2xl border-0 bg-background"
       sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
       allow="encrypted-media; fullscreen; picture-in-picture"
       referrerPolicy="strict-origin-when-cross-origin"
@@ -123,8 +123,6 @@ function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
           title={highlight.title[locale]}
           height={560}
           resizeOrigin={X_EMBED_ORIGIN}
-          // Reaches into the card padding: the post embed needs ~300px to lay out well.
-          className="-mx-3 mt-5 w-[calc(100%+1.5rem)]"
         />
       ) : (
         <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
@@ -156,8 +154,7 @@ function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
   );
 }
 
-/** The account's own TikTok profile embed, as wide as the page, under the strip heading. */
-function TikTokProfilePanel() {
+function TikTokProfileCard() {
   const { locale } = useLanguage();
   const [showEmbed, setShowEmbed] = React.useState(false);
   const styles = PLATFORM_STYLES.tiktok;
@@ -166,44 +163,45 @@ function TikTokProfilePanel() {
         title: "أحدث فيديوهات الحساب",
         description: "شاهد فيديوهات سافر بوعي على تيك توك هنا دون مغادرة الموقع.",
         show: "اعرض الفيديوهات هنا",
+        open: "فتح الحساب على تيك توك",
       }
     : {
         title: "Latest videos from the account",
         description: "Watch SafrBwai's TikTok videos here without leaving the site.",
         show: "Show the videos here",
+        open: "Open the account on TikTok",
       };
 
-  if (showEmbed) {
-    return (
-      <EmbedFrame
-        src={TIKTOK_PROFILE_EMBED}
-        title={copy.title}
-        height={640}
-        className="mt-6 border border-border"
-      />
-    );
-  }
-
   return (
-    <section
-      aria-label={copy.title}
-      className={cn("mt-6 flex flex-col gap-4 rounded-3xl border bg-background p-6 shadow-sm sm:flex-row sm:items-center", styles.card)}
-    >
-      <span className={cn("inline-flex size-10 shrink-0 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
+    <article className={cn(CARD, styles.card)}>
+      <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
         <Play className="size-5" aria-hidden />
       </span>
-      <div className="min-w-0 flex-1">
-        <h4 className="font-display text-lg font-extrabold">{copy.title}</h4>
-        <p className="mt-1 text-sm leading-6 text-muted-foreground">{copy.description}</p>
-      </div>
-      <div className="sm:w-64">
-        <Button type="button" variant="outline" className="w-full" onClick={() => setShowEmbed(true)}>
-          <Play aria-hidden />
-          {copy.show}
-        </Button>
-        <EmbedNote platform="tiktok" />
-      </div>
-    </section>
+      <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{copy.title}</h3>
+      {showEmbed ? (
+        <EmbedFrame src={TIKTOK_PROFILE_EMBED} title={copy.title} height={640} />
+      ) : (
+        <>
+          <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">{copy.description}</p>
+          <div className="mt-5">
+            <Button type="button" variant="outline" className="w-full" onClick={() => setShowEmbed(true)}>
+              <Play aria-hidden />
+              {copy.show}
+            </Button>
+            <EmbedNote platform="tiktok" />
+          </div>
+        </>
+      )}
+      <a
+        href={SOCIAL_PROFILES.tiktok}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+      >
+        {copy.open}
+        <ExternalLink className="size-4" aria-hidden />
+      </a>
+    </article>
   );
 }
 
@@ -241,12 +239,11 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
         </a>
       </div>
 
-      {platform === "tiktok" ? <TikTokProfilePanel /> : null}
-
       <div
         className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
         aria-label={copy.title}
       >
+        {platform === "tiktok" ? <TikTokProfileCard /> : null}
         {SOCIAL_HIGHLIGHTS[platform].map((highlight) => (
           <HighlightCard key={highlight.id} highlight={highlight} />
         ))}
