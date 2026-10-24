@@ -1,11 +1,19 @@
 "use client";
 
+import * as React from "react";
+import { useTheme } from "next-themes";
 import { ArrowLeft, ExternalLink, MessageCircle, Play, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/shared/reveal";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n/provider";
 import {
   SOCIAL_HIGHLIGHTS,
   SOCIAL_PROFILES,
+  TIKTOK_PROFILE_EMBED,
+  X_EMBED_ORIGIN,
+  xEmbedHeight,
+  xEmbedUrl,
+  xPostId,
   type SocialHighlight,
   type SocialPlatform,
 } from "@/lib/social-highlights";
@@ -28,23 +36,72 @@ const PLATFORM_STYLES: Readonly<Record<SocialPlatform, {
   },
 };
 
+const CARD =
+  "flex w-[82vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200 sm:w-[340px]";
+
+/**
+ * The platform's own player, mounted only after the visitor clicks: until then
+ * the browser makes no request to X or TikTok.
+ */
+function EmbedFrame({ src, title, height, resizeOrigin }: {
+  src: string;
+  title: string;
+  height: number;
+  /** Origin whose resize messages may set the frame height (X posts them). */
+  resizeOrigin?: string;
+}) {
+  const ref = React.useRef<HTMLIFrameElement>(null);
+  const [frameHeight, setFrameHeight] = React.useState(height);
+
+  React.useEffect(() => {
+    if (!resizeOrigin) return;
+    const onMessage = (event: MessageEvent) => {
+      if (event.origin !== resizeOrigin || event.source !== ref.current?.contentWindow) return;
+      const next = xEmbedHeight(event.data);
+      if (next) setFrameHeight(Math.min(Math.max(next, 200), 1400));
+    };
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [resizeOrigin]);
+
+  return (
+    <iframe
+      ref={ref}
+      src={src}
+      title={title}
+      style={{ height: frameHeight }}
+      // Reaches into the card padding: the embeds need ~300px to lay out well.
+      className="-mx-3 mt-5 w-[calc(100%+1.5rem)] rounded-2xl border-0 bg-background"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
+      allow="encrypted-media; fullscreen; picture-in-picture"
+      referrerPolicy="strict-origin-when-cross-origin"
+    />
+  );
+}
+
+function EmbedNote({ platform }: { platform: SocialPlatform }) {
+  const { locale } = useLanguage();
+  const name = platform === "x" ? "X" : locale === "ar" ? "تيك توك" : "TikTok";
+  return (
+    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+      {locale === "ar"
+        ? `يُحمَّل من ${name} عند الضغط، وتنطبق عليه سياستها.`
+        : `Loads from ${name} when you tap, under its own policy.`}
+    </p>
+  );
+}
+
 function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
   const { locale } = useLanguage();
+  const { resolvedTheme } = useTheme();
+  const [showEmbed, setShowEmbed] = React.useState(false);
   const styles = PLATFORM_STYLES[highlight.platform];
   const PlatformIcon = styles.icon;
   const action = highlight.action[locale];
+  const postId = highlight.platform === "x" ? xPostId(highlight.href) : null;
 
   return (
-    <a
-      href={highlight.href}
-      target="_blank"
-      rel="noreferrer"
-      className={cn(
-        "group flex min-h-64 w-[82vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg sm:w-[340px]",
-        styles.card,
-      )}
-      aria-label={`${highlight.title[locale]} — ${action}`}
-    >
+    <article className={cn(CARD, styles.card)}>
       <div className="flex items-center justify-between gap-3">
         <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
           <PlatformIcon className="size-5" aria-hidden />
@@ -59,15 +116,92 @@ function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
       <h3 className="mt-6 font-display text-xl font-extrabold leading-8">
         {highlight.title[locale]}
       </h3>
-      <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
-        {highlight.description[locale]}
-      </p>
 
-      <span className="mt-6 inline-flex items-center gap-2 text-sm font-bold">
+      {postId && showEmbed ? (
+        <EmbedFrame
+          src={xEmbedUrl(postId, locale, resolvedTheme === "dark" ? "dark" : "light")}
+          title={highlight.title[locale]}
+          height={560}
+          resizeOrigin={X_EMBED_ORIGIN}
+        />
+      ) : (
+        <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">
+          {highlight.description[locale]}
+        </p>
+      )}
+
+      {postId && !showEmbed ? (
+        <div className="mt-5">
+          <Button type="button" variant="outline" className="w-full" onClick={() => setShowEmbed(true)}>
+            <MessageCircle aria-hidden />
+            {locale === "ar" ? "اعرض المنشور هنا" : "Show the post here"}
+          </Button>
+          <EmbedNote platform="x" />
+        </div>
+      ) : null}
+
+      <a
+        href={highlight.href}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+        aria-label={`${highlight.title[locale]} — ${action}`}
+      >
         {action}
-        <ExternalLink className="size-4 transition-transform group-hover:-translate-x-0.5 ltr:group-hover:translate-x-0.5" aria-hidden />
+        <ExternalLink className="size-4" aria-hidden />
+      </a>
+    </article>
+  );
+}
+
+function TikTokProfileCard() {
+  const { locale } = useLanguage();
+  const [showEmbed, setShowEmbed] = React.useState(false);
+  const styles = PLATFORM_STYLES.tiktok;
+  const copy = locale === "ar"
+    ? {
+        title: "أحدث فيديوهات الحساب",
+        description: "شاهد فيديوهات سافر بوعي على تيك توك هنا دون مغادرة الموقع.",
+        show: "اعرض الفيديوهات هنا",
+        open: "فتح الحساب على تيك توك",
+      }
+    : {
+        title: "Latest videos from the account",
+        description: "Watch SafrBwai's TikTok videos here without leaving the site.",
+        show: "Show the videos here",
+        open: "Open the account on TikTok",
+      };
+
+  return (
+    <article className={cn(CARD, styles.card)}>
+      <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
+        <Play className="size-5" aria-hidden />
       </span>
-    </a>
+      <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{copy.title}</h3>
+      {showEmbed ? (
+        <EmbedFrame src={TIKTOK_PROFILE_EMBED} title={copy.title} height={640} />
+      ) : (
+        <>
+          <p className="mt-3 flex-1 text-sm leading-7 text-muted-foreground">{copy.description}</p>
+          <div className="mt-5">
+            <Button type="button" variant="outline" className="w-full" onClick={() => setShowEmbed(true)}>
+              <Play aria-hidden />
+              {copy.show}
+            </Button>
+            <EmbedNote platform="tiktok" />
+          </div>
+        </>
+      )}
+      <a
+        href={SOCIAL_PROFILES.tiktok}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+      >
+        {copy.open}
+        <ExternalLink className="size-4" aria-hidden />
+      </a>
+    </article>
   );
 }
 
@@ -109,6 +243,7 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
         className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
         aria-label={copy.title}
       >
+        {platform === "tiktok" ? <TikTokProfileCard /> : null}
         {SOCIAL_HIGHLIGHTS[platform].map((highlight) => (
           <HighlightCard key={highlight.id} highlight={highlight} />
         ))}
