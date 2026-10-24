@@ -53,9 +53,13 @@ describe("SocialHighlights embeds", () => {
     expect(frames[0].getAttribute("title")).toBe("دليل تايلاند 2026");
   });
 
-  it("mounts the TikTok profile embed after a click", () => {
+  it("mounts the TikTok profile embed, page-wide, after a click", () => {
     const { container } = renderHighlights();
     fireEvent.click(screen.getByRole("button", { name: "اعرض الفيديوهات هنا" }));
-    expect(container.querySelector("iframe")?.getAttribute("src")).toBe("https://www.tiktok.com/embed/@safrbwai");
+    const frame = container.querySelector("iframe");
+    expect(frame?.getAttribute("src")).toBe("https://www.tiktok.com/embed/@safrbwai");
+    // Full page width under the strip heading, not squeezed into a carousel card.
+    expect(frame?.closest("article")).toBeNull();
+    expect(frame?.className).toContain("w-full");
   });
 });
