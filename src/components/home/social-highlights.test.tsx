@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { LanguageProvider } from "@/lib/i18n/provider";
 import { SocialHighlights } from "./social-highlights";
@@ -79,42 +79,50 @@ describe("SocialHighlights embeds", () => {
     expect(screen.queryByRole("button", { name: /اعرض/ })).toBeNull();
   });
 
-  it("keeps our card and link until the embed reports it rendered", () => {
+  it("keeps our card until the X embed reports it rendered, and caps tall posts", () => {
     const { container } = renderHighlights();
     scrollIntoSection();
     const frames = [...container.querySelectorAll("iframe")];
-    const xFrame = frames.find((frame) => frame.src.includes("2050941925461529038"))!;
-    const tiktokFrame = frames.find((frame) => frame.src.startsWith("https://www.tiktok.com"))!;
+    const [thailand, karakoy] = ["2050941925461529038", "2106058301876097401"].map(
+      (id) => frames.find((frame) => frame.src.includes(id))!
+    );
+    const resize = (frame: HTMLIFrameElement, height: number, origin = "https://platform.twitter.com") =>
+      act(() => {
+        window.dispatchEvent(new MessageEvent("message", {
+          origin,
+          source: frame.contentWindow,
+          data: JSON.stringify({ "twttr.embed": { method: "twttr.private.resize", params: [{ height }] } }),
+        }));
+      });
 
     // Loading (or blocked): the fallback stays and the frame is hidden from everyone.
     expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
-    expect(xFrame.getAttribute("aria-hidden")).toBe("true");
+    expect(thailand.getAttribute("aria-hidden")).toBe("true");
 
     // A message from elsewhere does not count.
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", {
-        origin: "https://evil.example",
-        source: xFrame.contentWindow,
-        data: JSON.stringify({ "twttr.embed": { method: "twttr.private.resize", params: [{ height: 480 }] } }),
-      }));
-    });
+    resize(thailand, 300, "https://evil.example");
     expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
 
-    // X's own resize message: the post is shown in place of our card.
-    act(() => {
-      window.dispatchEvent(new MessageEvent("message", {
-        origin: "https://platform.twitter.com",
-        source: xFrame.contentWindow,
-        data: JSON.stringify({ "twttr.embed": { method: "twttr.private.resize", params: [{ height: 480 }] } }),
-      }));
-    });
+    // A short post shows at its own height, without the "read more" fade.
+    resize(thailand, 300);
     expect(screen.queryByText("دليل تايلاند 2026")).toBeNull();
-    expect(xFrame.getAttribute("aria-hidden")).toBeNull();
-    expect(xFrame.style.height).toBe("480px");
+    expect(thailand.getAttribute("aria-hidden")).toBeNull();
+    expect(thailand.style.height).toBe("300px");
+    expect(screen.queryAllByRole("link", { name: /اقرأ المنشور كاملًا على X/ })).toHaveLength(0);
 
-    // TikTok has no such message: its frame's load event stands in.
-    fireEvent.load(tiktokFrame);
-    expect(screen.queryByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeNull();
+    // A tall post (photo or video) is cut to a sensible height, with a link to the full post.
+    resize(karakoy, 900);
+    expect(karakoy.style.height).toBe("460px");
+    const more = screen.getByRole("link", { name: /اقرأ المنشور كاملًا على X/ });
+    expect(more.getAttribute("href")).toBe("https://x.com/SafrBwai/status/2106058301876097401");
+  });
+
+  it("shows the TikTok account embed as soon as it mounts, with the account link kept under it", () => {
+    const { container } = renderHighlights();
+    scrollIntoSection();
+    const tiktok = [...container.querySelectorAll("iframe")].find((frame) => frame.src.startsWith("https://www.tiktok.com"))!;
+    expect(tiktok.getAttribute("aria-hidden")).toBeNull();
+    expect(tiktok.className).not.toContain("opacity-0");
+    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
   });
 });
