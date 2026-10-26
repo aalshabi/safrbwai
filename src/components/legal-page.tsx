@@ -70,7 +70,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "الملاحظات والتحليلات",
-        p: "جمع الملاحظات غير مفعّل. نقيس عدد الزيارات بشكل مجمّع عبر Vercel Web Analytics دون ملفات تعريف الارتباط (cookies): الصفحة المزارة، والموقع الذي جئت منه، والبلد، ونوع الجهاز والمتصفح ونظام التشغيل، ومعاملات الحملة (utm). نحذف بقية معاملات الرابط قبل الإرسال، فلا يدخل في هذا القياس نص العرض أو الرابط الذي تطلب قراءته أو النتيجة أو أي بيانات تُدخلها. ويحتوي التطبيق أيضًا على واجهة قياس لأحداث محددة (بدء التحليل واكتماله وفشله ونسخ المخرجات) إرسالها الخارجي معطّل حاليًا، ولا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
+        p: "جمع الملاحظات غير مفعّل. نقيس عدد الزيارات بشكل مجمّع عبر Vercel Web Analytics دون ملفات تعريف الارتباط (cookies): الصفحة المزارة، والموقع الذي جئت منه، والبلد، ونوع الجهاز والمتصفح ونظام التشغيل، ومعاملات الحملة (utm). نحذف بقية معاملات الرابط قبل الإرسال، فلا يدخل في هذا القياس نص العرض أو الرابط الذي تطلب قراءته أو النتيجة أو أي بيانات تُدخلها. ونرسل إلى Vercel Web Analytics أيضًا، دون ملفات تعريف الارتباط، أربعة أحداث محددة فقط: بدء التحليل واكتماله وفشله ونسخ المخرجات، ومع كل حدث لغة الواجهة ومصدر الحملة (utm_source) ونوع المخرَج المنسوخ فقط. لا يدخل نص العرض أو الدليل أو النتيجة أو الاسم أو معلومات الاتصال أو الدفع في حمولة القياس.",
       },
       {
         h: "نشرة واتساب (اختيارية)",
@@ -139,7 +139,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Feedback and analytics",
-        p: "Feedback collection is disabled. We count visits in aggregate with Vercel Web Analytics, without cookies: the page visited, the site you came from, country, device type, browser and operating system, and campaign (utm) parameters. All other link parameters are removed before sending, so offer text, a link you ask us to read, results and anything you enter never reach this measurement. The application also includes a measurement interface for four allowlisted events (analysis start, completion, failure, and useful-output copy) whose external transmission is currently disabled; offer text, evidence, results, names, contact information, and payment details cannot enter that payload.",
+        p: "Feedback collection is disabled. We count visits in aggregate with Vercel Web Analytics, without cookies: the page visited, the site you came from, country, device type, browser and operating system, and campaign (utm) parameters. All other link parameters are removed before sending, so offer text, a link you ask us to read, results and anything you enter never reach this measurement. We also send Vercel Web Analytics, without cookies, only four allowlisted events: analysis start, completion, failure, and output copy, each with nothing but the interface language, the campaign source (utm_source), and the copied output type; offer text, evidence, results, names, contact information, and payment details cannot enter that payload.",
       },
       {
         h: "WhatsApp newsletter (optional)",
