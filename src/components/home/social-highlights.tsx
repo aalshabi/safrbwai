@@ -6,10 +6,12 @@ import { ArrowLeft, ExternalLink, MessageCircle, Play, Sparkles } from "lucide-r
 import { Reveal } from "@/components/shared/reveal";
 import { useLanguage } from "@/lib/i18n/provider";
 import {
+  MAX_HIGHLIGHTS,
   SOCIAL_HIGHLIGHTS,
   SOCIAL_PROFILES,
-  TIKTOK_PROFILE_EMBED,
   X_EMBED_ORIGIN,
+  tiktokPlayerUrl,
+  tiktokVideoId,
   xEmbedHeight,
   xEmbedUrl,
   xPostId,
@@ -36,10 +38,10 @@ const PLATFORM_STYLES: Readonly<Record<SocialPlatform, {
 };
 
 const CARD_BODY = "flex flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200";
-const EMBED_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[340px]";
-/** X posts: four to a row on wide screens (X's embed lays out from 250px). */
-const X_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[290px] lg:w-[calc((100%-3rem)/4)]";
-const CARD = cn(CARD_BODY, EMBED_SLOT);
+/** One post per slot, four to a row on wide screens (X's embed lays out from 250px). */
+const SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[290px] lg:w-[calc((100%-3rem)/4)]";
+/** Both platforms' posts share one height so a row lines up. */
+const POST_HEIGHT = 460;
 
 /**
  * True once the element is near the viewport. The platform embeds mount only
@@ -76,8 +78,6 @@ const FRAME_PROPS = {
   referrerPolicy: "strict-origin-when-cross-origin",
 } as const;
 
-/** Tall posts (photo or video plus text) are cut here, with a fade and a link to the full post. */
-const X_MAX_HEIGHT = 460;
 
 /**
  * X's own post embed, so the card looks and works as it does on X. It stays
@@ -105,10 +105,10 @@ function XEmbedSlot({ src, title, href, fallback }: {
   }, []);
 
   const ready = rendered !== null;
-  const cut = ready && rendered > X_MAX_HEIGHT;
+  const cut = ready && rendered > POST_HEIGHT;
 
   return (
-    <div className={cn("relative", X_SLOT)}>
+    <div className={cn("relative", SLOT)}>
       {ready ? null : fallback}
       <iframe
         ref={ref}
@@ -118,7 +118,7 @@ function XEmbedSlot({ src, title, href, fallback }: {
         tabIndex={ready ? undefined : -1}
         // A cut post would otherwise show its own scrollbar; the fade links to the full post.
         scrolling="no"
-        style={{ height: ready ? Math.min(rendered, X_MAX_HEIGHT) : 560 }}
+        style={{ height: ready ? Math.min(rendered, POST_HEIGHT) : 560 }}
         className={cn(
           "w-full rounded-2xl border-0 bg-transparent",
           !ready && "pointer-events-none absolute inset-x-0 top-0 opacity-0"
@@ -150,7 +150,7 @@ function HighlightCard({ highlight, fill = false }: { highlight: SocialHighlight
   const action = highlight.action[locale];
 
   return (
-    <article className={cn(CARD_BODY, fill ? "w-full" : X_SLOT, styles.card)}>
+    <article className={cn(CARD_BODY, fill ? "w-full" : SLOT, styles.card)}>
       <div className="flex items-center justify-between gap-3">
         <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
           <PlatformIcon className="size-5" aria-hidden />
@@ -193,45 +193,33 @@ function XPost({ highlight, load }: { highlight: SocialHighlight; load: boolean 
 }
 
 /**
- * TikTok's own account embed, shown as soon as it mounts (TikTok posts no
- * "rendered" message, and an embed kept invisible did not render), with the
- * link to the account always kept under it.
+ * One TikTok video in TikTok's own player, the same size as an X post. TikTok
+ * posts no "rendered" message, so the player shows as soon as it mounts, with
+ * the link to the video kept under it.
  */
-function TikTokProfile({ load }: { load: boolean }) {
+function TikTokVideo({ highlight, load }: { highlight: SocialHighlight; load: boolean }) {
   const { locale } = useLanguage();
-  const title = locale === "ar" ? "حساب سافر بوعي على تيك توك" : "SafrBwai on TikTok";
-  const link = (
-    <a
-      href={SOCIAL_PROFILES.tiktok}
-      target="_blank"
-      rel="noreferrer"
-      className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
-    >
-      {locale === "ar" ? "فتح الحساب على تيك توك" : "Open the account on TikTok"}
-      <ExternalLink className="size-4" aria-hidden />
-    </a>
-  );
-  if (!load) {
-    return (
-      <article className={cn(CARD, PLATFORM_STYLES.tiktok.card, "min-h-[640px]")}>
-        <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", PLATFORM_STYLES.tiktok.accent)}>
-          <Play className="size-5" aria-hidden />
-        </span>
-        <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{title}</h3>
-        {link}
-      </article>
-    );
-  }
+  const videoId = tiktokVideoId(highlight.href);
+  if (!videoId || !load) return <HighlightCard highlight={highlight} />;
   return (
-    <div className={EMBED_SLOT}>
+    <div className={SLOT}>
       <iframe
-        src={TIKTOK_PROFILE_EMBED}
-        title={title}
-        style={{ height: 640 }}
-        className="w-full rounded-2xl border border-border bg-background"
+        src={tiktokPlayerUrl(videoId)}
+        title={highlight.title[locale]}
+        style={{ height: POST_HEIGHT }}
+        className="w-full rounded-2xl border border-border bg-black"
         {...FRAME_PROPS}
       />
-      {link}
+      <a
+        href={highlight.href}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+        aria-label={`${highlight.title[locale]} — ${highlight.action[locale]}`}
+      >
+        {highlight.action[locale]}
+        <ExternalLink className="size-4" aria-hidden />
+      </a>
     </div>
   );
 }
@@ -249,6 +237,8 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
       : { title: "Selected posts on X", subtitle: "Travel guides and scenes worth saving for later.", profile: "Visit X profile" };
 
   const [stripRef, near] = useNearViewport<HTMLDivElement>();
+  const highlights = SOCIAL_HIGHLIGHTS[platform].slice(0, MAX_HIGHLIGHTS);
+  if (highlights.length === 0) return null;
 
   return (
     <div ref={stripRef} className="mt-12 first:mt-0">
@@ -276,10 +266,12 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
         className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
         aria-label={copy.title}
       >
-        {platform === "tiktok" ? (
-          <TikTokProfile load={near} />
-        ) : (
-          SOCIAL_HIGHLIGHTS.x.map((highlight) => <XPost key={highlight.id} highlight={highlight} load={near} />)
+        {highlights.map((highlight) =>
+          platform === "tiktok" ? (
+            <TikTokVideo key={highlight.id} highlight={highlight} load={near} />
+          ) : (
+            <XPost key={highlight.id} highlight={highlight} load={near} />
+          )
         )}
       </div>
     </div>
