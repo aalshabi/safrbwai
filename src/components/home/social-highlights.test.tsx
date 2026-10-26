@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { act, cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { LanguageProvider } from "@/lib/i18n/provider";
 import { SocialHighlights } from "./social-highlights";
@@ -77,5 +77,44 @@ describe("SocialHighlights embeds", () => {
     ]);
     // No click needed, and no "show here" buttons left.
     expect(screen.queryByRole("button", { name: /اعرض/ })).toBeNull();
+  });
+
+  it("keeps our card and link until the embed reports it rendered", () => {
+    const { container } = renderHighlights();
+    scrollIntoSection();
+    const frames = [...container.querySelectorAll("iframe")];
+    const xFrame = frames.find((frame) => frame.src.includes("2050941925461529038"))!;
+    const tiktokFrame = frames.find((frame) => frame.src.startsWith("https://www.tiktok.com"))!;
+
+    // Loading (or blocked): the fallback stays and the frame is hidden from everyone.
+    expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
+    expect(xFrame.getAttribute("aria-hidden")).toBe("true");
+
+    // A message from elsewhere does not count.
+    act(() => {
+      window.dispatchEvent(new MessageEvent("message", {
+        origin: "https://evil.example",
+        source: xFrame.contentWindow,
+        data: JSON.stringify({ "twttr.embed": { method: "twttr.private.resize", params: [{ height: 480 }] } }),
+      }));
+    });
+    expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
+
+    // X's own resize message: the post is shown in place of our card.
+    act(() => {
+      window.dispatchEvent(new MessageEvent("message", {
+        origin: "https://platform.twitter.com",
+        source: xFrame.contentWindow,
+        data: JSON.stringify({ "twttr.embed": { method: "twttr.private.resize", params: [{ height: 480 }] } }),
+      }));
+    });
+    expect(screen.queryByText("دليل تايلاند 2026")).toBeNull();
+    expect(xFrame.getAttribute("aria-hidden")).toBeNull();
+    expect(xFrame.style.height).toBe("480px");
+
+    // TikTok has no such message: its frame's load event stands in.
+    fireEvent.load(tiktokFrame);
+    expect(screen.queryByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeNull();
   });
 });

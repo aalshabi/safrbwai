@@ -68,40 +68,58 @@ function useNearViewport<T extends Element>(): [React.RefObject<T | null>, boole
   return [ref, near];
 }
 
-/** The platform's own embed, so the card looks and works as it does on X or TikTok. */
-function EmbedFrame({ src, title, height, resizeOrigin }: {
+/**
+ * The platform's own embed, so the card looks and works as it does on X or
+ * TikTok. It stays invisible over our fallback card until it is known to have
+ * rendered: X's first resize message, or for TikTok (no such message) the
+ * frame's load event. A blocked or failed embed leaves the fallback in place.
+ */
+function EmbedSlot({ src, title, height, resizeOrigin, fallback }: {
   src: string;
   title: string;
   height: number;
-  /** Origin whose resize messages may set the frame height (X posts them). */
+  /** Origin whose resize messages report the rendered height (X posts them). */
   resizeOrigin?: string;
+  fallback: React.ReactNode;
 }) {
   const ref = React.useRef<HTMLIFrameElement>(null);
   const [frameHeight, setFrameHeight] = React.useState(height);
+  const [ready, setReady] = React.useState(false);
 
   React.useEffect(() => {
     if (!resizeOrigin) return;
     const onMessage = (event: MessageEvent) => {
       if (event.origin !== resizeOrigin || event.source !== ref.current?.contentWindow) return;
       const next = xEmbedHeight(event.data);
-      if (next) setFrameHeight(Math.min(Math.max(next, 200), 1400));
+      if (next) {
+        setFrameHeight(Math.min(Math.max(next, 200), 1400));
+        setReady(true);
+      }
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
   }, [resizeOrigin]);
 
   return (
-    <iframe
-      ref={ref}
-      src={src}
-      title={title}
-      loading="lazy"
-      style={{ height: frameHeight }}
-      className="w-full rounded-2xl border-0 bg-transparent"
+    <div className={cn("relative", EMBED_SLOT)}>
+      {ready ? null : fallback}
+      <iframe
+        ref={ref}
+        src={src}
+        title={title}
+        onLoad={resizeOrigin ? undefined : () => setReady(true)}
+        aria-hidden={ready ? undefined : true}
+        tabIndex={ready ? undefined : -1}
+        style={{ height: frameHeight }}
+        className={cn(
+          "w-full rounded-2xl border-0 bg-transparent",
+          !ready && "pointer-events-none absolute inset-x-0 top-0 opacity-0"
+        )}
       sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
       allow="encrypted-media; fullscreen; picture-in-picture"
-      referrerPolicy="strict-origin-when-cross-origin"
-    />
+        referrerPolicy="strict-origin-when-cross-origin"
+      />
+    </div>
   );
 }
 
@@ -146,44 +164,38 @@ function XPost({ highlight, load }: { highlight: SocialHighlight; load: boolean 
   const postId = xPostId(highlight.href);
   if (!postId || !load) return <HighlightCard highlight={highlight} />;
   return (
-    <div className={EMBED_SLOT}>
-      <EmbedFrame
-        src={xEmbedUrl(postId, locale, resolvedTheme === "dark" ? "dark" : "light")}
-        title={highlight.title[locale]}
-        height={560}
-        resizeOrigin={X_EMBED_ORIGIN}
-      />
-    </div>
+    <EmbedSlot
+      src={xEmbedUrl(postId, locale, resolvedTheme === "dark" ? "dark" : "light")}
+      title={highlight.title[locale]}
+      height={560}
+      resizeOrigin={X_EMBED_ORIGIN}
+      fallback={<HighlightCard highlight={highlight} />}
+    />
   );
 }
 
 function TikTokProfile({ load }: { load: boolean }) {
   const { locale } = useLanguage();
   const title = locale === "ar" ? "حساب سافر بوعي على تيك توك" : "SafrBwai on TikTok";
-  if (!load) {
-    return (
-      <article className={cn(CARD, PLATFORM_STYLES.tiktok.card, "min-h-[640px]")}>
-        <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", PLATFORM_STYLES.tiktok.accent)}>
-          <Play className="size-5" aria-hidden />
-        </span>
-        <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{title}</h3>
-        <a
-          href={SOCIAL_PROFILES.tiktok}
-          target="_blank"
-          rel="noreferrer"
-          className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
-        >
-          {locale === "ar" ? "فتح الحساب على تيك توك" : "Open the account on TikTok"}
-          <ExternalLink className="size-4" aria-hidden />
-        </a>
-      </article>
-    );
-  }
-  return (
-    <div className={EMBED_SLOT}>
-      <EmbedFrame src={TIKTOK_PROFILE_EMBED} title={title} height={640} />
-    </div>
+  const card = (
+    <article className={cn(CARD, PLATFORM_STYLES.tiktok.card, "min-h-[640px]")}>
+      <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", PLATFORM_STYLES.tiktok.accent)}>
+        <Play className="size-5" aria-hidden />
+      </span>
+      <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{title}</h3>
+      <a
+        href={SOCIAL_PROFILES.tiktok}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+      >
+        {locale === "ar" ? "فتح الحساب على تيك توك" : "Open the account on TikTok"}
+        <ExternalLink className="size-4" aria-hidden />
+      </a>
+    </article>
   );
+  if (!load) return card;
+  return <EmbedSlot src={TIKTOK_PROFILE_EMBED} title={title} height={640} fallback={card} />;
 }
 
 function HighlightStrip({ platform }: { platform: SocialPlatform }) {
