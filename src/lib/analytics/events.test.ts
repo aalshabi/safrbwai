@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { trackAnalyticsEvent } from "./client";
+import { defaultAnalyticsTransport, trackAnalyticsEvent, vercelAnalyticsTransport } from "./client";
 import { campaignSourceFromSearch, createAnalyticsEvent } from "./events";
 
 describe("privacy-safe analytics events", () => {
@@ -37,5 +37,30 @@ describe("privacy-safe analytics events", () => {
       name: "offer_analysis_started",
       properties: { locale: "en" },
     });
+  });
+
+  it("sends to Vercel Web Analytics only on Vercel deployments", () => {
+    expect(defaultAnalyticsTransport("production")).toBe(vercelAnalyticsTransport);
+    expect(defaultAnalyticsTransport("preview")).toBe(vercelAnalyticsTransport);
+    expect(defaultAnalyticsTransport("development")).toBeUndefined();
+    expect(defaultAnalyticsTransport(undefined)).toBeUndefined();
+  });
+
+  it("passes only the allowlisted event to the va queue", () => {
+    const va = vi.fn();
+    window.va = va;
+    const event = createAnalyticsEvent("offer_analysis_output_copied", {
+      locale: "ar",
+      campaignSource: "tiktok",
+      outputType: "questions",
+      offerText: "نص العرض",
+    })!;
+    vercelAnalyticsTransport.send(event);
+    expect(va).toHaveBeenCalledWith("event", {
+      name: "offer_analysis_output_copied",
+      data: { locale: "ar", campaignSource: "tiktok", outputType: "questions" },
+    });
+    delete window.va;
+    expect(() => vercelAnalyticsTransport.send(event)).not.toThrow();
   });
 });
