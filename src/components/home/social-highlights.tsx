@@ -35,9 +35,11 @@ const PLATFORM_STYLES: Readonly<Record<SocialPlatform, {
   },
 };
 
-const CARD =
-  "flex w-[82vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200 sm:w-[340px]";
+const CARD_BODY = "flex flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200";
 const EMBED_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[340px]";
+/** X posts: four to a row on wide screens (X's embed lays out from 250px). */
+const X_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[290px] lg:w-[calc((100%-3rem)/4)]";
+const CARD = cn(CARD_BODY, EMBED_SLOT);
 
 /**
  * True once the element is near the viewport. The platform embeds mount only
@@ -106,7 +108,7 @@ function XEmbedSlot({ src, title, href, fallback }: {
   const cut = ready && rendered > X_MAX_HEIGHT;
 
   return (
-    <div className={cn("relative", EMBED_SLOT)}>
+    <div className={cn("relative", X_SLOT)}>
       {ready ? null : fallback}
       <iframe
         ref={ref}
@@ -114,6 +116,8 @@ function XEmbedSlot({ src, title, href, fallback }: {
         title={title}
         aria-hidden={ready ? undefined : true}
         tabIndex={ready ? undefined : -1}
+        // A cut post would otherwise show its own scrollbar; the fade links to the full post.
+        scrolling="no"
         style={{ height: ready ? Math.min(rendered, X_MAX_HEIGHT) : 560 }}
         className={cn(
           "w-full rounded-2xl border-0 bg-transparent",
@@ -139,14 +143,14 @@ function XEmbedSlot({ src, title, href, fallback }: {
 }
 
 /** Our own card: shown until the embed mounts, and the content if it never does. */
-function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
+function HighlightCard({ highlight, fill = false }: { highlight: SocialHighlight; fill?: boolean }) {
   const { locale } = useLanguage();
   const styles = PLATFORM_STYLES[highlight.platform];
   const PlatformIcon = styles.icon;
   const action = highlight.action[locale];
 
   return (
-    <article className={cn(CARD, styles.card)}>
+    <article className={cn(CARD_BODY, fill ? "w-full" : X_SLOT, styles.card)}>
       <div className="flex items-center justify-between gap-3">
         <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
           <PlatformIcon className="size-5" aria-hidden />
@@ -183,7 +187,7 @@ function XPost({ highlight, load }: { highlight: SocialHighlight; load: boolean 
       src={xEmbedUrl(postId, locale, resolvedTheme === "dark" ? "dark" : "light")}
       title={highlight.title[locale]}
       href={highlight.href}
-      fallback={<HighlightCard highlight={highlight} />}
+      fallback={<HighlightCard highlight={highlight} fill />}
     />
   );
 }
