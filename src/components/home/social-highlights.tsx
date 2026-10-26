@@ -35,9 +35,11 @@ const PLATFORM_STYLES: Readonly<Record<SocialPlatform, {
   },
 };
 
-const CARD =
-  "flex w-[82vw] max-w-sm shrink-0 snap-start flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200 sm:w-[340px]";
+const CARD_BODY = "flex flex-col rounded-3xl border bg-background p-6 shadow-sm transition duration-200";
 const EMBED_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[340px]";
+/** X posts: four to a row on wide screens (X's embed lays out from 250px). */
+const X_SLOT = "w-[82vw] max-w-sm shrink-0 snap-start sm:w-[290px] lg:w-[calc((100%-3rem)/4)]";
+const CARD = cn(CARD_BODY, EMBED_SLOT);
 
 /**
  * True once the element is near the viewport. The platform embeds mount only
@@ -68,70 +70,87 @@ function useNearViewport<T extends Element>(): [React.RefObject<T | null>, boole
   return [ref, near];
 }
 
+const FRAME_PROPS = {
+  sandbox: "allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation",
+  allow: "encrypted-media; fullscreen; picture-in-picture",
+  referrerPolicy: "strict-origin-when-cross-origin",
+} as const;
+
+/** Tall posts (photo or video plus text) are cut here, with a fade and a link to the full post. */
+const X_MAX_HEIGHT = 460;
+
 /**
- * The platform's own embed, so the card looks and works as it does on X or
- * TikTok. It stays invisible over our fallback card until it is known to have
- * rendered: X's first resize message, or for TikTok (no such message) the
- * frame's load event. A blocked or failed embed leaves the fallback in place.
+ * X's own post embed, so the card looks and works as it does on X. It stays
+ * invisible over our fallback card until X's first resize message says it
+ * rendered; a blocked or failed embed leaves the fallback in place.
  */
-function EmbedSlot({ src, title, height, resizeOrigin, fallback }: {
+function XEmbedSlot({ src, title, href, fallback }: {
   src: string;
   title: string;
-  height: number;
-  /** Origin whose resize messages report the rendered height (X posts them). */
-  resizeOrigin?: string;
+  href: string;
   fallback: React.ReactNode;
 }) {
+  const { locale } = useLanguage();
   const ref = React.useRef<HTMLIFrameElement>(null);
-  const [frameHeight, setFrameHeight] = React.useState(height);
-  const [ready, setReady] = React.useState(false);
+  const [rendered, setRendered] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    if (!resizeOrigin) return;
     const onMessage = (event: MessageEvent) => {
-      if (event.origin !== resizeOrigin || event.source !== ref.current?.contentWindow) return;
+      if (event.origin !== X_EMBED_ORIGIN || event.source !== ref.current?.contentWindow) return;
       const next = xEmbedHeight(event.data);
-      if (next) {
-        setFrameHeight(Math.min(Math.max(next, 200), 1400));
-        setReady(true);
-      }
+      if (next) setRendered(Math.max(next, 200));
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [resizeOrigin]);
+  }, []);
+
+  const ready = rendered !== null;
+  const cut = ready && rendered > X_MAX_HEIGHT;
 
   return (
-    <div className={cn("relative", EMBED_SLOT)}>
+    <div className={cn("relative", X_SLOT)}>
       {ready ? null : fallback}
       <iframe
         ref={ref}
         src={src}
         title={title}
-        onLoad={resizeOrigin ? undefined : () => setReady(true)}
         aria-hidden={ready ? undefined : true}
         tabIndex={ready ? undefined : -1}
-        style={{ height: frameHeight }}
+        // A cut post would otherwise show its own scrollbar; the fade links to the full post.
+        scrolling="no"
+        style={{ height: ready ? Math.min(rendered, X_MAX_HEIGHT) : 560 }}
         className={cn(
           "w-full rounded-2xl border-0 bg-transparent",
           !ready && "pointer-events-none absolute inset-x-0 top-0 opacity-0"
         )}
-      sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation"
-      allow="encrypted-media; fullscreen; picture-in-picture"
-        referrerPolicy="strict-origin-when-cross-origin"
+        {...FRAME_PROPS}
       />
+      {cut ? (
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 flex h-28 items-end justify-center rounded-b-2xl bg-gradient-to-t from-background via-background/90 to-transparent pb-2">
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full border border-border bg-background px-4 text-sm font-bold shadow-sm hover:underline"
+          >
+            {locale === "ar" ? "اقرأ المنشور كاملًا على X" : "Read the full post on X"}
+            <ExternalLink className="size-4" aria-hidden />
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }
 
 /** Our own card: shown until the embed mounts, and the content if it never does. */
-function HighlightCard({ highlight }: { highlight: SocialHighlight }) {
+function HighlightCard({ highlight, fill = false }: { highlight: SocialHighlight; fill?: boolean }) {
   const { locale } = useLanguage();
   const styles = PLATFORM_STYLES[highlight.platform];
   const PlatformIcon = styles.icon;
   const action = highlight.action[locale];
 
   return (
-    <article className={cn(CARD, styles.card)}>
+    <article className={cn(CARD_BODY, fill ? "w-full" : X_SLOT, styles.card)}>
       <div className="flex items-center justify-between gap-3">
         <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", styles.accent)}>
           <PlatformIcon className="size-5" aria-hidden />
@@ -164,38 +183,57 @@ function XPost({ highlight, load }: { highlight: SocialHighlight; load: boolean 
   const postId = xPostId(highlight.href);
   if (!postId || !load) return <HighlightCard highlight={highlight} />;
   return (
-    <EmbedSlot
+    <XEmbedSlot
       src={xEmbedUrl(postId, locale, resolvedTheme === "dark" ? "dark" : "light")}
       title={highlight.title[locale]}
-      height={560}
-      resizeOrigin={X_EMBED_ORIGIN}
-      fallback={<HighlightCard highlight={highlight} />}
+      href={highlight.href}
+      fallback={<HighlightCard highlight={highlight} fill />}
     />
   );
 }
 
+/**
+ * TikTok's own account embed, shown as soon as it mounts (TikTok posts no
+ * "rendered" message, and an embed kept invisible did not render), with the
+ * link to the account always kept under it.
+ */
 function TikTokProfile({ load }: { load: boolean }) {
   const { locale } = useLanguage();
   const title = locale === "ar" ? "حساب سافر بوعي على تيك توك" : "SafrBwai on TikTok";
-  const card = (
-    <article className={cn(CARD, PLATFORM_STYLES.tiktok.card, "min-h-[640px]")}>
-      <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", PLATFORM_STYLES.tiktok.accent)}>
-        <Play className="size-5" aria-hidden />
-      </span>
-      <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{title}</h3>
-      <a
-        href={SOCIAL_PROFILES.tiktok}
-        target="_blank"
-        rel="noreferrer"
-        className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
-      >
-        {locale === "ar" ? "فتح الحساب على تيك توك" : "Open the account on TikTok"}
-        <ExternalLink className="size-4" aria-hidden />
-      </a>
-    </article>
+  const link = (
+    <a
+      href={SOCIAL_PROFILES.tiktok}
+      target="_blank"
+      rel="noreferrer"
+      className="mt-2 inline-flex min-h-11 items-center gap-2 text-sm font-bold hover:underline"
+    >
+      {locale === "ar" ? "فتح الحساب على تيك توك" : "Open the account on TikTok"}
+      <ExternalLink className="size-4" aria-hidden />
+    </a>
   );
-  if (!load) return card;
-  return <EmbedSlot src={TIKTOK_PROFILE_EMBED} title={title} height={640} fallback={card} />;
+  if (!load) {
+    return (
+      <article className={cn(CARD, PLATFORM_STYLES.tiktok.card, "min-h-[640px]")}>
+        <span className={cn("inline-flex size-10 items-center justify-center rounded-2xl bg-muted", PLATFORM_STYLES.tiktok.accent)}>
+          <Play className="size-5" aria-hidden />
+        </span>
+        <h3 className="mt-6 font-display text-xl font-extrabold leading-8">{title}</h3>
+        {link}
+      </article>
+    );
+  }
+  return (
+    <div className={EMBED_SLOT}>
+      <iframe
+        src={TIKTOK_PROFILE_EMBED}
+        title={title}
+        style={{ height: 640 }}
+        className="w-full rounded-2xl border border-border bg-background"
+        {...FRAME_PROPS}
+      />
+      {link}
+    </div>
+  );
 }
 
 function HighlightStrip({ platform }: { platform: SocialPlatform }) {
