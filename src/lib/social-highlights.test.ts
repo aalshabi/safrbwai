@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { SOCIAL_HIGHLIGHTS, SOCIAL_PROFILES } from "@/lib/social-highlights";
+import {
+  SOCIAL_HIGHLIGHTS,
+  SOCIAL_PROFILES,
+  TIKTOK_PROFILE_EMBED,
+  xEmbedHeight,
+  xEmbedUrl,
+  xPostId,
+} from "@/lib/social-highlights";
 
 describe("social highlights", () => {
   it("uses the official SafrBwai profiles", () => {
@@ -30,5 +37,28 @@ describe("social highlights", () => {
   it("uses the verified TikTok profile until individual video links are available", () => {
     expect(SOCIAL_HIGHLIGHTS.tiktok.every((highlight) => highlight.href === SOCIAL_PROFILES.tiktok)).toBe(true);
   });
-});
 
+  it("embeds each X highlight by its post id through the official embed host", () => {
+    for (const highlight of SOCIAL_HIGHLIGHTS.x) {
+      const id = xPostId(highlight.href);
+      expect(id).toMatch(/^\d+$/);
+      const url = new URL(xEmbedUrl(id!, "ar", "dark"));
+      expect(url.origin).toBe("https://platform.twitter.com");
+      expect(url.searchParams.get("id")).toBe(id);
+      expect(url.searchParams.get("lang")).toBe("ar");
+      expect(url.searchParams.get("dnt")).toBe("true");
+    }
+    expect(xPostId("https://x.com/someone-else/status/1")).toBeNull();
+    expect(TIKTOK_PROFILE_EMBED).toBe("https://www.tiktok.com/embed/@safrbwai");
+  });
+
+  it("reads only X resize messages for the frame height", () => {
+    const resize = { "twttr.embed": { method: "twttr.private.resize", params: [{ height: 612.4, width: 300 }] } };
+    expect(xEmbedHeight(JSON.stringify(resize))).toBe(613);
+    expect(xEmbedHeight(resize)).toBe(613);
+    expect(xEmbedHeight("not json")).toBeNull();
+    expect(xEmbedHeight({ "twttr.embed": { method: "twttr.private.trigger", params: [{ height: 5 }] } })).toBeNull();
+    expect(xEmbedHeight({ "twttr.embed": { method: "twttr.private.resize", params: [{ height: -1 }] } })).toBeNull();
+    expect(xEmbedHeight(null)).toBeNull();
+  });
+});

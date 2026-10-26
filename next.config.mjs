@@ -27,7 +27,8 @@ const csp = [
   `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   `connect-src 'self' https://*.supabase.co wss://*.supabase.co${isDev ? " ws: http://localhost:*" : ""}`,
   "manifest-src 'self'",
-  "frame-src 'self'",
+  // Official X / TikTok embeds on the homepage, mounted only after a click.
+  "frame-src 'self' https://platform.twitter.com https://www.tiktok.com",
   "worker-src 'self' blob:",
   "upgrade-insecure-requests",
 ].join("; ");

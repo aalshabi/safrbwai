@@ -77,6 +77,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
         p: "إذا اشتركت في نشرة مرصد السفر، نجمع رقم جوالك ووقت موافقتك فقط، لنرسل لك المواضيع الجديدة على واتساب. يُحفظ الرقم في حساب واتساب للأعمال التابع لسكاي العالمية للسفر (منشأة مالك الموقع) على منصة Wati، ومنه تُرسل النشرة، ولا يُستخدم لغرض آخر ولا يُشارك مع أي جهة أخرى. لا نسجّل الرقم في سجلات التشغيل. تستطيع إلغاء الاشتراك في أي وقت بالرد «إلغاء» على أي رسالة، ولطلب حذف رقمك أرسل «احذف رقمي» في المحادثة نفسها.",
       },
       {
+        h: "المحتوى المضمّن من X وتيك توك",
+        p: "تعرض الصفحة الرئيسية بطاقات لمنشورات سافر بوعي على X وفيديوهاته على تيك توك. لا يُحمَّل أي محتوى من المنصتين إلا إذا ضغطت «اعرض المنشور هنا» أو «اعرض الفيديوهات هنا»؛ عندها يتصل متصفحك مباشرة بخوادم X أو تيك توك، وقد تجمع المنصة بيانات مثل عنوان IP ومعلومات المتصفح وتضع ملفات تعريف الارتباط وفق سياستها. لا يرسل سافر بوعي إليهما أي بيانات عنك، ولا يتلقى منهما بيانات عنك.",
+      },
+      {
         h: "تفضيلات المتصفح",
         p: "قد تبقى تفضيلات اللغة والمظهر محليًا في متصفحك لتطبيق اختيارك عند الزيارات اللاحقة.",
       },
@@ -144,6 +148,10 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       {
         h: "WhatsApp newsletter (optional)",
         p: "If you subscribe to the Travel Monitor newsletter, we collect only your mobile number and the time you agreed, to send you new stories on WhatsApp. The number is kept in the WhatsApp Business account of Sky Global Travel (the site owner's business) on the Wati platform, which sends the newsletter; it is not used for anything else or shared with anyone else. We do not record the number in operational logs. You can unsubscribe at any time by replying «إلغاء» to any message, and to have your number deleted, send «احذف رقمي» in the same chat.",
+      },
+      {
+        h: "Embedded content from X and TikTok",
+        p: "The homepage shows cards for SafrBwai posts on X and videos on TikTok. Nothing is loaded from either platform unless you tap «Show the post here» or «Show the videos here»; your browser then connects directly to X or TikTok, which may collect data such as your IP address and browser information and set cookies under its own policy. SafrBwai sends them no data about you and receives no data about you from them.",
       },
       {
         h: "Browser preferences",
