@@ -78,7 +78,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "المحتوى المضمّن من X وتيك توك",
-        p: "تعرض الصفحة الرئيسية بطاقات لمنشورات سافر بوعي على X وفيديوهاته على تيك توك. لا يُحمَّل أي محتوى من المنصتين إلا إذا ضغطت «اعرض المنشور هنا» أو «اعرض الفيديوهات هنا»؛ عندها يتصل متصفحك مباشرة بخوادم X أو تيك توك، وقد تجمع المنصة بيانات مثل عنوان IP ومعلومات المتصفح وتضع ملفات تعريف الارتباط وفق سياستها. لا يرسل سافر بوعي إليهما أي بيانات عنك، ولا يتلقى منهما بيانات عنك.",
+        p: "تعرض الصفحة الرئيسية منشورات سافر بوعي على X وحسابه على تيك توك بالتضمين الرسمي للمنصتين. لا يُحمَّل أي محتوى منهما عند فتح الصفحة، بل عند وصولك بالتمرير إلى قسم «من قنوات سافر بوعي»؛ عندها يتصل متصفحك مباشرة بخوادم X أو تيك توك، وقد تجمع المنصة بيانات مثل عنوان IP ومعلومات المتصفح وتضع ملفات تعريف الارتباط وفق سياستها. لا يرسل سافر بوعي إليهما أي بيانات عنك، ولا يتلقى منهما بيانات عنك.",
       },
       {
         h: "تفضيلات المتصفح",
@@ -151,7 +151,7 @@ export const LEGAL_CONTENT: Record<Doc, Record<"ar" | "en", Section[]>> = {
       },
       {
         h: "Embedded content from X and TikTok",
-        p: "The homepage shows cards for SafrBwai posts on X and videos on TikTok. Nothing is loaded from either platform unless you tap «Show the post here» or «Show the videos here»; your browser then connects directly to X or TikTok, which may collect data such as your IP address and browser information and set cookies under its own policy. SafrBwai sends them no data about you and receives no data about you from them.",
+        p: "The homepage shows SafrBwai posts on X and its TikTok account through each platform's official embed. Nothing is loaded from either platform when the page opens, only when you scroll to the «From SafrBwai channels» section; your browser then connects directly to X or TikTok, which may collect data such as your IP address and browser information and set cookies under its own policy. SafrBwai sends them no data about you and receives no data about you from them.",
       },
       {
         h: "Browser preferences",

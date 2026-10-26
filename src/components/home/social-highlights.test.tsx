@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { LanguageProvider } from "@/lib/i18n/provider";
 import { SocialHighlights } from "./social-highlights";
@@ -34,28 +34,48 @@ function renderHighlights() {
   );
 }
 
+let observed: Array<(entries: Array<{ isIntersecting: boolean }>) => void> = [];
+
+function installObserver() {
+  observed = [];
+  class FakeObserver {
+    constructor(private callback: (entries: Array<{ isIntersecting: boolean }>) => void) {
+      observed.push(callback);
+    }
+    observe() {}
+    disconnect() {}
+  }
+  Object.defineProperty(window, "IntersectionObserver", { configurable: true, value: FakeObserver });
+}
+
+function scrollIntoSection() {
+  act(() => observed.forEach((callback) => callback([{ isIntersecting: true }])));
+}
+
 describe("SocialHighlights embeds", () => {
-  it("loads nothing from X or TikTok until the visitor asks", () => {
+  beforeEach(installObserver);
+
+  it("loads nothing from X or TikTok until the section is near the screen", () => {
     const { container } = renderHighlights();
     expect(container.querySelector("iframe")).toBeNull();
-    expect(screen.getAllByRole("button", { name: "اعرض المنشور هنا" })).toHaveLength(3);
-    expect(screen.getByRole("button", { name: "اعرض الفيديوهات هنا" })).toBeTruthy();
+    // Our own cards stand in, each with a link to the original.
+    expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
+    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
   });
 
-  it("mounts the official post embed in place after a click", () => {
+  it("shows the official X posts and TikTok account once the section is reached", () => {
     const { container } = renderHighlights();
-    fireEvent.click(screen.getAllByRole("button", { name: "اعرض المنشور هنا" })[0]);
-    const frames = container.querySelectorAll("iframe");
-    expect(frames).toHaveLength(1);
-    const src = new URL(frames[0].getAttribute("src")!);
-    expect(src.origin).toBe("https://platform.twitter.com");
-    expect(src.searchParams.get("id")).toBe("2050941925461529038");
-    expect(frames[0].getAttribute("title")).toBe("دليل تايلاند 2026");
-  });
-
-  it("mounts the TikTok profile embed after a click", () => {
-    const { container } = renderHighlights();
-    fireEvent.click(screen.getByRole("button", { name: "اعرض الفيديوهات هنا" }));
-    expect(container.querySelector("iframe")?.getAttribute("src")).toBe("https://www.tiktok.com/embed/@safrbwai");
+    scrollIntoSection();
+    const sources = [...container.querySelectorAll("iframe")].map((frame) => new URL(frame.getAttribute("src")!));
+    expect(sources.filter((src) => src.origin === "https://platform.twitter.com").map((src) => src.searchParams.get("id"))).toEqual([
+      "2050941925461529038",
+      "2106058301876097401",
+      "2085437614832939399",
+    ]);
+    expect(sources.filter((src) => src.origin === "https://www.tiktok.com").map(String)).toEqual([
+      "https://www.tiktok.com/embed/@safrbwai",
+    ]);
+    // No click needed, and no "show here" buttons left.
+    expect(screen.queryByRole("button", { name: /اعرض/ })).toBeNull();
   });
 });
