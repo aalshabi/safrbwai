@@ -19,45 +19,15 @@ export const SOCIAL_PROFILES: Readonly<Record<SocialPlatform, string>> = {
   x: "https://x.com/SafrBwai",
 };
 
+/**
+ * Each strip shows up to four posts, four to a row on wide screens. TikTok
+ * entries are individual videos (https://www.tiktok.com/@safrbwai/video/<id>),
+ * never the account page; a strip with no posts is not shown.
+ */
+export const MAX_HIGHLIGHTS = 4;
+
 export const SOCIAL_HIGHLIGHTS: Readonly<Record<SocialPlatform, readonly SocialHighlight[]>> = {
-  tiktok: [
-    {
-      id: "destination-experiences",
-      platform: "tiktok",
-      title: { ar: "تجارب الوجهات قبل الترشيح", en: "Destinations tested before recommending" },
-      description: {
-        ar: "مشاهد وتجارب واقعية تساعدك على تكوين صورة أوضح عن الوجهة قبل التخطيط.",
-        en: "Real scenes and experiences that give you a clearer view of a destination before planning.",
-      },
-      action: { ar: "تصفح الفيديوهات", en: "Browse videos" },
-      href: SOCIAL_PROFILES.tiktok,
-      label: { ar: "من الحساب الرسمي", en: "From the official account" },
-    },
-    {
-      id: "hotel-experiences",
-      platform: "tiktok",
-      title: { ar: "تجارب الفنادق كما هي", en: "Hotel experiences as they are" },
-      description: {
-        ar: "ملاحظات عملية عن الفندق والموقع والتجربة بعيدًا عن الصور التسويقية وحدها.",
-        en: "Practical notes on the hotel, location, and stay beyond marketing photos alone.",
-      },
-      action: { ar: "تصفح الفيديوهات", en: "Browse videos" },
-      href: SOCIAL_PROFILES.tiktok,
-      label: { ar: "من الحساب الرسمي", en: "From the official account" },
-    },
-    {
-      id: "travel-tips",
-      platform: "tiktok",
-      title: { ar: "نصائح من مسافر لمسافر", en: "Traveler-to-traveler advice" },
-      description: {
-        ar: "اختصارات وتنبيهات تساعدك على تقليل الأخطاء والتكاليف غير المتوقعة.",
-        en: "Short tips and alerts that help reduce mistakes and unexpected costs.",
-      },
-      action: { ar: "تصفح الفيديوهات", en: "Browse videos" },
-      href: SOCIAL_PROFILES.tiktok,
-      label: { ar: "من الحساب الرسمي", en: "From the official account" },
-    },
-  ],
+  tiktok: [],
   x: [
     {
       id: "thailand-2026-guide",
@@ -99,17 +69,27 @@ export const SOCIAL_HIGHLIGHTS: Readonly<Record<SocialPlatform, readonly SocialH
 
 
 /**
- * Official embeds, loaded only after the visitor asks for them (click to load):
- * nothing is fetched from X or TikTok while the page is just being read.
+ * Official embeds, mounted only when the visitor reaches the section: nothing
+ * is fetched from X or TikTok while the page above it is being read.
  */
 export const X_EMBED_ORIGIN = "https://platform.twitter.com";
 export const TIKTOK_EMBED_ORIGIN = "https://www.tiktok.com";
-export const TIKTOK_PROFILE_EMBED = `${TIKTOK_EMBED_ORIGIN}/embed/@safrbwai`;
 
 const X_POST = /^https:\/\/x\.com\/SafrBwai\/status\/(\d+)$/;
 
 export function xPostId(href: string): string | null {
   return X_POST.exec(href)?.[1] ?? null;
+}
+
+const TIKTOK_VIDEO = /^https:\/\/www\.tiktok\.com\/@safrbwai\/video\/(\d+)$/;
+
+export function tiktokVideoId(href: string): string | null {
+  return TIKTOK_VIDEO.exec(href)?.[1] ?? null;
+}
+
+/** TikTok's official embed player for one video. */
+export function tiktokPlayerUrl(id: string): string {
+  return `${TIKTOK_EMBED_ORIGIN}/player/v1/${id}`;
 }
 
 export function xEmbedUrl(id: string, locale: Locale, theme: "light" | "dark"): string {

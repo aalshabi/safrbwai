@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   SOCIAL_HIGHLIGHTS,
   SOCIAL_PROFILES,
-  TIKTOK_PROFILE_EMBED,
+  MAX_HIGHLIGHTS,
+  tiktokPlayerUrl,
+  tiktokVideoId,
   xEmbedHeight,
   xEmbedUrl,
   xPostId,
@@ -16,9 +18,10 @@ describe("social highlights", () => {
     });
   });
 
-  it("keeps three bilingual highlights in each strip", () => {
+  it("keeps at most four bilingual highlights in each strip", () => {
+    expect(MAX_HIGHLIGHTS).toBe(4);
     for (const [platform, highlights] of Object.entries(SOCIAL_HIGHLIGHTS)) {
-      expect(highlights).toHaveLength(3);
+      expect(highlights.length).toBeLessThanOrEqual(MAX_HIGHLIGHTS);
       expect(highlights.every((highlight) => highlight.platform === platform)).toBe(true);
       expect(highlights.every((highlight) => highlight.title.ar && highlight.title.en)).toBe(true);
       expect(highlights.every((highlight) => highlight.description.ar && highlight.description.en)).toBe(true);
@@ -34,8 +37,12 @@ describe("social highlights", () => {
     ).toBe(true);
   });
 
-  it("uses the verified TikTok profile until individual video links are available", () => {
-    expect(SOCIAL_HIGHLIGHTS.tiktok.every((highlight) => highlight.href === SOCIAL_PROFILES.tiktok)).toBe(true);
+  it("links every TikTok highlight to one video of the official account, never the account page", () => {
+    expect(SOCIAL_HIGHLIGHTS.tiktok.every((highlight) => tiktokVideoId(highlight.href) !== null)).toBe(true);
+    expect(tiktokVideoId(SOCIAL_PROFILES.tiktok)).toBeNull();
+    expect(tiktokVideoId("https://www.tiktok.com/@someone/video/123")).toBeNull();
+    expect(tiktokVideoId("https://www.tiktok.com/@safrbwai/video/7412345678901234567")).toBe("7412345678901234567");
+    expect(tiktokPlayerUrl("7412345678901234567")).toBe("https://www.tiktok.com/player/v1/7412345678901234567");
   });
 
   it("embeds each X highlight by its post id through the official embed host", () => {
@@ -49,7 +56,6 @@ describe("social highlights", () => {
       expect(url.searchParams.get("dnt")).toBe("true");
     }
     expect(xPostId("https://x.com/someone-else/status/1")).toBeNull();
-    expect(TIKTOK_PROFILE_EMBED).toBe("https://www.tiktok.com/embed/@safrbwai");
   });
 
   it("reads only X resize messages for the frame height", () => {

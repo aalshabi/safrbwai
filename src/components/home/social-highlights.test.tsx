@@ -55,15 +55,14 @@ function scrollIntoSection() {
 describe("SocialHighlights embeds", () => {
   beforeEach(installObserver);
 
-  it("loads nothing from X or TikTok until the section is near the screen", () => {
+  it("loads nothing from X until the section is near the screen", () => {
     const { container } = renderHighlights();
     expect(container.querySelector("iframe")).toBeNull();
     // Our own cards stand in, each with a link to the original.
     expect(screen.getByText("دليل تايلاند 2026")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
   });
 
-  it("shows the official X posts and TikTok account once the section is reached", () => {
+  it("shows the official X posts once the section is reached, and no TikTok account page", () => {
     const { container } = renderHighlights();
     scrollIntoSection();
     const sources = [...container.querySelectorAll("iframe")].map((frame) => new URL(frame.getAttribute("src")!));
@@ -72,10 +71,9 @@ describe("SocialHighlights embeds", () => {
       "2106058301876097401",
       "2085437614832939399",
     ]);
-    expect(sources.filter((src) => src.origin === "https://www.tiktok.com").map(String)).toEqual([
-      "https://www.tiktok.com/embed/@safrbwai",
-    ]);
-    // No click needed, and no "show here" buttons left.
+    // No account-page embed; with no TikTok videos listed, the TikTok strip is not shown at all.
+    expect(sources.some((src) => src.pathname.startsWith("/embed/@"))).toBe(false);
+    expect(screen.queryByText("فيديوهات مختارة على تيك توك")).toBeNull();
     expect(screen.queryByRole("button", { name: /اعرض/ })).toBeNull();
   });
 
@@ -117,12 +115,4 @@ describe("SocialHighlights embeds", () => {
     expect(more.getAttribute("href")).toBe("https://x.com/SafrBwai/status/2106058301876097401");
   });
 
-  it("shows the TikTok account embed as soon as it mounts, with the account link kept under it", () => {
-    const { container } = renderHighlights();
-    scrollIntoSection();
-    const tiktok = [...container.querySelectorAll("iframe")].find((frame) => frame.src.startsWith("https://www.tiktok.com"))!;
-    expect(tiktok.getAttribute("aria-hidden")).toBeNull();
-    expect(tiktok.className).not.toContain("opacity-0");
-    expect(screen.getByRole("link", { name: /فتح الحساب على تيك توك/ })).toBeTruthy();
-  });
 });
