@@ -7,6 +7,7 @@ import { CTA } from "@/components/home/cta";
 import { LatestInsights } from "@/components/home/latest-insights";
 import { SocialHighlights } from "@/components/home/social-highlights";
 import { getLatestInsights } from "@/lib/travel-insights";
+import { getCachedTikTokVideos } from "@/lib/tiktok/latest-videos";
 
 // Neutral structured data for the travel-offer review tool.
 const HOME_JSON_LD = {
@@ -18,8 +19,12 @@ const HOME_JSON_LD = {
   inLanguage: ["ar", "en"],
 };
 
-export default function HomePage() {
+// The TikTok strip shows the account's newest videos; the page is rebuilt at most every 12 hours.
+export const revalidate = 43200;
+
+export default async function HomePage() {
   const insights = getLatestInsights(3);
+  const tiktokVideos = await getCachedTikTokVideos();
 
   return (
     <>
@@ -30,7 +35,7 @@ export default function HomePage() {
       <Hero />
       <Benefits />
       <LatestInsights insights={insights} />
-      <SocialHighlights />
+      <SocialHighlights tiktok={tiktokVideos} />
       <Features />
       <HowItWorks />
       <Pillars />

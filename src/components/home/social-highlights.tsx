@@ -224,7 +224,10 @@ function TikTokVideo({ highlight, load }: { highlight: SocialHighlight; load: bo
   );
 }
 
-function HighlightStrip({ platform }: { platform: SocialPlatform }) {
+function HighlightStrip({ platform, highlights: listed }: {
+  platform: SocialPlatform;
+  highlights: readonly SocialHighlight[];
+}) {
   const { locale } = useLanguage();
   const styles = PLATFORM_STYLES[platform];
   const PlatformIcon = styles.icon;
@@ -237,7 +240,7 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
       : { title: "Selected posts on X", subtitle: "Travel guides and scenes worth saving for later.", profile: "Visit X profile" };
 
   const [stripRef, near] = useNearViewport<HTMLDivElement>();
-  const highlights = SOCIAL_HIGHLIGHTS[platform].slice(0, MAX_HIGHLIGHTS);
+  const highlights = listed.slice(0, MAX_HIGHLIGHTS);
   if (highlights.length === 0) return null;
 
   return (
@@ -278,7 +281,8 @@ function HighlightStrip({ platform }: { platform: SocialPlatform }) {
   );
 }
 
-export function SocialHighlights() {
+/** `tiktok` is the account's newest videos, read on the server; the listed ones are the fallback. */
+export function SocialHighlights({ tiktok = [] }: { tiktok?: readonly SocialHighlight[] }) {
   const { locale } = useLanguage();
   const copy = locale === "ar"
     ? {
@@ -307,8 +311,8 @@ export function SocialHighlights() {
         </Reveal>
 
         <Reveal className="mt-12">
-          <HighlightStrip platform="tiktok" />
-          <HighlightStrip platform="x" />
+          <HighlightStrip platform="tiktok" highlights={tiktok.length ? tiktok : SOCIAL_HIGHLIGHTS.tiktok} />
+          <HighlightStrip platform="x" highlights={SOCIAL_HIGHLIGHTS.x} />
         </Reveal>
       </div>
     </section>

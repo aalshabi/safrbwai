@@ -4,21 +4,14 @@ import type { ReactNode } from "react";
 import { LanguageProvider } from "@/lib/i18n/provider";
 import { SocialHighlights } from "./social-highlights";
 
-vi.mock("@/lib/social-highlights", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/social-highlights")>();
-  // Five sample videos (no real ones are listed yet): only four may show.
-  const video = (n: number) => ({
-    id: `video-${n}`,
-    platform: "tiktok" as const,
-    title: { ar: `فيديو ${n}`, en: `Video ${n}` },
-    description: { ar: "وصف", en: "Description" },
-    action: { ar: "شاهد على تيك توك", en: "Watch on TikTok" },
-    href: `https://www.tiktok.com/@safrbwai/video/741234567890123456${n}`,
-  });
-  return {
-    ...actual,
-    SOCIAL_HIGHLIGHTS: { ...actual.SOCIAL_HIGHLIGHTS, tiktok: [1, 2, 3, 4, 5].map(video) },
-  };
+// Five sample videos, as the server passes the account's newest: only four may show.
+const video = (n: number) => ({
+  id: `video-${n}`,
+  platform: "tiktok" as const,
+  title: { ar: `فيديو ${n}`, en: `Video ${n}` },
+  description: { ar: "", en: "" },
+  action: { ar: "شاهد على تيك توك", en: "Watch on TikTok" },
+  href: `https://www.tiktok.com/@safrbwai/video/741234567890123456${n}`,
 });
 
 vi.mock("@/components/shared/reveal", () => ({
@@ -52,7 +45,7 @@ describe("TikTok videos", () => {
   it("shows each video in TikTok's own player, four at most, like the X posts", () => {
     const { container } = render(
       <LanguageProvider>
-        <SocialHighlights />
+        <SocialHighlights tiktok={[1, 2, 3, 4, 5].map(video)} />
       </LanguageProvider>
     );
     expect(container.querySelector('iframe[src^="https://www.tiktok.com"]')).toBeNull();
