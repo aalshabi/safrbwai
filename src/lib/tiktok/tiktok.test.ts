@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TIKTOK_TOKEN_URL, TIKTOK_VIDEO_LIST_URL, tiktokAuthorizeUrl } from "./api";
-import { getTikTokConfig, getTikTokStoreConfig, TIKTOK_REDIRECT_URI, type TikTokConfig } from "./config";
+import { describeTikTokSetup, getTikTokConfig, getTikTokStoreConfig, TIKTOK_REDIRECT_URI, type TikTokConfig } from "./config";
 import { createTikTokState, handleTikTokCallback, handleTikTokConnect, isValidTikTokState, STATE_COOKIE } from "./connect";
 import { getLatestTikTokVideos, tiktokHighlights } from "./latest-videos";
 import { REFRESH_TOKEN_KEY, UpstashTikTokStore, VIDEOS_KEY, type TikTokStore } from "./store";
@@ -65,6 +65,35 @@ describe("TikTok config", () => {
       token: "t",
     });
     expect(getTikTokStoreConfig({ UPSTASH_REDIS_REST_URL: "http://x", UPSTASH_REDIS_REST_TOKEN: "t" })).toBeNull();
+  });
+});
+
+describe("TikTok setup log", () => {
+  it("names what is missing and similar names that are set, never a value", () => {
+    const text = describeTikTokSetup({
+      TIKTOK_CLIENT_KEY: "ck-value",
+      TIKTOK_CLIENTSECRET: "secret-value",
+      TIKTOK_CONNECT_KEY: "short-value",
+      KV_REST_API_URL: "https://x.upstash.io",
+      KV_REST_API_TOKEN: "token-value",
+      PATH: "/usr/bin",
+    });
+    expect(text).toBe(
+      "missing: TIKTOK_CLIENT_SECRET, TIKTOK_CONNECT_KEY (shorter than 24 characters); " +
+        "similar names set: KV_REST_API_TOKEN, KV_REST_API_URL, TIKTOK_CLIENTSECRET, TIKTOK_CLIENT_KEY, TIKTOK_CONNECT_KEY"
+    );
+    expect(text).not.toMatch(/value|upstash\.io|usr/);
+  });
+
+  it("reports nothing missing once everything is set", () => {
+    const env = {
+      TIKTOK_CLIENT_KEY: "ck",
+      TIKTOK_CLIENT_SECRET: "cs",
+      TIKTOK_CONNECT_KEY: "k".repeat(32),
+      KV_REST_API_URL: "https://x.upstash.io",
+      KV_REST_API_TOKEN: "t",
+    };
+    expect(describeTikTokSetup(env)).toMatch(/^missing: none;/);
   });
 });
 

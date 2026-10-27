@@ -32,3 +32,20 @@ export function getTikTokStoreConfig(env: Record<string, string | undefined> = p
   if (!url?.startsWith("https://") || !token) return null;
   return { url, token };
 }
+
+/**
+ * What keeps the TikTok link off, by variable name only (never a value), plus
+ * the names of any similar variables that are set, so a misspelt or misplaced
+ * name shows up in the server log.
+ */
+export function describeTikTokSetup(env: Record<string, string | undefined> = process.env): string {
+  const missing: string[] = [];
+  if (!env.TIKTOK_CLIENT_KEY?.trim()) missing.push("TIKTOK_CLIENT_KEY");
+  if (!env.TIKTOK_CLIENT_SECRET?.trim()) missing.push("TIKTOK_CLIENT_SECRET");
+  const connectKey = env.TIKTOK_CONNECT_KEY?.trim();
+  if (!connectKey) missing.push("TIKTOK_CONNECT_KEY");
+  else if (connectKey.length < 24) missing.push("TIKTOK_CONNECT_KEY (shorter than 24 characters)");
+  if (!getTikTokStoreConfig(env)) missing.push("KV_REST_API_URL (https) + KV_REST_API_TOKEN");
+  const similar = Object.keys(env).filter((name) => /tik|kv_|upstash/i.test(name)).sort();
+  return `missing: ${missing.join(", ") || "none"}; similar names set: ${similar.join(", ") || "none"}`;
+}
