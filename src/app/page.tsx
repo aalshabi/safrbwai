@@ -7,7 +7,7 @@ import { CTA } from "@/components/home/cta";
 import { LatestInsights } from "@/components/home/latest-insights";
 import { SocialHighlights } from "@/components/home/social-highlights";
 import { getLatestInsights } from "@/lib/travel-insights";
-import { getLatestTikTokVideos } from "@/lib/tiktok/latest-videos";
+import { getCachedTikTokVideos } from "@/lib/tiktok/latest-videos";
 
 // Neutral structured data for the travel-offer review tool.
 const HOME_JSON_LD = {
@@ -24,7 +24,7 @@ export const revalidate = 43200;
 
 export default async function HomePage() {
   const insights = getLatestInsights(3);
-  const tiktokVideos = await getLatestTikTokVideos();
+  const tiktokVideos = await getCachedTikTokVideos();
 
   return (
     <>

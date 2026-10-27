@@ -1,6 +1,7 @@
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { getTikTokConfig, getTikTokStoreConfig } from "@/lib/tiktok/config";
 import { handleTikTokCallback } from "@/lib/tiktok/connect";
+import { TIKTOK_VIDEOS_TAG } from "@/lib/tiktok/latest-videos";
 import { UpstashTikTokStore } from "@/lib/tiktok/store";
 
 export const runtime = "nodejs";
@@ -11,6 +12,9 @@ export function GET(request: Request) {
   return handleTikTokCallback(
     request,
     { config: getTikTokConfig(), store: storeConfig ? new UpstashTikTokStore(storeConfig) : null },
-    () => revalidatePath("/")
+    () => {
+      revalidateTag(TIKTOK_VIDEOS_TAG);
+      revalidatePath("/");
+    }
   );
 }

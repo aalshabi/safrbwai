@@ -1,4 +1,4 @@
-import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { exchangeTikTokCode, listTikTokVideos, tiktokAuthorizeUrl } from "./api";
 import type { TikTokConfig } from "./config";
 import { MAX_HIGHLIGHTS } from "@/lib/social-highlights";
@@ -6,10 +6,27 @@ import { saveTikTokConnection, type LatestVideosDeps } from "./latest-videos";
 
 export const STATE_COOKIE = "tiktok_oauth_state";
 const STATE_COOKIE_PATH = "/api/tiktok";
+const STATE_TTL_SECONDS = 600;
 
 function sameSecret(a: string, b: string): boolean {
   const digest = (value: string) => createHash("sha256").update(value).digest();
   return timingSafeEqual(digest(a), digest(b));
+}
+
+const stateSignature = (config: TikTokConfig, payload: string) =>
+  createHmac("sha256", config.connectKey).update(`tiktok-state:${payload}`).digest("hex");
+
+/** `<expiry>.<nonce>.<hmac>`, signed with the connect key so only /connect can mint one. */
+export function createTikTokState(config: TikTokConfig, now = Date.now()): string {
+  const payload = `${Math.floor(now / 1000) + STATE_TTL_SECONDS}.${randomBytes(16).toString("hex")}`;
+  return `${payload}.${stateSignature(config, payload)}`;
+}
+
+export function isValidTikTokState(config: TikTokConfig, state: string, now = Date.now()): boolean {
+  const [expiry, nonce, signature, ...rest] = state.split(".");
+  if (rest.length || !/^\d+$/.test(expiry ?? "") || !/^[0-9a-f]{32}$/.test(nonce ?? "") || !signature) return false;
+  if (Number(expiry) < Math.floor(now / 1000)) return false;
+  return sameSecret(signature, stateSignature(config, `${expiry}.${nonce}`));
 }
 
 function readCookie(request: Request, name: string): string | null {
@@ -39,21 +56,23 @@ function page(status: number, message: string, clearState = false): Response {
 export function handleTikTokConnect(request: Request, config: TikTokConfig | null): Response {
   const key = new URL(request.url).searchParams.get("key") ?? "";
   if (!config || !sameSecret(key, config.connectKey)) return new Response("Not found", { status: 404 });
-  const state = randomBytes(24).toString("hex");
+  const state = createTikTokState(config);
   return new Response(null, {
     status: 302,
     headers: {
       location: tiktokAuthorizeUrl(config, state),
-      "set-cookie": stateCookie(state, 600),
+      "set-cookie": stateCookie(state, STATE_TTL_SECONDS),
       "cache-control": "no-store",
     },
   });
 }
 
 /**
- * GET /api/tiktok/callback — TikTok returns here after consent. Checks the
- * state against the cookie set by /connect, swaps the code for tokens, saves
- * the refresh token and the newest videos, then lets the homepage refresh.
+ * GET /api/tiktok/callback — TikTok returns here after consent. The state must
+ * carry /connect's unexpired signature and match the cookie it set, so a
+ * request that skipped the connect key cannot replace the linked account.
+ * Then it swaps the code for tokens, saves the refresh token and the newest
+ * videos, and lets the homepage refresh.
  */
 export async function handleTikTokCallback(
   request: Request,
@@ -64,7 +83,7 @@ export async function handleTikTokCallback(
   const params = new URL(request.url).searchParams;
   const state = params.get("state") ?? "";
   const expected = readCookie(request, STATE_COOKIE);
-  if (!expected || !state || !sameSecret(state, expected)) {
+  if (!expected || !state || !sameSecret(state, expected) || !isValidTikTokState(config, state)) {
     return page(400, "انتهت صلاحية طلب الربط أو لا يطابق. ابدأ الربط من جديد.", true);
   }
   const code = params.get("code");

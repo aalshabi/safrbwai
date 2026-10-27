@@ -31,7 +31,6 @@ export class UpstashTikTokStore implements TikTokStore {
       headers: { authorization: `Bearer ${this.config.token}`, "content-type": "application/json" },
       body: JSON.stringify(args),
       signal: AbortSignal.timeout(this.timeoutMs),
-      cache: "no-store",
     });
     const body = (await response.json().catch(() => ({}))) as { result?: unknown; error?: string };
     if (!response.ok || body.error) throw new Error(`Upstash ${args[0]} failed with status ${response.status}`);

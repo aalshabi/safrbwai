@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { MAX_HIGHLIGHTS, type SocialHighlight } from "@/lib/social-highlights";
 import { listTikTokVideos, refreshTikTokTokens, type TikTokVideo } from "./api";
 import { getTikTokConfig, getTikTokStoreConfig, type TikTokConfig } from "./config";
@@ -70,8 +71,8 @@ export async function getLatestTikTokVideos(deps: LatestVideosDeps = defaultDeps
 
     const tokens = await refreshTikTokTokens(config, refreshToken, fetchImpl);
     if (tokens.refreshToken !== refreshToken) await store.set(REFRESH_TOKEN_KEY, tokens.refreshToken);
+    // An empty list is TikTok's real answer (no public videos), so it replaces the saved one.
     const videos = await listTikTokVideos(tokens.accessToken, MAX_HIGHLIGHTS, fetchImpl);
-    if (videos.length === 0) return tiktokHighlights(lastGood);
     await store.set(VIDEOS_KEY, JSON.stringify(videos));
     return tiktokHighlights(videos);
   } catch (error) {
@@ -79,3 +80,14 @@ export async function getLatestTikTokVideos(deps: LatestVideosDeps = defaultDeps
     return tiktokHighlights(lastGood);
   }
 }
+
+export const TIKTOK_VIDEOS_TAG = "tiktok-videos";
+
+/**
+ * The homepage's copy: one TikTok round per 12 hours however often the page
+ * is rebuilt; the connect callback clears it by tag.
+ */
+export const getCachedTikTokVideos = unstable_cache(() => getLatestTikTokVideos(), ["tiktok-latest-videos"], {
+  revalidate: 43_200,
+  tags: [TIKTOK_VIDEOS_TAG],
+});

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TIKTOK_TOKEN_URL, TIKTOK_VIDEO_LIST_URL, tiktokAuthorizeUrl } from "./api";
 import { getTikTokConfig, getTikTokStoreConfig, TIKTOK_REDIRECT_URI, type TikTokConfig } from "./config";
-import { handleTikTokCallback, handleTikTokConnect, STATE_COOKIE } from "./connect";
+import { createTikTokState, handleTikTokCallback, handleTikTokConnect, isValidTikTokState, STATE_COOKIE } from "./connect";
 import { getLatestTikTokVideos, tiktokHighlights } from "./latest-videos";
 import { REFRESH_TOKEN_KEY, UpstashTikTokStore, VIDEOS_KEY, type TikTokStore } from "./store";
 
@@ -83,7 +83,7 @@ describe("TikTok connect", () => {
     expect(location.searchParams.get("scope")).toBe("user.info.basic,video.list");
     expect(location.searchParams.get("redirect_uri")).toBe(TIKTOK_REDIRECT_URI);
     expect(location.searchParams.get("client_key")).toBe("ck");
-    expect(state).toMatch(/^[0-9a-f]{48}$/);
+    expect(isValidTikTokState(config, state ?? "")).toBe(true);
     expect(response.headers.get("set-cookie")).toContain(`${STATE_COOKIE}=${state}; Path=/api/tiktok`);
     expect(response.headers.get("set-cookie")).toContain("HttpOnly; Secure");
     expect(tiktokAuthorizeUrl(config, "s")).not.toContain("cs");
@@ -96,10 +96,20 @@ describe("TikTok callback", () => {
       headers: cookie ? { cookie: `${STATE_COOKIE}=${cookie}` } : {},
     });
 
-  it("refuses a missing or different state and stores nothing", async () => {
+  it("refuses a missing, different, forged or expired state and stores nothing", async () => {
     const store = new MemoryStore();
     const fetchImpl = tiktokFetch();
-    for (const request of [callback("a", null), callback("a", "b")]) {
+    const valid = createTikTokState(config);
+    const forged = createTikTokState({ ...config, connectKey: "x".repeat(32) });
+    const expired = createTikTokState(config, Date.now() - 11 * 60_000);
+    for (const request of [
+      callback(valid, null),
+      callback(valid, createTikTokState(config)),
+      // A direct request can set any cookie; without the connect key's signature it gets nowhere.
+      callback(forged, forged),
+      callback("a", "a"),
+      callback(expired, expired),
+    ]) {
       expect((await handleTikTokCallback(request, { config, store, fetchImpl }, vi.fn())).status).toBe(400);
     }
     expect(fetchImpl).not.toHaveBeenCalled();
@@ -109,7 +119,8 @@ describe("TikTok callback", () => {
   it("stores the refresh token and the four newest videos, then refreshes the homepage", async () => {
     const store = new MemoryStore();
     const revalidate = vi.fn();
-    const response = await handleTikTokCallback(callback("s1", "s1"), { config, store, fetchImpl: tiktokFetch() }, revalidate);
+    const state = createTikTokState(config);
+    const response = await handleTikTokCallback(callback(state, state), { config, store, fetchImpl: tiktokFetch() }, revalidate);
     expect(response.status).toBe(200);
     expect(store.values.get(REFRESH_TOKEN_KEY)).toBe("r2");
     expect(JSON.parse(store.values.get(VIDEOS_KEY) ?? "[]").map((v: { id: string }) => v.id)).toEqual([
@@ -158,6 +169,14 @@ describe("latest TikTok videos", () => {
     const highlights = await getLatestTikTokVideos({ config, store, fetchImpl: tiktokFetch({ tokenStatus: 400 }) });
     expect(highlights.map((h) => h.href)).toEqual(["https://www.tiktok.com/@safrbwai/video/77"]);
     expect(store.values.get(REFRESH_TOKEN_KEY)).toBe("r1");
+  });
+
+  it("saves an empty list when the account has no public videos left", async () => {
+    const store = new MemoryStore();
+    store.values.set(REFRESH_TOKEN_KEY, "r1");
+    store.values.set(VIDEOS_KEY, JSON.stringify([{ id: "77", title: "Old", description: "", createTime: 1 }]));
+    expect(await getLatestTikTokVideos({ config, store, fetchImpl: tiktokFetch({ ids: [] }) })).toEqual([]);
+    expect(store.values.get(VIDEOS_KEY)).toBe("[]");
   });
 
   it("titles a video by its first line, with a default when TikTok gives none", () => {
