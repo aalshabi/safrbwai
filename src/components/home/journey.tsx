@@ -27,14 +27,10 @@ export function Journey() {
     ? {
         promise: "اختر وجهتك، افهم عرضك، وسافر بوعي",
         intro: "ثلاث محطات قبل أن تدفع وقبل أن تسافر. كل محطة لها أداة أو دليل مختصر مبني على مصادر رسمية.",
-        disclosure:
-          "سافر بوعي مشروع تعليمي يديره عبدالله الشعبي، مالك سكاي العالمية للسفر. المحتوى التعليمي هنا منفصل عن عروض الوكالة، وأي محتوى ترويجي لها نوضح أنه ترويج.",
       }
     : {
         promise: "Choose your destination, understand your offer, travel aware",
         intro: "Three stops before you pay and before you fly. Each has a tool or a short guide based on official sources.",
-        disclosure:
-          "SafrBwai is an educational project run by Abdullah Alshabi, owner of Sky Global Travel. The educational content here is kept separate from the agency's offers, and any promotion of it is labelled as promotion.",
       };
 
   const stages: Stage[] = ar
@@ -142,7 +138,6 @@ export function Journey() {
             </li>
           ))}
         </ol>
-        <p className="mx-auto mt-8 max-w-3xl text-center text-xs leading-6 text-muted-foreground">{copy.disclosure}</p>
       </div>
     </section>
   );
