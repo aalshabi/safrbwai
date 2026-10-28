@@ -33,6 +33,26 @@ export const RELATED_CONTENT: Readonly<Record<string, readonly ContentRef[]>> = 
     { kind: "guide", slug: "transit-and-baggage" },
     { kind: "insight", slug: "schengen-2026-ees-etias-saudi-travelers" },
   ],
+  "guide:turkey": [
+    { kind: "guide", slug: "before-travel-checklist" },
+    { kind: "guide", slug: "luggage-and-carry-on" },
+  ],
+  "guide:georgia": [
+    { kind: "guide", slug: "turkey" },
+    { kind: "guide", slug: "before-travel-checklist" },
+  ],
+  "guide:azerbaijan": [
+    { kind: "guide", slug: "georgia" },
+    { kind: "guide", slug: "before-travel-checklist" },
+  ],
+  "guide:thailand": [
+    { kind: "guide", slug: "bali" },
+    { kind: "guide", slug: "before-travel-checklist" },
+  ],
+  "guide:bali": [
+    { kind: "guide", slug: "thailand" },
+    { kind: "guide", slug: "luggage-and-carry-on" },
+  ],
   "guide:luggage-and-carry-on": [
     { kind: "guide", slug: "before-travel-checklist" },
     { kind: "guide", slug: "transit-and-baggage" },
