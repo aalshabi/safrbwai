@@ -23,6 +23,8 @@ const IATA_TRAVEL_CENTRE = "https://www.iata.org/en/travel-centre/";
 const UK_MALDIVES_ENTRY = "https://www.gov.uk/foreign-travel-advice/maldives/entry-requirements";
 const VELANA_ARRIVAL = "https://velana.macl.aero/guide/arrival";
 const SAUDI_MOFA = "https://www.mofa.gov.sa/";
+const SAUDIA = "https://www.saudia.com/";
+const FLYNAS = "https://www.flynas.com/";
 
 export const TRAVEL_GUIDES: readonly TravelGuide[] = [
   {
@@ -249,6 +251,92 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
       { label: { ar: "وزارة الخارجية السعودية", en: "Saudi Ministry of Foreign Affairs" }, href: SAUDI_MOFA },
       { label: { ar: "مركز السفر التابع للاتحاد الدولي للنقل الجوي", en: "IATA Travel Centre" }, href: IATA_TRAVEL_CENTRE },
       { label: { ar: "الهيئة العامة للطيران المدني: حماية حقوق المسافرين", en: "GACA: Passenger Rights Protection Regulations" }, href: GACA_RIGHTS },
+    ],
+  },
+  {
+    slug: "luggage-and-carry-on",
+    stage: "travel",
+    title: { ar: "كيف تختار حقيبة السفر والحقيبة اليدوية", en: "How to choose your suitcase and carry-on" },
+    description: {
+      ar: "مقارنة بين أنواع الحقائب، وما يجعلها عملية، ومقاسات المقصورة، وما تضعه في حقيبتك اليدوية.",
+      en: "Comparing bag types, what makes them practical, cabin sizes, and what goes in your carry-on.",
+    },
+    reviewedAt: "2026-10-28",
+    status: "reviewed",
+    sections: [
+      {
+        heading: { ar: "اختر النوع حسب رحلتك", en: "Choose the type for your trip" },
+        body: {
+          ar: "لا توجد حقيبة أفضل لكل الرحلات. الحقيبة الصلبة (بولي كربونات مثلًا) تحمي ما بداخلها من الضغط والمطر، وتناسب الرحلات الجوية الطويلة والأغراض الهشة، لكنها لا تتمدد وقد تظهر عليها الخدوش. الحقيبة اللينة (القماشية) أخف غالبًا، وفيها جيوب خارجية، وتتمدد قليلًا، لكنها أقل حماية من الضغط والماء. حقيبة الظهر الكبيرة تناسب التنقل بين مدن وعلى الأرصفة والسلالم والقطارات، لكنها متعبة إذا ثقلت. حقيبة الدفل (الرياضية) مرنة وسهلة الحشو، وتناسب الرحلات القصيرة أو السيارة أكثر من المطارات الكبيرة.",
+          en: "No bag suits every trip. A hard-shell case (polycarbonate, for example) protects against pressure and rain and suits long flights and fragile items, but it does not expand and scuffs show. A soft case is usually lighter, has outside pockets and some give, but protects less against pressure and water. A large backpack suits moving between cities, pavements, stairs and trains, but tires you once heavy. A duffel is flexible and easy to pack, better for short trips or the car than for large airports.",
+        },
+        checks: [
+          { ar: "رحلة فيها تنقلات كثيرة بين مدن: حقيبة أصغر أو حقيبة ظهر.", en: "Many city-to-city moves: a smaller case or a backpack." },
+          { ar: "رحلة إقامة واحدة أو عائلية: حقيبة كبيرة بعجلات أسهل.", en: "One stay or a family trip: a large wheeled case is easier." },
+          { ar: "أغراض هشة أو هدايا: الحقيبة الصلبة أنسب.", en: "Fragile items or gifts: a hard case fits better." },
+        ],
+      },
+      {
+        heading: { ar: "ما الذي يجعل الحقيبة عملية", en: "What makes a bag practical" },
+        body: {
+          ar: "وزن الحقيبة وهي فارغة يُحسب من وزنك المسموح، فكلما كانت أخف بقي لك وزن أكثر لأغراضك. الحقيبة بأربع عجلات دوارة تمشي بجانبك بسهولة على الأرض الملساء، والحقيبة بعجلتين أثبت على الأرصفة والأرض غير المستوية. انتبه لجودة السحاب والمقبض الممتد، فهما أكثر ما يتعطل. ويفيدك جيب خارجي سريع، ولون أو علامة مميزة تعرف بها حقيبتك على سير الأمتعة.",
+          en: "The empty weight counts against your allowance, so a lighter case leaves more for your things. Four spinner wheels glide beside you on smooth floors; two wheels are steadier on pavements and uneven ground. Check the zip and telescopic handle, the parts that fail most. A quick outer pocket and a distinctive colour or tag help on the baggage belt.",
+        },
+        checks: [
+          { ar: "قارن الوزن الفارغ المكتوب على بطاقة الحقيبة.", en: "Compare the empty weight on the bag's label." },
+          { ar: "جرّب المقبض والعجلات في المحل قبل الشراء.", en: "Try the handle and wheels in the shop before buying." },
+          { ar: "ضع اسمك ورقم جوالك داخل الحقيبة وعلى بطاقة خارجية.", en: "Put your name and phone number inside the bag and on an outside tag." },
+        ],
+      },
+      {
+        heading: { ar: "مقاس حقيبة المقصورة ووزنها", en: "Cabin bag size and weight" },
+        body: {
+          ar: "كل شركة طيران تحدد مقاس حقيبة المقصورة ووزنها وعدد القطع، وتختلف الأرقام بين الشركات وبين درجات الحجز، وبعض التذاكر الاقتصادية الأرخص تسمح بقطعة شخصية صغيرة فقط. المقاس يشمل العجلات والمقابض. لذلك لا تعتمد على رقم عام أو على ما كُتب على الحقيبة بأنها «مناسبة للمقصورة»، وراجع صفحة الأمتعة في موقع شركتك قبل السفر، خاصة إذا كانت رحلتك على أكثر من شركة.",
+          en: "Each airline sets its own cabin bag size, weight and piece count, and they differ between airlines and fare classes; some cheaper economy fares allow only a small personal item. Size includes wheels and handles. Do not rely on a general number or a “cabin size” label; check your airline's baggage page before you fly, especially on trips with more than one airline.",
+        },
+        checks: [
+          { ar: "تحقق من مقاس ووزن المقصورة لكل شركة في رحلتك.", en: "Check cabin size and weight for every airline on your trip." },
+          { ar: "قس حقيبتك مع العجلات والمقبض.", en: "Measure your bag including wheels and handle." },
+        ],
+      },
+      {
+        heading: { ar: "الحقيبة اليدوية الصغيرة: أي نوع", en: "The small personal bag: which kind" },
+        body: {
+          ar: "القطعة الشخصية تكون تحت المقعد الذي أمامك. حقيبة الظهر الصغيرة توزع الوزن وتترك يديك حرتين في المطار. حقيبة الكتف أو الحقيبة الصغيرة المتقاطعة أسرع في الوصول للجواز والجوال. اختر حقيبة بجيب مغلق للوثائق، وجيب للشاحن، ومكان لزجاجة ماء فارغة.",
+          en: "The personal item goes under the seat in front of you. A small backpack spreads the weight and leaves your hands free. A shoulder or cross-body bag gets you to passport and phone faster. Choose one with a closed pocket for documents, a pocket for the charger, and room for an empty water bottle.",
+        },
+        checks: [],
+      },
+      {
+        heading: { ar: "ما تحتاجه في حقيبتك اليدوية", en: "What you need in your carry-on" },
+        body: {
+          ar: "ضع في اليد كل ما لا تستطيع الاستغناء عنه إذا تأخرت حقيبتك المشحونة أو ضاعت. بطاريات الليثيوم الاحتياطية مثل الباور بانك تُحمل عادة في المقصورة وليس في الحقيبة المشحونة، والسوائل في المقصورة لها قيود حجم تختلف حسب المطار؛ راجع شركة الطيران والمطار.",
+          en: "Keep in the cabin everything you cannot do without if your checked bag is late or lost. Spare lithium batteries such as power banks usually travel in the cabin, not in checked bags, and liquids in the cabin have volume limits that vary by airport; check with the airline and airport.",
+        },
+        checks: [
+          { ar: "الجواز والهوية والتذاكر والحجوزات (ونسخ منها على الجوال).", en: "Passport, ID, tickets and bookings (with copies on your phone)." },
+          { ar: "الأدوية اليومية مع الوصفة الطبية.", en: "Daily medicines with the prescription." },
+          { ar: "الجوال والشاحن والباور بانك.", en: "Phone, charger and power bank." },
+          { ar: "بطاقات الدفع وقليل من النقد.", en: "Payment cards and a little cash." },
+          { ar: "تغيير ملابس لليلة واحدة وأدوات عناية بعبوات صغيرة.", en: "A change of clothes for one night and small toiletries." },
+          { ar: "الأشياء الثمينة والهشة: النظارات والإلكترونيات والمجوهرات.", en: "Valuables and fragile items: glasses, electronics, jewellery." },
+          { ar: "سترة خفيفة وسماعات وزجاجة ماء فارغة تعبئها بعد التفتيش.", en: "A light jacket, headphones, and an empty bottle to fill after security." },
+        ],
+      },
+      {
+        heading: { ar: "أخطاء شائعة", en: "Common mistakes" },
+        body: {
+          ar: "وضع الباور بانك أو الأدوية في الحقيبة المشحونة، وشراء حقيبة ثقيلة وهي فارغة، والاعتماد على وزن مسموح سمعته من رحلة سابقة أو من شركة أخرى، وحشو الحقيبة حتى آخر كيلو في رحلة الذهاب فلا يبقى مكان لمشتريات العودة.",
+          en: "Packing the power bank or medicines in the checked bag, buying a case that is heavy when empty, relying on an allowance from a previous trip or another airline, and filling the case to the last kilo on the way out with no room for the trip home.",
+        },
+        checks: [],
+      },
+    ],
+    sources: [
+      { label: { ar: "الخطوط السعودية: معلومات الأمتعة في موقع الشركة", en: "Saudia: baggage information on the airline's site" }, href: SAUDIA },
+      { label: { ar: "طيران ناس: معلومات الأمتعة في موقع الشركة", en: "flynas: baggage information on the airline's site" }, href: FLYNAS },
+      { label: { ar: "الهيئة العامة للطيران المدني: حماية حقوق المسافرين", en: "GACA: Passenger Rights Protection Regulations" }, href: GACA_RIGHTS },
+      { label: { ar: "مركز السفر التابع للاتحاد الدولي للنقل الجوي", en: "IATA Travel Centre" }, href: IATA_TRAVEL_CENTRE },
     ],
   },
 ] as const;

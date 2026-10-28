@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { getReviewedGuides } from "./guides";
 
 describe("reviewed travel guides", () => {
-  it("publishes five focused guides with visible review dates and official sources", () => {
+  it("publishes six focused guides with visible review dates and official sources", () => {
     const guides = getReviewedGuides();
-    expect(guides).toHaveLength(5);
+    expect(guides).toHaveLength(6);
     expect(new Set(guides.map((guide) => guide.stage))).toEqual(new Set(["destination", "booking", "travel"]));
     for (const guide of guides) {
       expect(guide.reviewedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
