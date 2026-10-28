@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useTheme } from "next-themes";
-import { ArrowLeft, ExternalLink, MessageCircle, Play, Sparkles } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, ExternalLink, MessageCircle, Play, Sparkles } from "lucide-react";
 import { Reveal } from "@/components/shared/reveal";
 import { useLanguage } from "@/lib/i18n/provider";
 import {
@@ -18,6 +18,7 @@ import {
   type SocialHighlight,
   type SocialPlatform,
 } from "@/lib/social-highlights";
+import type { SocialStrip } from "@/lib/social/selection";
 import { cn } from "@/lib/utils";
 
 const PLATFORM_STYLES: Readonly<Record<SocialPlatform, {
@@ -224,50 +225,133 @@ function TikTokVideo({ highlight, load }: { highlight: SocialHighlight; load: bo
   );
 }
 
-function HighlightStrip({ platform, highlights: listed }: {
-  platform: SocialPlatform;
-  highlights: readonly SocialHighlight[];
-}) {
+const ACCOUNT_HANDLE: Readonly<Record<SocialPlatform, string>> = { tiktok: "@safrbwai", x: "@SafrBwai" };
+
+/** The platform's own look for its badge: TikTok's black with cyan/pink edges, X's black and white. */
+const PLATFORM_BADGE: Readonly<Record<SocialPlatform, string>> = {
+  tiktok: "bg-black text-white shadow-[-2px_-2px_0_#25F4EE,2px_2px_0_#FE2C55]",
+  x: "bg-black text-white dark:bg-white dark:text-black",
+};
+
+function formatDate(iso: string, locale: "ar" | "en"): string {
+  return new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory-nu-latn" : "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(iso));
+}
+
+/** What the selection is, in plain words: hand-picked, or ranked by which metric over which range. */
+function selectionNote(platform: SocialPlatform, strip: SocialStrip, locale: "ar" | "en"): string {
+  if (strip.source === "manual" || !strip.poolSize) {
+    return locale === "ar" ? "مختارات من الحساب" : "Picks from the account";
+  }
+  const date = strip.refreshedAt ? formatDate(strip.refreshedAt, locale) : null;
+  const n = strip.poolSize;
+  if (platform === "tiktok") {
+    return locale === "ar"
+      ? `الأكثر مشاهدة بين آخر ${n} فيديو في الحساب (حسب مشاهدات تيك توك)${date ? ` · آخر تحديث ${date}` : ""}`
+      : `Most viewed of the account's latest ${n} videos (TikTok views)${date ? ` · updated ${date}` : ""}`;
+  }
+  return locale === "ar"
+    ? `الأعلى ظهورًا بين آخر ${n} منشور أصلي في الحساب (مرات الظهور كما يقيسها X، وهي غير مشاهدات الفيديو)${date ? ` · آخر تحديث ${date}` : ""}`
+    : `Highest impressions among the account's latest ${n} original posts (X impressions, not video views)${date ? ` · updated ${date}` : ""}`;
+}
+
+function HighlightStrip({ platform, strip }: { platform: SocialPlatform; strip: SocialStrip }) {
   const { locale } = useLanguage();
   const styles = PLATFORM_STYLES[platform];
   const PlatformIcon = styles.icon;
   const copy = platform === "tiktok"
     ? locale === "ar"
-      ? { title: "فيديوهات مختارة على تيك توك", subtitle: "تجارب ونصائح قصيرة من الحساب الرسمي.", profile: "زيارة حساب تيك توك" }
-      : { title: "Selected videos on TikTok", subtitle: "Short experiences and advice from the official account.", profile: "Visit TikTok profile" }
+      ? { title: "سافر بوعي على تيك توك", profile: "فتح الحساب على تيك توك", prev: "الفيديو السابق", next: "الفيديو التالي" }
+      : { title: "SafrBwai on TikTok", profile: "Open the TikTok account", prev: "Previous video", next: "Next video" }
     : locale === "ar"
-      ? { title: "مواضيع مختارة على X", subtitle: "أدلة ومشاهد سفر تستحق الحفظ والعودة إليها.", profile: "زيارة حساب X" }
-      : { title: "Selected posts on X", subtitle: "Travel guides and scenes worth saving for later.", profile: "Visit X profile" };
+      ? { title: "سافر بوعي على X", profile: "فتح الحساب على X", prev: "المنشور السابق", next: "المنشور التالي" }
+      : { title: "SafrBwai on X", profile: "Open the X account", prev: "Previous post", next: "Next post" };
 
   const [stripRef, near] = useNearViewport<HTMLDivElement>();
-  const highlights = listed.slice(0, MAX_HIGHLIGHTS);
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
+  const highlights = strip.items.slice(0, MAX_HIGHLIGHTS);
+
+  const step = React.useCallback((direction: 1 | -1) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+    const card = scroller.firstElementChild as HTMLElement | null;
+    const width = (card?.offsetWidth ?? scroller.clientWidth) + 16;
+    // "Next" moves toward the end of the row: leftward in Arabic (RTL), rightward in English.
+    const rtl = getComputedStyle(scroller).direction === "rtl";
+    scroller.scrollBy({ left: direction * width * (rtl ? -1 : 1), behavior: "smooth" });
+  }, []);
+
   if (highlights.length === 0) return null;
+  const titleId = `social-strip-${platform}`;
 
   return (
-    <div ref={stripRef} className="mt-12 first:mt-0">
+    <div ref={stripRef} className="mt-12 first:mt-0" role="group" aria-labelledby={titleId}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className={cn("inline-flex items-center gap-2 text-sm font-extrabold", styles.accent)}>
-            <PlatformIcon className="size-4" aria-hidden />
-            {platform === "tiktok" ? "TikTok" : "X"}
+          <p className="flex items-center gap-2 text-sm font-bold">
+            <span className={cn("inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 font-extrabold", PLATFORM_BADGE[platform])}>
+              <PlatformIcon className="size-4" aria-hidden />
+              {platform === "tiktok" ? "TikTok" : "X"}
+            </span>
+            <span dir="ltr" className="text-muted-foreground">{ACCOUNT_HANDLE[platform]}</span>
           </p>
-          <h3 className="mt-2 font-display text-2xl font-extrabold md:text-3xl">{copy.title}</h3>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.subtitle}</p>
+          <h3 id={titleId} className="mt-3 font-display text-2xl font-extrabold md:text-3xl">{copy.title}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectionNote(platform, strip, locale)}</p>
         </div>
-        <a
-          href={SOCIAL_PROFILES[platform]}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-teal hover:underline"
-        >
-          {copy.profile}
-          <ArrowLeft className="size-4 ltr:rotate-180" aria-hidden />
-        </a>
+        <div className="flex items-center gap-2">
+          <a
+            href={SOCIAL_PROFILES[platform]}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 text-sm font-bold text-teal hover:underline"
+          >
+            {copy.profile}
+            <ArrowLeft className="size-4 ltr:rotate-180" aria-hidden />
+          </a>
+          {highlights.length > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={() => step(-1)}
+                aria-label={copy.prev}
+                className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-background hover:bg-muted"
+              >
+                <ChevronRight className="size-5 ltr:rotate-180" aria-hidden />
+              </button>
+              <button
+                type="button"
+                onClick={() => step(1)}
+                aria-label={copy.next}
+                className="inline-flex size-11 items-center justify-center rounded-full border border-border bg-background hover:bg-muted"
+              >
+                <ChevronLeft className="size-5 ltr:rotate-180" aria-hidden />
+              </button>
+            </>
+          ) : null}
+        </div>
       </div>
 
       <div
-        className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-5 sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
+        ref={scrollerRef}
+        tabIndex={0}
+        role="region"
         aria-label={copy.title}
+        onKeyDown={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const rtl = getComputedStyle(event.currentTarget).direction === "rtl";
+          if (event.key === "ArrowLeft") {
+            event.preventDefault();
+            step(rtl ? 1 : -1);
+          }
+          if (event.key === "ArrowRight") {
+            event.preventDefault();
+            step(rtl ? -1 : 1);
+          }
+        }}
+        className="-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
       >
         {highlights.map((highlight) =>
           platform === "tiktok" ? (
@@ -281,19 +365,21 @@ function HighlightStrip({ platform, highlights: listed }: {
   );
 }
 
-/** `tiktok` is the account's newest videos, read on the server; the listed ones are the fallback. */
-export function SocialHighlights({ tiktok = [] }: { tiktok?: readonly SocialHighlight[] }) {
+const MANUAL = (platform: SocialPlatform): SocialStrip => ({ items: [...SOCIAL_HIGHLIGHTS[platform]], source: "manual" });
+
+/** Each strip is its weekly selection, read on the server; without one it is the hand-picked list. */
+export function SocialHighlights({ tiktok = MANUAL("tiktok"), x = MANUAL("x") }: { tiktok?: SocialStrip; x?: SocialStrip }) {
   const { locale } = useLanguage();
   const copy = locale === "ar"
     ? {
         eyebrow: "من قنوات سافر بوعي",
         title: "شاهد الفكرة بسرعة، ثم احفظ التفاصيل",
-        subtitle: "مختارات مباشرة من محتوى سافر بوعي على تيك توك وX، في مكان واحد.",
+        subtitle: "منشورات حسابَي سافر بوعي على تيك توك وX، معروضة بالتضمين الرسمي لكل منصة. سافر بوعي غير مرتبط بتيك توك أو X بأي شراكة.",
       }
     : {
         eyebrow: "From SafrBwai channels",
         title: "Watch the idea, then save the details",
-        subtitle: "Highlights from SafrBwai on TikTok and X, collected in one place.",
+        subtitle: "Posts from SafrBwai's TikTok and X accounts, shown with each platform's official embed. SafrBwai has no partnership with TikTok or X.",
       };
 
   return (
@@ -311,8 +397,8 @@ export function SocialHighlights({ tiktok = [] }: { tiktok?: readonly SocialHigh
         </Reveal>
 
         <Reveal className="mt-12">
-          <HighlightStrip platform="tiktok" highlights={tiktok.length ? tiktok : SOCIAL_HIGHLIGHTS.tiktok} />
-          <HighlightStrip platform="x" highlights={SOCIAL_HIGHLIGHTS.x} />
+          <HighlightStrip platform="tiktok" strip={tiktok} />
+          <HighlightStrip platform="x" strip={x} />
         </Reveal>
       </div>
     </section>

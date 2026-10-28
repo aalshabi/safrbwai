@@ -39,7 +39,12 @@ export function ResultCopyAction({
     []
   );
 
-  const hasQuestions = analysis.suggestedQuestions.length > 0;
+  const concernQuestions = analysis.concerns.map((concern) => ({
+    key: concern.key,
+    question: concern.question,
+    priority: "high" as const,
+  }));
+  const hasQuestions = analysis.suggestedQuestions.length + concernQuestions.length > 0;
   if (kind === "questions" && !hasQuestions) return null;
 
   const buttonLabel =
@@ -67,10 +72,12 @@ export function ResultCopyAction({
 
     const text =
       kind === "questions"
-        ? formatQuestionsForCopy(analysis.suggestedQuestions, locale, {
-            title: result.questionsTitle,
-            reviewedWith: copy.reviewedWith,
-          })
+        ? formatQuestionsForCopy(
+            analysis.suggestedQuestions,
+            locale,
+            { title: result.questionsTitle, reviewedWith: copy.reviewedWith },
+            concernQuestions
+          )
         : formatSummaryForCopy(analysis, locale, {
             title: copy.summaryTitle,
             confirmedTitle: result.confirmedTitle,

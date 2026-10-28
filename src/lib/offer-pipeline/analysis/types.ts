@@ -84,8 +84,23 @@ export interface OfferCompleteness {
   fields: CompletenessField[];
 }
 
+/**
+ * A point worth checking that the offer does not state as a fact. `basis`
+ * says what in the offer raised it; it is never a finding that something is
+ * missing, excluded or wrong.
+ */
+export interface InferredConcern {
+  key: string;
+  title: Bi;
+  detail: Bi;
+  basis: Bi;
+  question: Bi;
+}
+
 export interface OfferAnalysis {
   confirmedFacts: ConfirmedFact[];
+  /** Inferred concerns, kept apart from facts (confirmedFacts) and unknowns (missingFields). */
+  concerns: InferredConcern[];
   missingFields: MissingField[];
   contradictions: Contradiction[];
   checklist: ChecklistItem[];

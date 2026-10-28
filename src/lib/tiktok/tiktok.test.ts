@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { TIKTOK_TOKEN_URL, TIKTOK_VIDEO_LIST_URL, tiktokAuthorizeUrl } from "./api";
+import { collectTikTokVideos, TIKTOK_TOKEN_URL, TIKTOK_VIDEO_LIST_URL, tiktokAuthorizeUrl } from "./api";
 import { describeTikTokSetup, getTikTokConfig, getTikTokStoreConfig, TIKTOK_REDIRECT_URI, type TikTokConfig } from "./config";
 import { createTikTokState, handleTikTokCallback, handleTikTokConnect, isValidTikTokState, STATE_COOKIE } from "./connect";
-import { getLatestTikTokVideos, tiktokHighlights } from "./latest-videos";
+import { getTikTokStrip, tiktokHighlights } from "./latest-videos";
 import { REFRESH_TOKEN_KEY, UpstashTikTokStore, VIDEOS_KEY, type TikTokStore } from "./store";
 
 // Every TikTok and Upstash call below is a mocked fetch; nothing leaves the test.
@@ -24,10 +24,25 @@ class MemoryStore implements TikTokStore {
 }
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
+/** TikTok's own view counts for the sample videos; ranking by views differs from recency on purpose. */
+const VIEWS: Record<string, number> = { "11": 500, "22": 100, "33": 900, "44": 50, "55": 300 };
 const videosResponse = (ids: string[]) =>
   json({
-    data: { videos: ids.map((id, i) => ({ id, title: `Video ${id}`, create_time: 1_700_000_000 + i })) },
+    data: {
+      videos: ids.map((id, i) => ({ id, title: `Video ${id}`, create_time: 1_700_000_000 + i, view_count: VIEWS[id] })),
+      cursor: 0,
+      has_more: false,
+    },
     error: { code: "ok" },
+  });
+const NOW = Date.parse("2026-10-28T00:00:00Z");
+const DAY = 24 * 60 * 60 * 1000;
+const snapshot = (ids: string[], refreshedAt: number) =>
+  JSON.stringify({
+    version: 2,
+    refreshedAt: new Date(refreshedAt).toISOString(),
+    poolSize: 40,
+    entries: ids.map((id) => ({ id, title: `Saved ${id}`, description: "", createTime: 1, viewCount: 10 })),
   });
 
 /** Answers the token endpoint and the video list the way TikTok documents them. */
@@ -145,19 +160,17 @@ describe("TikTok callback", () => {
     expect(store.values.size).toBe(0);
   });
 
-  it("stores the refresh token and the four newest videos, then refreshes the homepage", async () => {
+  it("stores the refresh token and the four most-viewed videos, then refreshes the homepage", async () => {
     const store = new MemoryStore();
     const revalidate = vi.fn();
     const state = createTikTokState(config);
     const response = await handleTikTokCallback(callback(state, state), { config, store, fetchImpl: tiktokFetch() }, revalidate);
     expect(response.status).toBe(200);
     expect(store.values.get(REFRESH_TOKEN_KEY)).toBe("r2");
-    expect(JSON.parse(store.values.get(VIDEOS_KEY) ?? "[]").map((v: { id: string }) => v.id)).toEqual([
-      "55",
-      "44",
-      "33",
-      "22",
-    ]);
+    const saved = JSON.parse(store.values.get(VIDEOS_KEY) ?? "{}");
+    expect(saved.entries.map((v: { id: string }) => v.id)).toEqual(["33", "11", "55", "22"]);
+    expect(saved.poolSize).toBe(5);
+    expect(Date.parse(saved.refreshedAt)).not.toBeNaN();
     expect(revalidate).toHaveBeenCalledOnce();
     // Neither the tokens nor the client secret appear on the page.
     const text = await response.text();
@@ -165,56 +178,104 @@ describe("TikTok callback", () => {
   });
 });
 
-describe("latest TikTok videos", () => {
-  it("does nothing until TikTok and the store are configured", async () => {
+describe("weekly TikTok strip", () => {
+  it("shows the hand-picked list, and asks nothing, until TikTok and the store are configured", async () => {
     const fetchImpl = vi.fn();
-    expect(await getLatestTikTokVideos({ config: null, store: new MemoryStore(), fetchImpl })).toEqual([]);
-    expect(await getLatestTikTokVideos({ config, store: null, fetchImpl })).toEqual([]);
+    for (const strip of [
+      await getTikTokStrip({ config: null, store: new MemoryStore(), fetchImpl, now: NOW }),
+      await getTikTokStrip({ config, store: null, fetchImpl, now: NOW }),
+    ]) {
+      expect(strip.source).toBe("manual");
+    }
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("renews the token, keeps the new refresh token, and returns four video highlights", async () => {
+  it("reuses a ranking under a week old without calling TikTok", async () => {
     const store = new MemoryStore();
     store.values.set(REFRESH_TOKEN_KEY, "r1");
-    const fetchImpl = tiktokFetch({ refreshToken: "r2" });
-    const highlights = await getLatestTikTokVideos({ config, store, fetchImpl });
+    store.values.set(VIDEOS_KEY, snapshot(["77"], NOW - 6 * DAY));
+    const fetchImpl = tiktokFetch();
+    const strip = await getTikTokStrip({ config, store, fetchImpl, now: NOW });
+    expect(fetchImpl).not.toHaveBeenCalled();
+    expect(strip).toMatchObject({ source: "ranked", poolSize: 40, refreshedAt: new Date(NOW - 6 * DAY).toISOString() });
+    expect(strip.items.map((h) => h.href)).toEqual(["https://www.tiktok.com/@safrbwai/video/77"]);
+  });
 
-    expect(highlights.map((h) => h.href)).toEqual(
-      ["55", "44", "33", "22"].map((id) => `https://www.tiktok.com/@safrbwai/video/${id}`)
+  it("re-ranks by TikTok's view count once the ranking is a week old, keeping the new refresh token", async () => {
+    const store = new MemoryStore();
+    store.values.set(REFRESH_TOKEN_KEY, "r1");
+    store.values.set(VIDEOS_KEY, snapshot(["77"], NOW - 8 * DAY));
+    const fetchImpl = tiktokFetch({ refreshToken: "r2" });
+    const strip = await getTikTokStrip({ config, store, fetchImpl, now: NOW });
+
+    expect(strip.items.map((h) => h.href)).toEqual(
+      ["33", "11", "55", "22"].map((id) => `https://www.tiktok.com/@safrbwai/video/${id}`)
     );
+    expect(strip).toMatchObject({ source: "ranked", poolSize: 5, refreshedAt: new Date(NOW).toISOString() });
     expect(store.values.get(REFRESH_TOKEN_KEY)).toBe("r2");
     const refreshBody = new URLSearchParams(String(fetchImpl.mock.calls[0][1]?.body));
     expect(refreshBody.get("grant_type")).toBe("refresh_token");
     expect(refreshBody.get("refresh_token")).toBe("r1");
     expect(fetchImpl.mock.calls[1][1]?.headers).toMatchObject({ authorization: "Bearer access-refresh_token" });
-    expect(JSON.parse(String(fetchImpl.mock.calls[1][1]?.body))).toEqual({ max_count: 4 });
+    expect(JSON.parse(String(fetchImpl.mock.calls[1][1]?.body))).toEqual({ max_count: 20 });
   });
 
-  it("falls back to the last saved list when TikTok refuses", async () => {
+  it("applies pins and exclusions to the ranking", async () => {
     const store = new MemoryStore();
     store.values.set(REFRESH_TOKEN_KEY, "r1");
-    store.values.set(VIDEOS_KEY, JSON.stringify([{ id: "77", title: "Saved", description: "", createTime: 1 }]));
+    const strip = await getTikTokStrip({
+      config,
+      store,
+      fetchImpl: tiktokFetch(),
+      now: NOW,
+      curation: { pinned: ["44"], excluded: ["33"] },
+    });
+    expect(strip.items.map((h) => h.id)).toEqual(["tiktok-44", "tiktok-11", "tiktok-55", "tiktok-22"]);
+  });
+
+  it("keeps the last ranking, with its real date, when the refresh fails", async () => {
+    const store = new MemoryStore();
+    store.values.set(REFRESH_TOKEN_KEY, "r1");
+    store.values.set(VIDEOS_KEY, snapshot(["77"], NOW - 9 * DAY));
     vi.spyOn(console, "error").mockImplementation(() => undefined);
-    const highlights = await getLatestTikTokVideos({ config, store, fetchImpl: tiktokFetch({ tokenStatus: 400 }) });
-    expect(highlights.map((h) => h.href)).toEqual(["https://www.tiktok.com/@safrbwai/video/77"]);
+    const strip = await getTikTokStrip({ config, store, fetchImpl: tiktokFetch({ tokenStatus: 400 }), now: NOW });
+    expect(strip.items.map((h) => h.href)).toEqual(["https://www.tiktok.com/@safrbwai/video/77"]);
+    expect(strip.refreshedAt).toBe(new Date(NOW - 9 * DAY).toISOString());
     expect(store.values.get(REFRESH_TOKEN_KEY)).toBe("r1");
   });
 
-  it("saves an empty list when the account has no public videos left", async () => {
+  it("saves an empty ranking when the account has no public videos left", async () => {
     const store = new MemoryStore();
     store.values.set(REFRESH_TOKEN_KEY, "r1");
-    store.values.set(VIDEOS_KEY, JSON.stringify([{ id: "77", title: "Old", description: "", createTime: 1 }]));
-    expect(await getLatestTikTokVideos({ config, store, fetchImpl: tiktokFetch({ ids: [] }) })).toEqual([]);
-    expect(store.values.get(VIDEOS_KEY)).toBe("[]");
+    store.values.set(VIDEOS_KEY, snapshot(["77"], NOW - 8 * DAY));
+    const strip = await getTikTokStrip({ config, store, fetchImpl: tiktokFetch({ ids: [] }), now: NOW });
+    expect(strip.items).toEqual([]);
+    expect(JSON.parse(store.values.get(VIDEOS_KEY) ?? "{}").entries).toEqual([]);
   });
 
   it("titles a video by its first line, with a default when TikTok gives none", () => {
     const [first, second] = tiktokHighlights([
-      { id: "1", title: "", description: "\nأول سطر\nثاني سطر", createTime: 0 },
-      { id: "2", title: "", description: "", createTime: 0 },
+      { id: "1", title: "", description: "\nأول سطر\nثاني سطر", createTime: 0, viewCount: null },
+      { id: "2", title: "", description: "", createTime: 0, viewCount: null },
     ]);
     expect(first.title.ar).toBe("أول سطر");
     expect(second.title.ar).toBe("فيديو من سافر بوعي");
+  });
+});
+
+describe("collectTikTokVideos", () => {
+  it("follows the cursor page by page until TikTok reports no more", async () => {
+    const pages = [
+      { videos: [{ id: "1", view_count: 3 }], cursor: 111, has_more: true },
+      { videos: [{ id: "2", view_count: 7 }], cursor: 222, has_more: false },
+    ];
+    const fetchImpl = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => json({ data: pages.shift(), error: { code: "ok" } }));
+    const videos = await collectTikTokVideos("token", 60, fetchImpl);
+    expect(videos.map((video) => [video.id, video.viewCount])).toEqual([["1", 3], ["2", 7]]);
+    expect(fetchImpl.mock.calls.map(([, init]) => JSON.parse(String(init?.body)))).toEqual([
+      { max_count: 20 },
+      { max_count: 20, cursor: 111 },
+    ]);
   });
 });
 

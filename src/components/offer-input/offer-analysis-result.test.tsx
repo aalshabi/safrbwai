@@ -12,6 +12,7 @@ afterEach(cleanup);
 const d = getDictionary("ar");
 
 const analysis: OfferAnalysis = {
+  concerns: [],
   confirmedFacts: [
     { key: "totalPrice", label: { ar: "السعر النهائي", en: "Total price" }, value: { amount: 3200, currency: "SAR" }, evidence: "٣٢٠٠ ر.س", confidenceType: "exact" },
     { key: "nights", label: { ar: "عدد الليالي", en: "Number of nights" }, value: 5, evidence: "٥ ليالٍ", confidenceType: "exact" },

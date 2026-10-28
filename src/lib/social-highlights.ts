@@ -69,6 +69,17 @@ export const SOCIAL_HIGHLIGHTS: Readonly<Record<SocialPlatform, readonly SocialH
 
 
 /**
+ * Manual control over the weekly ranked selections: pinned post ids always
+ * show first (when they are among the ranked posts), excluded ids never show.
+ * Ids are the numeric ids from the post URLs. Has no effect on the manual
+ * lists above, which are already hand-picked.
+ */
+export const SOCIAL_CURATION: Readonly<Record<SocialPlatform, Readonly<{ pinned: readonly string[]; excluded: readonly string[] }>>> = {
+  tiktok: { pinned: [], excluded: [] },
+  x: { pinned: [], excluded: [] },
+};
+
+/**
  * Official embeds, mounted only when the visitor reaches the section: nothing
  * is fetched from X or TikTok while the page above it is being read.
  */

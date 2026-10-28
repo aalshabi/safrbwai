@@ -1,8 +1,8 @@
 import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { exchangeTikTokCode, listTikTokVideos, tiktokAuthorizeUrl } from "./api";
+import { collectTikTokVideos, exchangeTikTokCode, tiktokAuthorizeUrl } from "./api";
 import type { TikTokConfig } from "./config";
-import { MAX_HIGHLIGHTS } from "@/lib/social-highlights";
-import { saveTikTokConnection, type LatestVideosDeps } from "./latest-videos";
+import { SOCIAL_CURATION } from "@/lib/social-highlights";
+import { saveTikTokConnection, TIKTOK_RANK_POOL, tiktokSnapshot, type LatestVideosDeps } from "./latest-videos";
 
 export const STATE_COOKIE = "tiktok_oauth_state";
 const STATE_COOKIE_PATH = "/api/tiktok";
@@ -76,7 +76,7 @@ export function handleTikTokConnect(request: Request, config: TikTokConfig | nul
  */
 export async function handleTikTokCallback(
   request: Request,
-  { config, store, fetchImpl = fetch }: LatestVideosDeps,
+  { config, store, fetchImpl = fetch }: Pick<LatestVideosDeps, "config" | "store" | "fetchImpl">,
   revalidateHome: () => void
 ): Promise<Response> {
   if (!config || !store) return new Response("Not found", { status: 404 });
@@ -94,10 +94,11 @@ export async function handleTikTokCallback(
     if (!tokens.scope.split(",").includes("video.list")) {
       return page(400, "لم تُمنح صلاحية قراءة الفيديوهات (video.list). أعد الربط ووافق عليها.", true);
     }
-    const videos = await listTikTokVideos(tokens.accessToken, MAX_HIGHLIGHTS, fetchImpl);
-    await saveTikTokConnection(store, tokens.refreshToken, videos);
+    const pool = await collectTikTokVideos(tokens.accessToken, TIKTOK_RANK_POOL, fetchImpl);
+    const snapshot = tiktokSnapshot(pool, SOCIAL_CURATION.tiktok, Date.now());
+    await saveTikTokConnection(store, tokens.refreshToken, snapshot);
     revalidateHome();
-    return page(200, `تم ربط تيك توك. عدد الفيديوهات الظاهرة الآن: ${videos.length}.`, true);
+    return page(200, `تم ربط تيك توك. عدد الفيديوهات الظاهرة الآن: ${snapshot.entries.length}.`, true);
   } catch (error) {
     console.error("[tiktok] connect failed:", error instanceof Error ? error.message : "unknown error");
     return page(502, "تعذر إكمال الربط مع تيك توك. حاول مرة أخرى لاحقًا.", true);
