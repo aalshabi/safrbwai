@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 export function GuideArticle({ guide }: { guide: TravelGuide }) {
   const { locale } = useLanguage();
   const copy = locale === "ar"
-    ? { eyebrow: "دليل عملي لمراجعة العرض", reviewed: "آخر مراجعة للمصادر", sources: "المصادر", change: "قد تتغير المتطلبات والسياسات. راجع المصدر الرسمي ومقدم الخدمة قبل الحجز.", ctaTitle: "طبّق القائمة على عرضك", ctaBody: "ألصق نص العرض وسيحدد المحلل المعلومات المذكورة والأسئلة التي تحتاج طرحها.", cta: "حلّل العرض الآن" }
-    : { eyebrow: "Practical offer review guide", reviewed: "Sources last reviewed", sources: "Sources", change: "Requirements and policies can change. Check the official source and provider before booking.", ctaTitle: "Apply the checklist to your offer", ctaBody: "Paste the offer text to identify stated information and questions you should ask.", cta: "Analyze the offer" };
+    ? { eyebrow: { destination: "قبل اختيار الوجهة", booking: "دليل عملي لمراجعة العرض", travel: "قبل السفر" }, reviewed: "آخر مراجعة للمصادر", sources: "المصادر", change: "قد تتغير المتطلبات والسياسات. راجع المصدر الرسمي ومقدم الخدمة قبل الحجز.", ctaTitle: "طبّق القائمة على عرضك", ctaBody: "ألصق نص العرض وسيحدد المحلل المعلومات المذكورة والأسئلة التي تحتاج طرحها.", cta: "حلّل العرض الآن" }
+    : { eyebrow: { destination: "Before choosing a destination", booking: "Practical offer review guide", travel: "Before you travel" }, reviewed: "Sources last reviewed", sources: "Sources", change: "Requirements and policies can change. Check the official source and provider before booking.", ctaTitle: "Apply the checklist to your offer", ctaBody: "Paste the offer text to identify stated information and questions you should ask.", cta: "Analyze the offer" };
 
   return (
     <div className="mx-auto max-w-3xl">
-      <p className="text-sm font-semibold text-teal">{copy.eyebrow}</p>
+      <p className="text-sm font-semibold text-teal">{copy.eyebrow[guide.stage]}</p>
       <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight md:text-4xl">{guide.title[locale]}</h1>
       <p className="mt-4 text-lg text-muted-foreground">{guide.description[locale]}</p>
       <p className="mt-3 text-sm text-muted-foreground">{copy.reviewed}: <time dateTime={guide.reviewedAt}>{guide.reviewedAt}</time></p>

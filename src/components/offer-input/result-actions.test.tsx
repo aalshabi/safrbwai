@@ -21,6 +21,7 @@ const ar = getDictionary("ar").analyzeOffer.v2.result;
 const en = getDictionary("en").analyzeOffer.v2.result;
 
 const analysis: OfferAnalysis = {
+  concerns: [],
   confirmedFacts: [
     {
       key: "nights",

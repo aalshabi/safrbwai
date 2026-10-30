@@ -13,6 +13,7 @@ const copyTextMock = vi.mocked(copyText);
 const VALID_TEXT = "عرض إلى دبي خمس ليالٍ لشخصين شامل الإفطار، السعر ٣٢٠٠ ر.س، التأشيرة غير مشمولة.";
 
 const SAMPLE_ANALYSIS: OfferAnalysis = {
+  concerns: [],
   confirmedFacts: [
     { key: "nights", label: { ar: "عدد الليالي", en: "Nights" }, value: 5, evidence: "٥ ليالٍ", confidenceType: "exact" },
   ],

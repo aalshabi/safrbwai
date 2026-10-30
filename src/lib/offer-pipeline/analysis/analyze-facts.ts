@@ -17,6 +17,7 @@ import { buildChecklist } from "./checklist";
 import { buildSuggestedQuestions } from "./questions";
 import { deriveQuestionContext } from "./question-context";
 import { computeCompleteness } from "./completeness";
+import { buildInferredConcerns } from "./concerns";
 
 export interface AnalyzeOptions {
   /** The original offer text — used only to contextualize suggested questions. */
@@ -33,6 +34,7 @@ export function analyzeFacts(facts: ExtractedOfferFacts, options?: AnalyzeOption
 
   return {
     confirmedFacts: buildConfirmedFacts(facts, options?.observations),
+    concerns: buildInferredConcerns(facts, options?.text),
     missingFields,
     contradictions,
     checklist,

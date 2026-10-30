@@ -1,13 +1,27 @@
 import { unstable_cache } from "next/cache";
-import { MAX_HIGHLIGHTS, type SocialHighlight } from "@/lib/social-highlights";
-import { listTikTokVideos, refreshTikTokTokens, type TikTokVideo } from "./api";
+import { MAX_HIGHLIGHTS, SOCIAL_CURATION, SOCIAL_HIGHLIGHTS, type SocialHighlight } from "@/lib/social-highlights";
+import {
+  isFresh,
+  parseSnapshot,
+  rankWithCuration,
+  shortTitle,
+  type Curation,
+  type RankedSnapshot,
+  type SocialStrip,
+} from "@/lib/social/selection";
+import { collectTikTokVideos, refreshTikTokTokens, type TikTokVideo } from "./api";
 import { getTikTokConfig, getTikTokStoreConfig, type TikTokConfig } from "./config";
 import { REFRESH_TOKEN_KEY, UpstashTikTokStore, VIDEOS_KEY, type TikTokStore } from "./store";
+
+/** How many of the newest videos the weekly ranking looks at (three pages of 20). */
+export const TIKTOK_RANK_POOL = 60;
 
 export type LatestVideosDeps = {
   config: TikTokConfig | null;
   store: TikTokStore | null;
   fetchImpl?: typeof fetch;
+  curation?: Curation;
+  now?: number;
 };
 
 function defaultDeps(): LatestVideosDeps {
@@ -15,17 +29,10 @@ function defaultDeps(): LatestVideosDeps {
   return { config: getTikTokConfig(), store: storeConfig ? new UpstashTikTokStore(storeConfig) : null };
 }
 
-const TITLE_LIMIT = 70;
-
-function shorten(text: string): string {
-  const line = text.split("\n").map((part) => part.trim()).find(Boolean) ?? "";
-  return line.length > TITLE_LIMIT ? `${line.slice(0, TITLE_LIMIT - 1).trimEnd()}…` : line;
-}
-
 /** The videos as homepage highlights; TikTok's own text is shown as written, in both languages. */
 export function tiktokHighlights(videos: readonly TikTokVideo[]): SocialHighlight[] {
   return videos.slice(0, MAX_HIGHLIGHTS).map((video) => {
-    const text = shorten(video.title || video.description);
+    const text = shortTitle(video.title || video.description);
     return {
       id: `tiktok-${video.id}`,
       platform: "tiktok",
@@ -37,57 +44,86 @@ export function tiktokHighlights(videos: readonly TikTokVideo[]): SocialHighligh
   });
 }
 
-export function parseStoredVideos(raw: string | null): TikTokVideo[] {
-  if (!raw) return [];
-  try {
-    const value: unknown = JSON.parse(raw);
-    return Array.isArray(value) ? (value as TikTokVideo[]).filter((video) => /^\d+$/.test(String(video?.id))) : [];
-  } catch {
-    return [];
-  }
+function isVideo(value: unknown): value is TikTokVideo {
+  const video = value as Partial<TikTokVideo> | null;
+  return Boolean(video) && /^\d+$/.test(String(video!.id));
 }
 
-/** Saves the newest videos with the token that fetched them. */
-export async function saveTikTokConnection(store: TikTokStore, refreshToken: string, videos: readonly TikTokVideo[]) {
-  await store.set(REFRESH_TOKEN_KEY, refreshToken);
-  await store.set(VIDEOS_KEY, JSON.stringify(videos));
+export function parseStoredVideos(raw: string | null): RankedSnapshot<TikTokVideo> | null {
+  return parseSnapshot(raw, isVideo);
 }
+
+/** The weekly selection: the most-viewed of the newest videos, after pins and exclusions. */
+export function rankTikTokVideos(pool: readonly TikTokVideo[], curation: Curation): TikTokVideo[] {
+  return rankWithCuration(
+    pool.map((video) => ({ ...video, metric: video.viewCount })),
+    curation,
+    MAX_HIGHLIGHTS
+  ).map(({ metric: _metric, ...video }) => video);
+}
+
+export function tiktokSnapshot(pool: readonly TikTokVideo[], curation: Curation, now: number): RankedSnapshot<TikTokVideo> {
+  return { version: 2, refreshedAt: new Date(now).toISOString(), poolSize: pool.length, entries: rankTikTokVideos(pool, curation) };
+}
+
+/** Saves the connection and its first ranked selection. */
+export async function saveTikTokConnection(
+  store: TikTokStore,
+  refreshToken: string,
+  snapshot: RankedSnapshot<TikTokVideo>
+) {
+  await store.set(REFRESH_TOKEN_KEY, refreshToken);
+  await store.set(VIDEOS_KEY, JSON.stringify(snapshot));
+}
+
+function rankedStrip(snapshot: RankedSnapshot<TikTokVideo>): SocialStrip {
+  return {
+    items: tiktokHighlights(snapshot.entries),
+    source: "ranked",
+    poolSize: snapshot.poolSize,
+    refreshedAt: snapshot.refreshedAt,
+  };
+}
+
+const manualStrip = (): SocialStrip => ({ items: [...SOCIAL_HIGHLIGHTS.tiktok], source: "manual" });
 
 /**
- * The account's four newest videos. Renews the access token with the stored
- * refresh token, keeps the refresh token TikTok returns, and saves the list.
- * Any failure (TikTok, the store, an expired connection) falls back to the
- * last list that worked, so the homepage never breaks over it.
+ * The TikTok strip. With the account linked, it shows the most-viewed of the
+ * newest videos, ranked at most once a week: a fresh saved ranking is reused
+ * as is, and TikTok is only asked again once it is seven days old. Any failure
+ * (TikTok, the store, an expired connection) keeps the last ranking that
+ * worked, with its real date. Without a link it shows the hand-picked list.
  */
-export async function getLatestTikTokVideos(deps: LatestVideosDeps = defaultDeps()): Promise<SocialHighlight[]> {
-  const { config, store, fetchImpl = fetch } = deps;
-  if (!config || !store) return [];
+export async function getTikTokStrip(deps: LatestVideosDeps = defaultDeps()): Promise<SocialStrip> {
+  const { config, store, fetchImpl = fetch, curation = SOCIAL_CURATION.tiktok, now = Date.now() } = deps;
+  if (!config || !store) return manualStrip();
 
-  let lastGood: TikTokVideo[] = [];
+  let saved: RankedSnapshot<TikTokVideo> | null = null;
   try {
-    lastGood = parseStoredVideos(await store.get(VIDEOS_KEY));
+    saved = parseStoredVideos(await store.get(VIDEOS_KEY));
+    if (saved && isFresh(saved, now)) return rankedStrip(saved);
     const refreshToken = await store.get(REFRESH_TOKEN_KEY);
-    if (!refreshToken) return tiktokHighlights(lastGood);
+    if (!refreshToken) return saved ? rankedStrip(saved) : manualStrip();
 
     const tokens = await refreshTikTokTokens(config, refreshToken, fetchImpl);
     if (tokens.refreshToken !== refreshToken) await store.set(REFRESH_TOKEN_KEY, tokens.refreshToken);
-    // An empty list is TikTok's real answer (no public videos), so it replaces the saved one.
-    const videos = await listTikTokVideos(tokens.accessToken, MAX_HIGHLIGHTS, fetchImpl);
-    await store.set(VIDEOS_KEY, JSON.stringify(videos));
-    return tiktokHighlights(videos);
+    // An empty pool is TikTok's real answer (no public videos), so it replaces the saved ranking.
+    const snapshot = tiktokSnapshot(await collectTikTokVideos(tokens.accessToken, TIKTOK_RANK_POOL, fetchImpl), curation, now);
+    await store.set(VIDEOS_KEY, JSON.stringify(snapshot));
+    return rankedStrip(snapshot);
   } catch (error) {
-    console.error("[tiktok] using the last saved videos:", error instanceof Error ? error.message : "unknown error");
-    return tiktokHighlights(lastGood);
+    console.error("[tiktok] keeping the last saved ranking:", error instanceof Error ? error.message : "unknown error");
+    return saved ? rankedStrip(saved) : manualStrip();
   }
 }
 
 export const TIKTOK_VIDEOS_TAG = "tiktok-videos";
 
 /**
- * The homepage's copy: one TikTok round per 12 hours however often the page
- * is rebuilt; the connect callback clears it by tag.
+ * The homepage's copy, read at most every 12 hours; TikTok itself is asked
+ * only when the saved ranking is a week old. The connect callback clears it.
  */
-export const getCachedTikTokVideos = unstable_cache(() => getLatestTikTokVideos(), ["tiktok-latest-videos"], {
+export const getCachedTikTokStrip = unstable_cache(() => getTikTokStrip(), ["tiktok-weekly-strip"], {
   revalidate: 43_200,
   tags: [TIKTOK_VIDEOS_TAG],
 });

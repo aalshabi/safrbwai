@@ -12,6 +12,7 @@ const ORIGINAL_OFFER =
 const INTERNAL_EVIDENCE = "INTERNAL_EVIDENCE_FROM_OFFER";
 
 const analysis: OfferAnalysis = {
+  concerns: [],
   confirmedFacts: [
     {
       key: "destination",

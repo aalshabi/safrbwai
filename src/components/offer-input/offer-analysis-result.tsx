@@ -5,6 +5,7 @@ import {
   XCircle,
   AlertTriangle,
   HelpCircle,
+  Lightbulb,
   ListChecks,
   ClipboardCheck,
   ChevronDown,
@@ -187,7 +188,7 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
         </Section>
 
         {/* Suggested questions — the most actionable output, kept near the top. */}
-        {analysis.suggestedQuestions.length > 0 && (
+        {analysis.suggestedQuestions.length + analysis.concerns.length > 0 && (
           <Section
             id="oa-questions"
             guideId="result-questions"
@@ -198,7 +199,7 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
             }
           >
             <ol className="space-y-2">
-              {analysis.suggestedQuestions.map((q) => (
+              {[...analysis.suggestedQuestions, ...analysis.concerns].map((q) => (
                 <li key={q.key} className="flex items-start gap-2.5 rounded-xl border border-border p-3 text-sm text-foreground">
                   <HelpCircle className="mt-0.5 size-4 shrink-0 text-teal" aria-hidden />
                   <span>{localizeBi(q.question, locale)}</span>
@@ -208,11 +209,39 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
           </Section>
         )}
 
+        {/* Inferred concerns — kept apart from stated facts and missing information. */}
+        {analysis.concerns.length > 0 && (
+          <Section id="oa-concerns" icon={Lightbulb} title={r.concernsTitle}>
+            <p className="mb-3 text-xs text-muted-foreground">{r.concernsNote}</p>
+            <ul className="space-y-3">
+              {analysis.concerns.map((c) => (
+                <li key={c.key} className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+                  <p className="text-sm font-semibold text-foreground">{localizeBi(c.title, locale)}</p>
+                  <p className="mt-1 text-sm leading-6 text-foreground">{localizeBi(c.detail, locale)}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    <span className="font-medium">{r.concernBasisLabel}: </span>
+                    {localizeBi(c.basis, locale)}
+                  </p>
+                  <p className="mt-2 flex items-start gap-2 text-sm text-foreground">
+                    <HelpCircle className="mt-0.5 size-4 shrink-0 text-teal" aria-hidden />
+                    <span>
+                      <span className="font-medium">{r.concernQuestionLabel}: </span>
+                      {localizeBi(c.question, locale)}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
         {/* Missing fields — open by default, ahead of the confirmed detail */}
         <FoldableSection guideId="result-missing" icon={XCircle} title={r.missingTitle} count={analysis.missingFields.length} defaultOpen={analysis.missingFields.length > 0}>
           {analysis.missingFields.length === 0 ? (
             <p className="text-sm text-muted-foreground">{r.missingEmpty}</p>
           ) : (
+            <>
+            <p className="mb-3 text-xs text-muted-foreground">{r.missingNote}</p>
             <ul className="flex flex-wrap gap-2">
               {analysis.missingFields.map((m) => (
                 <li key={m.key} className="inline-flex items-center gap-1.5 rounded-full border border-border px-2.5 py-1 text-xs text-foreground">
@@ -221,6 +250,7 @@ export function OfferAnalysisResult({ analysis }: { analysis: OfferAnalysis }) {
                 </li>
               ))}
             </ul>
+            </>
           )}
         </FoldableSection>
 

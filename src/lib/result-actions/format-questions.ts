@@ -12,10 +12,11 @@ export interface QuestionCopyLabels {
 
 export function getCopyableQuestions(
   questions: readonly SuggestedQuestion[],
-  locale: Locale
+  locale: Locale,
+  max = MAX_COPIED_QUESTIONS
 ): string[] {
   return questions
-    .slice(0, MAX_COPIED_QUESTIONS)
+    .slice(0, max)
     .map((question) => localizeBi(question.question, locale))
     .filter((question) => question.length > 0);
 }
@@ -23,9 +24,14 @@ export function getCopyableQuestions(
 export function formatQuestionsForCopy(
   questions: readonly SuggestedQuestion[],
   locale: Locale,
-  labels: QuestionCopyLabels
+  labels: QuestionCopyLabels,
+  /** Questions from inferred concerns, copied after the suggested ones and not counted against the cap. */
+  concernQuestions: readonly SuggestedQuestion[] = []
 ): string {
-  const copyableQuestions = getCopyableQuestions(questions, locale);
+  const copyableQuestions = [
+    ...getCopyableQuestions(questions, locale),
+    ...getCopyableQuestions(concernQuestions, locale, concernQuestions.length),
+  ];
   if (copyableQuestions.length === 0) return "";
 
   const numberedQuestions = copyableQuestions.map(
