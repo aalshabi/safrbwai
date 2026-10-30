@@ -22,6 +22,7 @@ const GACA_RIGHTS = "https://gaca.gov.sa/-/media/Files/PDF/LawsAndRegulation/Con
 const IATA_TRAVEL_CENTRE = "https://www.iata.org/en/travel-centre/";
 const UK_MALDIVES_ENTRY = "https://www.gov.uk/foreign-travel-advice/maldives/entry-requirements";
 const VELANA_ARRIVAL = "https://velana.macl.aero/guide/arrival";
+const VELANA_TRANSPORT = "https://velana.macl.aero/guide/transport";
 const SAUDI_MOFA = "https://www.mofa.gov.sa/";
 const SAUDIA = "https://www.saudia.com/";
 const FLYNAS = "https://www.flynas.com/";
@@ -122,7 +123,7 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
       en: "Who the Maldives suits, and how transfers, meals, and season shape trip length and budget.",
     },
     reviewedAt: "2026-10-28",
-    status: "draft",
+    status: "reviewed",
     sections: [
       {
         heading: { ar: "لمن تناسب", en: "Who it suits" },
@@ -160,11 +161,11 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
       {
         heading: { ar: "التنقل: الطائرة المائية والقارب والرحلات الداخلية", en: "Getting there: seaplane, boat, and domestic flights" },
         body: {
-          ar: "يصل المسافر إلى مطار فيلانا الدولي في ماليه، ثم ينتقل إلى المنتجع بقارب سريع أو بطائرة مائية أو برحلة داخلية ثم قارب حسب موقعه. لكل منتجع ومشغّل مواعيده، ورحلات الطائرة المائية تعمل في ساعات النهار عادة ولها حد للأمتعة قد يختلف عن رحلتك الدولية. إذا وصلت متأخرًا فقد تحتاج ليلة قرب المطار.",
-          en: "Travelers arrive at Velana International Airport in Malé, then reach the resort by speedboat, seaplane, or a domestic flight then boat, depending on location. Each resort and operator sets its own schedule; seaplanes usually fly in daylight and can have a baggage limit that differs from your international flight. Arriving late may mean a night near the airport.",
+          ar: "يصل المسافر إلى مطار فيلانا الدولي في ماليه، ثم ينتقل إلى المنتجع بقارب سريع أو بطائرة مائية أو برحلة داخلية ثم قارب حسب موقعه. لكل منتجع ومشغّل مواعيده وشروطه وحدوده للأمتعة، وهي تُطلب منه مكتوبة لأنها لا تُنشر في مكان واحد. إذا وصلت متأخرًا فقد تحتاج ليلة قرب المطار.",
+          en: "Travelers arrive at Velana International Airport in Malé, then reach the resort by speedboat, seaplane, or a domestic flight then boat, depending on location. Each resort and operator sets its own schedule, conditions and baggage limits, and these are worth getting in writing because they are not published in one place. Arriving late may mean a night near the airport.",
         },
         checks: [
-          { ar: "اسأل عن آخر موعد وصول يسمح بالانتقال في اليوم نفسه، ولا تعتمد على موعد عام.", en: "Ask for the latest arrival that still allows a same-day transfer; do not rely on a general cutoff." },
+          { ar: "اسأل المنتجع عن آخر موعد وصول يسمح بالانتقال في اليوم نفسه، ولا تعتمد على موعد عام.", en: "Ask for the latest arrival that still allows a same-day transfer; do not rely on a general cutoff." },
           { ar: "اسأل عن حد الأمتعة في الطائرة المائية.", en: "Ask about the seaplane baggage allowance." },
         ],
       },
@@ -179,11 +180,11 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
       {
         heading: { ar: "الدخول للمسافر السعودي", en: "Entry for Saudi travelers" },
         body: {
-          ar: "تذكر المصادر الحكومية أن السائح يحصل على تأشيرة دخول عند الوصول، وأن الجواز يجب أن يكون صالحًا ستة أشهر على الأقل، وأن نموذج إقرار المسافر (IMUGA) يُعبأ إلكترونيًا خلال 96 ساعة قبل الوصول. هذه المتطلبات قد تتغير وتختلف حسب الجنسية، فتحقق منها لجوازك من مصدر رسمي قبل السفر.",
-          en: "Government sources state that tourists receive a visa on arrival, that passports should be valid for at least six months, and that the IMUGA traveller declaration is completed online within 96 hours before arrival. These requirements can change and depend on nationality, so check them for your passport from an official source before you travel.",
+          ar: "يذكر دليل مطار فيلانا أن تأشيرة السياحة تُمنح عند الوصول لكل الجنسيات بلا موافقة مسبقة، وأن الجواز أو وثيقة السفر يجب أن تحمل منطقة قراءة آلية (MRZ) صالحة شهرًا على الأقل، وتذكر الإرشادات الحكومية البريطانية المدة نفسها وتضيف أن تأشيرة الوصول للسائح 30 يومًا. ويُعبأ نموذج إقرار المسافر (IMUGA) إلكترونيًا خلال 96 ساعة قبل وصول رحلتك. هذه المتطلبات قد تتغير وتختلف حسب الجنسية، فتحقق منها لجوازك من مصدر رسمي قبل السفر.",
+          en: "Velana airport's arrival guide states that tourist visas are granted on arrival for all nationalities with no pre-approval, and that the passport or travel document must have a machine-readable zone valid for at least one month; UK government guidance gives the same validity and adds that the visa on arrival for a tourist is 30 days. The IMUGA traveller declaration is completed online within 96 hours before your flight arrives. These requirements can change and depend on nationality, so check them for your passport from an official source before you travel.",
         },
         checks: [
-          { ar: "تحقق من صلاحية الجواز ومتطلبات الدخول لجنسيتك.", en: "Check passport validity and entry requirements for your nationality." },
+          { ar: "تحقق من صلاحية الجواز ومن متطلبات الدخول لجنسيتك من المصدر الرسمي.", en: "Check passport validity and entry requirements for your nationality." },
           { ar: "عبّئ إقرار IMUGA في الموعد.", en: "Complete the IMUGA declaration on time." },
         ],
       },
@@ -191,6 +192,7 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     sources: [
       { label: { ar: "حكومة المملكة المتحدة: متطلبات دخول المالديف", en: "UK Government: Maldives entry requirements" }, href: UK_MALDIVES_ENTRY },
       { label: { ar: "مطار فيلانا الدولي: دليل الوصول", en: "Velana International Airport: arrival guide" }, href: VELANA_ARRIVAL },
+      { label: { ar: "مطار فيلانا الدولي: دليل التنقل", en: "Velana International Airport: transport guide" }, href: VELANA_TRANSPORT },
       { label: { ar: "مركز السفر التابع للاتحاد الدولي للنقل الجوي", en: "IATA Travel Centre" }, href: IATA_TRAVEL_CENTRE },
     ],
   },
@@ -618,8 +620,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     {
       heading: { ar: "متطلبات الدخول لحامل الجواز السعودي", en: "Entry requirements for Saudi passport holders" },
       body: {
-        ar: "يدرج قرار الحكومة الجورجية رقم 255 المملكة العربية السعودية ضمن الدول التي يمكن لمواطنيها الدخول والبقاء دون تأشيرة لمدة سنة كاملة، والحكم مرتبط بجنسية الجواز لا بمكان الإقامة. المقيم في السعودية بجنسية أخرى يخضع لمسار منفصل: ينظم القرار رقم 256 دخول حاملي تأشيرة أو إقامة سارية من دول مدرجة حتى 90 يومًا ضمن أي 180 يومًا، بشرط سريان الوثيقة يوم الدخول، وتسري شروط أشد على مواطني عدد من الدول، تتعلق بتعدد الدخول وبمدة سريان الوثيقة. إدراج الدولة في القائمة لا يعني ضمان القبول على الحدود. هذه القواعد تتغير، فافحص نص القرار وصفحة التأشيرات في وزارة الخارجية الجورجية قبل إصدار التذاكر وقبل السفر.",
-        en: "Ordinance No. 255 of the Government of Georgia lists the Kingdom of Saudi Arabia among the countries whose citizens may enter and stay without a visa for one full year; this follows the nationality of the passport, not the country of residence. A resident of Saudi Arabia holding another nationality falls under a separate track: Ordinance No. 256 allows holders of a valid visa or residence permit from listed countries to stay up to 90 days within any 180 days, provided the document is valid on the day of entry, and stricter conditions on multiple entry and document validity apply to citizens of a number of countries. Being on the list does not guarantee admission at the border. These rules change, so check the text of the ordinance and the visa page of the Georgian Ministry of Foreign Affairs before issuing tickets and before travel.",
+        ar: "تنظم قرارات الحكومة الجورجية الدخول دون تأشيرة بقوائم للدول ومددها، والحكم مرتبط بجنسية الجواز لا بمكان الإقامة. لم نتمكن من فتح نص القرار الرسمي للتأكد من مدة الإعفاء لحامل الجواز السعودي، والمصادر غير الرسمية تتعارض فيها، فلا نذكر مدة هنا: راجعها من القنصلية الجورجية قبل الحجز. المقيم في السعودية بجنسية أخرى يخضع لمسار منفصل: ينظم القرار رقم 256 دخول حاملي تأشيرة أو إقامة سارية من دول مدرجة حتى 90 يومًا ضمن أي 180 يومًا، بشرط سريان الوثيقة يوم الدخول، وتسري شروط أشد على مواطني عدد من الدول، تتعلق بتعدد الدخول وبمدة سريان الوثيقة. إدراج الدولة في القائمة لا يعني ضمان القبول على الحدود. هذه القواعد تتغير، فافحص نص القرار وصفحة التأشيرات في وزارة الخارجية الجورجية قبل إصدار التذاكر وقبل السفر.",
+        en: "Georgian government ordinances set visa-free entry through lists of countries and their permitted stays, and this follows the nationality of the passport, not the country of residence. We could not open the official text to confirm the permitted stay for a Saudi passport, and unofficial sources disagree on it, so no duration is stated here: check it with the Georgian consular service before booking. A resident of Saudi Arabia holding another nationality falls under a separate track: Ordinance No. 256 allows holders of a valid visa or residence permit from listed countries to stay up to 90 days within any 180 days, provided the document is valid on the day of entry, and stricter conditions on multiple entry and document validity apply to citizens of a number of countries. Being on the list does not guarantee admission at the border. These rules change, so check the text of the ordinance and the visa page of the Georgian Ministry of Foreign Affairs before issuing tickets and before travel.",
       },
       checks: [
         { ar: "حدد جنسية الجواز المستخدم لكل مسافر قبل أي حجز.", en: "Establish the nationality of the passport each traveller will use before any booking." },
