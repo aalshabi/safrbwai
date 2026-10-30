@@ -25,25 +25,13 @@ export const RELATED_CONTENT: Readonly<Record<string, readonly ContentRef[]>> = 
     { kind: "guide", slug: "total-price-and-inclusions" },
     { kind: "insight", slug: "ai-trip-planning-human-review" },
   ],
-  "guide:maldives-trip-planning": [
-    { kind: "guide", slug: "before-travel-checklist" },
-    { kind: "guide", slug: "total-price-and-inclusions" },
-  ],
   "guide:before-travel-checklist": [
-    { kind: "guide", slug: "transit-and-baggage" },
+    { kind: "guide", slug: "luggage-and-carry-on" },
     { kind: "insight", slug: "schengen-2026-ees-etias-saudi-travelers" },
   ],
-  "guide:turkey": [
+  "guide:azerbaijan": [
     { kind: "guide", slug: "before-travel-checklist" },
     { kind: "guide", slug: "luggage-and-carry-on" },
-  ],
-  "guide:georgia": [
-    { kind: "guide", slug: "turkey" },
-    { kind: "guide", slug: "before-travel-checklist" },
-  ],
-  "guide:azerbaijan": [
-    { kind: "guide", slug: "georgia" },
-    { kind: "guide", slug: "before-travel-checklist" },
   ],
   "guide:thailand": [
     { kind: "guide", slug: "bali" },

@@ -122,7 +122,7 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
       en: "Who the Maldives suits, and how transfers, meals, and season shape trip length and budget.",
     },
     reviewedAt: "2026-10-28",
-    status: "reviewed",
+    status: "draft",
     sections: [
       {
         heading: { ar: "لمن تناسب", en: "Who it suits" },
@@ -351,7 +351,7 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     en: "How to choose Türkiye's cities and season, how to get around within and between them, and the entry rules for Saudi passport holders, with official sources.",
   },
   reviewedAt: "2026-10-28",
-  status: "reviewed",
+  status: "draft",
   sections: [
     {
       heading: {
@@ -569,7 +569,7 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     en: "Planning Georgia with scoped information: who it suits, season and trip length, moving between Tbilisi, the mountains and the coast, common planning mistakes, and entry requirements for Saudi passport holders.",
   },
   reviewedAt: "2026-10-28",
-  status: "reviewed",
+  status: "draft",
   sections: [
     {
       heading: { ar: "لمن تناسب جورجيا", en: "Who Georgia suits" },
@@ -618,8 +618,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     {
       heading: { ar: "متطلبات الدخول لحامل الجواز السعودي", en: "Entry requirements for Saudi passport holders" },
       body: {
-        ar: "يدرج قرار الحكومة الجورجية رقم 255 المملكة العربية السعودية ضمن الدول التي يمكن لمواطنيها الدخول والبقاء دون تأشيرة لمدة سنة كاملة، والحكم مرتبط بجنسية الجواز لا بمكان الإقامة. المقيم في السعودية بجنسية أخرى يخضع لمسار منفصل: ينظم القرار رقم 256 دخول حاملي تأشيرة أو إقامة سارية من دول مدرجة حتى 90 يومًا ضمن أي 180 يومًا، بشرط سريان الوثيقة يوم الدخول، وأُضيفت منذ 2025 شروط أشد على مواطني عدد من الدول تتعلق بتعدد الدخول ومدة سريان الوثيقة. إدراج الدولة في القائمة لا يعني ضمان القبول على الحدود. هذه القواعد تتغير، فافحص نص القرار وصفحة التأشيرات في وزارة الخارجية الجورجية قبل إصدار التذاكر وقبل السفر.",
-        en: "Ordinance No. 255 of the Government of Georgia lists the Kingdom of Saudi Arabia among the countries whose citizens may enter and stay without a visa for one full year; this follows the nationality of the passport, not the country of residence. A resident of Saudi Arabia holding another nationality falls under a separate track: Ordinance No. 256 allows holders of a valid visa or residence permit from listed countries to stay up to 90 days within any 180 days, provided the document is valid on the day of entry, and since 2025 stricter conditions on multiple entry and document validity have applied to citizens of a number of countries. Being on the list does not guarantee admission at the border. These rules change, so check the text of the ordinance and the visa page of the Georgian Ministry of Foreign Affairs before issuing tickets and before travel.",
+        ar: "يدرج قرار الحكومة الجورجية رقم 255 المملكة العربية السعودية ضمن الدول التي يمكن لمواطنيها الدخول والبقاء دون تأشيرة لمدة سنة كاملة، والحكم مرتبط بجنسية الجواز لا بمكان الإقامة. المقيم في السعودية بجنسية أخرى يخضع لمسار منفصل: ينظم القرار رقم 256 دخول حاملي تأشيرة أو إقامة سارية من دول مدرجة حتى 90 يومًا ضمن أي 180 يومًا، بشرط سريان الوثيقة يوم الدخول، وتسري شروط أشد على مواطني عدد من الدول، تتعلق بتعدد الدخول وبمدة سريان الوثيقة. إدراج الدولة في القائمة لا يعني ضمان القبول على الحدود. هذه القواعد تتغير، فافحص نص القرار وصفحة التأشيرات في وزارة الخارجية الجورجية قبل إصدار التذاكر وقبل السفر.",
+        en: "Ordinance No. 255 of the Government of Georgia lists the Kingdom of Saudi Arabia among the countries whose citizens may enter and stay without a visa for one full year; this follows the nationality of the passport, not the country of residence. A resident of Saudi Arabia holding another nationality falls under a separate track: Ordinance No. 256 allows holders of a valid visa or residence permit from listed countries to stay up to 90 days within any 180 days, provided the document is valid on the day of entry, and stricter conditions on multiple entry and document validity apply to citizens of a number of countries. Being on the list does not guarantee admission at the border. These rules change, so check the text of the ordinance and the visa page of the Georgian Ministry of Foreign Affairs before issuing tickets and before travel.",
       },
       checks: [
         { ar: "حدد جنسية الجواز المستخدم لكل مسافر قبل أي حجز.", en: "Establish the nationality of the passport each traveller will use before any booking." },
@@ -697,8 +697,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     {
       heading: { ar: "لمن تناسب أذربيجان", en: "Who Azerbaijan suits" },
       body: {
-        ar: "تناسب أذربيجان من يريد مدينة حديثة ومركزًا تاريخيًا مع خيار جبلي في رحلة قصيرة، ويقبل التنقل البري بين قواعد منفصلة. باكو هي قاعدة المدينة، ومركزها التاريخي إيتشري شهر مدرج على قائمة التراث العالمي لليونسكو منذ عام 2000 مع قصر الشروانشاهات وبرج العذراء. شيكي مدينة تاريخية أُدرج مركزها مع قصر الخان على القائمة عام 2019، وتحتاج وقتًا مستقلًا لا طرفًا في يوم طويل. قبالا ومنطقة قوسار الجبلية تضيفان الطبيعة والأنشطة الموسمية.",
-        en: "Azerbaijan suits a traveller who wants a modern city and a historic centre with a mountain option on a short trip, and accepts road travel between separate bases. Baku is the city base, and its historic centre, Icherisheher, has been on the UNESCO World Heritage List since 2000 together with the Shirvanshahs' Palace and the Maiden Tower. Sheki is a historic town whose centre, with the Khan's Palace, was inscribed in 2019; it needs time of its own rather than a corner of a long day. Gabala and the mountainous Qusar area add nature and seasonal activities.",
+        ar: "تناسب أذربيجان من يريد مدينة حديثة ومركزًا تاريخيًا مع خيار جبلي في رحلة قصيرة، ويقبل التنقل البري بين قواعد منفصلة. باكو هي قاعدة المدينة، ومركزها التاريخي إيتشري شهر مدرج على قائمة التراث العالمي لليونسكو مع قصر الشروانشاهات وبرج العذراء. وشيكي مدينة تاريخية بقصر الخان، تحتاج وقتًا مستقلًا لا طرفًا في يوم طويل. قبالا ومنطقة قوسار الجبلية تضيفان الطبيعة والأنشطة الموسمية.",
+        en: "Azerbaijan suits a traveller who wants a modern city and a historic centre with a mountain option on a short trip, and accepts road travel between separate bases. Baku is the city base, and its historic centre, Icherisheher, is on the UNESCO World Heritage List together with the Shirvanshahs' Palace and the Maiden Tower. Sheki is a historic town with the Khan's Palace; it needs time of its own rather than a corner of a long day. Gabala and the mountainous Qusar area add nature and seasonal activities.",
       },
       checks: [
         { ar: "اختر قاعدة جبلية واحدة في الرحلة القصيرة.", en: "Choose a single mountain base on a short trip." },
@@ -742,8 +742,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     {
       heading: { ar: "متطلبات الدخول لحامل الجواز السعودي", en: "Entry requirements for Saudi passport holders" },
       body: {
-        ar: "تعلن دائرة الهجرة الحكومية إعفاء حاملي الجواز السعودي العادي من التأشيرة في الفترة من 15 فبراير 2026 إلى 15 فبراير 2027، بثلاث دخولات خلال الفترة وبحد أقصى 30 يومًا لكل دخول، ويتطلب الدخول الرابع تأشيرة سارية. هذا إعفاء مؤقت ومرتبط بجنسية الجواز، فالمقيم في السعودية بجنسية أخرى لا يأخذ حكم المواطن السعودي ويراجع أهليته للتأشيرة الإلكترونية من البوابة الرسمية. من يقيم مؤقتًا أكثر من 15 يومًا يجب تسجيله في مكان الإقامة، ويقدم الطلب عادة الفندق أو المضيف ويمكن للمسافر تقديمه، ومهلة التقديم وردت بصور مختلفة في المواد الرسمية فتُؤكد من دائرة الهجرة. القواعد تتغير، ولا يُفترض استمرار الإعفاء بعد 15 فبراير 2027 دون نشر رسمي؛ افحص البوابة الرسمية قبل إصدار التذاكر وقبل السفر.",
-        en: "The State Migration Service announces a visa exemption for holders of ordinary Saudi passports in the period from 15 February 2026 to 15 February 2027, with three entries during that period and a maximum of 30 days per entry; a fourth entry requires a valid visa. This is a temporary exemption tied to the nationality of the passport, so a resident of Saudi Arabia holding another nationality is not treated as a Saudi citizen and should check e-visa eligibility on the official portal. A foreigner staying temporarily for more than 15 days must be registered at the place of stay; the hotel or host usually files the application and the traveller may file it as well, and the filing deadline has appeared differently in official material, so confirm it with the State Migration Service. The rules change, and continuation of the exemption after 15 February 2027 must not be assumed without an official publication; check the official portal before issuing tickets and before travel.",
+        ar: "تعلن دائرة الهجرة الحكومية إعفاء حاملي الجواز السعودي العادي من التأشيرة في الفترة من 15 فبراير 2026 إلى 15 فبراير 2027، بثلاث دخولات خلال الفترة وبحد أقصى 30 يومًا لكل دخول، والإعفاء لا يغطي ما تجاوز ذلك: دخولًا إضافيًا أو إقامة أطول أو غرضًا غير السياحة، فلكلٍّ منها مسار تأشيرة. هذا إعفاء مؤقت ومرتبط بجنسية الجواز، فالمقيم في السعودية بجنسية أخرى لا يأخذ حكم المواطن السعودي ويراجع مساره الخاص لدى دائرة الهجرة قبل السفر. من يقيم مؤقتًا أكثر من 15 يومًا يجب تسجيله في مكان الإقامة، ومهلة التقديم وردت بصور مختلفة في المواد الرسمية، فتُؤكد مع دائرة الهجرة ومع مكان الإقامة. القواعد تتغير، ولا يُفترض استمرار الإعفاء بعد 15 فبراير 2027 دون نشر رسمي؛ افحص البوابة الرسمية قبل إصدار التذاكر وقبل السفر.",
+        en: "The State Migration Service announces a visa exemption for holders of ordinary Saudi passports in the period from 15 February 2026 to 15 February 2027, with three entries during that period and a maximum of 30 days per entry; the exemption does not cover more than that: a further entry, a longer stay, or a purpose other than tourism each need a visa. This is a temporary exemption tied to the nationality of the passport, so a resident of Saudi Arabia holding another nationality is not treated as a Saudi citizen and should check their own route with the State Migration Service before travelling. A foreigner staying temporarily for more than 15 days must be registered at the place of stay; the filing deadline has appeared differently in official material, so confirm it with the State Migration Service and with the place of stay. The rules change, and continuation of the exemption after 15 February 2027 must not be assumed without an official publication; check the official portal before issuing tickets and before travel.",
       },
       checks: [
         { ar: "احسب عدد الدخولات المستخدمة لكل جواز قبل الحجز.", en: "Count the entries already used on each passport before booking." },
@@ -919,8 +919,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
         en: "Entry requirements for Saudi passport holders",
       },
       body: {
-        ar: "تذكر الجهات التايلاندية الرسمية أن الجواز السعودي العادي ضمن نظام الإعفاء السياحي لمدة لا تتجاوز 30 يومًا، الساري من 15 سبتمبر 2026 بعد إلغاء نظام 60 يومًا السابق، والقائمة النهائية هي المنشورة في الجريدة الرسمية. الإعفاء للسياحة فقط، والعمل أو الدراسة أو الأغراض الأخرى تحتاج فئة تأشيرة مستقلة، والمقيم في السعودية بجنسية أخرى يخضع لحكم جنسية جوازه. يلزم كذلك تعبئة بطاقة الوصول الرقمية TDAC قبل الوصول عبر نطاق الهجرة الرسمي، وهي مجانية وليست تأشيرة ولا تمنح حق الدخول. القرار النهائي لضابط الهجرة، والقواعد تتغير، فافحص المصدر الرسمي قبل كل سفر.",
-        en: "Thai official bodies state that the ordinary Saudi passport is within the tourist visa exemption scheme for stays of up to 30 days, in force since 15 September 2026 after the earlier 60-day scheme was withdrawn; the list published in the Royal Gazette is the authority. The exemption covers tourism only; work, study and other purposes need their own visa category, and a resident of Saudi Arabia holding another nationality is governed by the nationality in their passport. The Thailand Digital Arrival Card must also be completed before arrival on the official immigration domain; it is free, it is not a visa, and it does not grant the right to enter. The final decision rests with the immigration officer, and the rules change, so check the official source before every trip.",
+        ar: "تذكر الجهات التايلاندية الرسمية أن الجواز السعودي العادي ضمن نظام الإعفاء السياحي لمدة لا تتجاوز 30 يومًا، الساري من 15 سبتمبر 2026 بعد إلغاء نظام 60 يومًا السابق، والقائمة النهائية هي المنشورة في الجريدة الرسمية. الإعفاء للسياحة فقط، والعمل أو الدراسة أو الأغراض الأخرى تحتاج فئة تأشيرة مستقلة، والمقيم في السعودية بجنسية أخرى يخضع لحكم جنسية جوازه. يلزم كذلك تعبئة بطاقة الوصول الرقمية TDAC قبل الوصول عبر نطاق الهجرة الرسمي، وهي مجانية وليست تأشيرة. القرار النهائي لضابط الهجرة، والقواعد تتغير، فافحص المصدر الرسمي قبل كل سفر.",
+        en: "Thai official bodies state that the ordinary Saudi passport is within the tourist visa exemption scheme for stays of up to 30 days, in force since 15 September 2026 after the earlier 60-day scheme was withdrawn; the list published in the Royal Gazette is the authority. The exemption covers tourism only; work, study and other purposes need their own visa category, and a resident of Saudi Arabia holding another nationality is governed by the nationality in their passport. The Thailand Digital Arrival Card must also be completed before arrival on the official immigration domain; it is free and it is not a visa. The final decision rests with the immigration officer, and the rules change, so check the official source before every trip.",
       },
       checks: [
         {
@@ -948,13 +948,6 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
     },
     {
       label: {
-        ar: "سفارة تايلاند الملكية: إشعار نظام الإعفاء السياحي 30 يومًا من 15 سبتمبر 2026",
-        en: "Royal Thai Embassy: notice on the 30-day tourist visa exemption from 15 September 2026",
-      },
-      href: "https://helsinki.thaiembassy.org/en/publicservice/updated-tourist-visa-exemption-scheme-30-days-effective-15-september-2",
-    },
-    {
-      label: {
         ar: "هيئة السياحة التايلاندية: قواعد الإعفاء 30 و15 يومًا",
         en: "Tourism Authority of Thailand: the new 30-day and 15-day exemption rules",
       },
@@ -966,13 +959,6 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
         en: "Thai Immigration Bureau: Digital Arrival Card FAQ",
       },
       href: "https://tdac.immigration.go.th/manual/en/faq.html",
-    },
-    {
-      label: {
-        ar: "البوابة الرسمية للتأشيرة الإلكترونية التايلاندية",
-        en: "Official Thailand e-Visa portal",
-      },
-      href: "https://www.thaievisa.go.th/",
     },
     {
       label: {
@@ -1090,8 +1076,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
         en: "Entry requirements for Saudi passport holders",
       },
       body: {
-        ar: "تدرج جهات الهجرة الإندونيسية الرسمية المملكة العربية السعودية ضمن جنسيات تأشيرة الوصول لفئة الزيارة، بإقامة أولية حتى 30 يومًا وإمكانية تمديد واحد وفق الإجراء المنشور. ويُطلب من الركاب الدوليين تعبئة تصريح الوصول الرقمي على منصة All Indonesia الحكومية، والتصريح مجاني ويصدر برمز يُعرض عند الوصول. ويُفرض على السياح الأجانب رسم خاص بزيارة بالي يُدفع عبر بوابة Love Bali الرسمية وفق تعليماتها، وله فئات إعفاء منشورة. لا شيء من ذلك يضمن الدخول؛ القرار لضابط الهجرة، والقواعد تتغير، فافحص المصدر الرسمي قبل السفر.",
-        en: "Indonesia's official immigration authorities list Saudi Arabia among the nationalities eligible for a visit-category visa on arrival, with an initial stay of up to 30 days and one extension under the published procedure. International passengers are also required to complete the digital arrival declaration on the government All Indonesia platform; the declaration is free and issues a code to present on arrival. Foreign tourists are additionally charged a levy for visiting Bali, paid through the official Love Bali portal under its instructions, with published exemption categories. None of this guarantees entry; the decision rests with the immigration officer, and the rules change, so check the official source before travel.",
+        ar: "تدرج جهات الهجرة الإندونيسية الرسمية المملكة العربية السعودية ضمن جنسيات تأشيرة الوصول لفئة الزيارة، بإقامة أولية حتى 30 يومًا وإمكانية تمديد واحد وفق الإجراء المنشور. ويُطلب من الركاب الدوليين تعبئة تصريح الوصول الرقمي على منصة All Indonesia الحكومية، والتصريح مجاني. ويُفرض على السياح الأجانب رسم خاص بزيارة بالي يُدفع عبر بوابة Love Bali الرسمية وفق تعليماتها، وله فئات إعفاء منشورة. لا شيء من ذلك يضمن الدخول؛ القرار لضابط الهجرة، والقواعد تتغير، فافحص المصدر الرسمي قبل السفر.",
+        en: "Indonesia's official immigration authorities list Saudi Arabia among the nationalities eligible for a visit-category visa on arrival, with an initial stay of up to 30 days and one extension under the published procedure. International passengers are also required to complete the digital arrival declaration on the government All Indonesia platform; the declaration is free. Foreign tourists are additionally charged a levy for visiting Bali, paid through the official Love Bali portal under its instructions, with published exemption categories. None of this guarantees entry; the decision rests with the immigration officer, and the rules change, so check the official source before travel.",
       },
       checks: [
         {
@@ -1099,8 +1085,8 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
           en: "Confirm your passport is on the official list before booking.",
         },
         {
-          ar: "املأ تصريح الوصول من النطاق الحكومي واحتفظ برمز التأكيد.",
-          en: "Complete the arrival declaration on the government domain and keep the confirmation code.",
+          ar: "املأ تصريح الوصول من النطاق الحكومي قبل الوصول.",
+          en: "Complete the arrival declaration on the government domain before arrival.",
         },
         {
           ar: "راجع صفحة الرسم الرسمية وقائمة الإعفاء قبل الوصول.",
@@ -1116,20 +1102,6 @@ export const TRAVEL_GUIDES: readonly TravelGuide[] = [
         en: "Ngurah Rai Airport Immigration Office: foreign national services and visa on arrival",
       },
       href: "https://ngurahrai.imigrasi.go.id/layanan-wna/",
-    },
-    {
-      label: {
-        ar: "الإدارة العامة للهجرة الإندونيسية: الأسئلة الشائعة",
-        en: "Indonesian Directorate General of Immigration: FAQ",
-      },
-      href: "https://imigrasi.go.id/faq",
-    },
-    {
-      label: {
-        ar: "الإدارة العامة للهجرة الإندونيسية: بيان مدة تأشيرة الوصول والتمديد",
-        en: "Indonesian Directorate General of Immigration: statement on visa on arrival duration and extension",
-      },
-      href: "https://www.imigrasi.go.id/en/2023/04/27/pelancong-asing-dari-panama-guatemala-dan-makau-kini-bisa-mengajukan-visa-on-arrival-indonesia",
     },
     {
       label: {
