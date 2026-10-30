@@ -56,6 +56,22 @@ describe("inferred concerns", () => {
     expect(analysis.concerns.map((c) => c.key).sort()).toEqual(["depositTerms", "hotelSubstitution", "nonRefundable"]);
   });
 
+  it("does not claim a deposit when the offer says there is none", async () => {
+    for (const text of [
+      "عرض إسطنبول 5 ليالٍ، السعر الإجمالي 6000 ر.س، بدون عربون، الدفع عند الوصول.",
+      "Istanbul package, 5 nights, total SAR 6,000. No deposit required; full payment on arrival.",
+      "عرض دبي 4 ليالٍ، السعر الإجمالي 5000 ر.س، العربون غير مطلوب.",
+    ]) {
+      const analysis = await analyze(text);
+      expect(analysis.concerns.map((c) => c.key)).not.toContain("depositTerms");
+    }
+  });
+
+  it("still raises the deposit concern when one is actually asked for", async () => {
+    const analysis = await analyze("عرض إسطنبول 5 ليالٍ، السعر الإجمالي 6000 ر.س، عربون 1000 ر.س عند الحجز.");
+    expect(analysis.concerns.map((c) => c.key)).toContain("depositTerms");
+  });
+
   it("notes unstated payment terms as a question, not as a hidden condition", async () => {
     const analysis = await analyze("عرض إلى دبي إقامة 5 ليالٍ لشخصين، السعر الإجمالي 3200 ر.س.");
     const payment = analysis.concerns.find((c) => c.key === "paymentSchedule");

@@ -15,6 +15,28 @@ import type { InferredConcern } from "./types";
 const has = (text: string, lower: string, words: readonly string[]) =>
   words.some((word) => (/[a-z]/.test(word) ? lower.includes(word) : text.includes(word)));
 
+/** Words that turn a nearby mention into a denial ("بدون عربون", "no deposit"). */
+const NEGATORS = ["بدون", "بلا", "دون", "لا يوجد", "لا يُطلب", "لا يطلب", "غير مطلوب", "ليس هناك", "no ", "without", "not required", "none"];
+
+/**
+ * True when the text mentions one of `words` somewhere it is NOT denied. An
+ * offer that says "بدون عربون" or "no deposit required" states the opposite of
+ * the concern, so it must not raise it.
+ */
+function mentionsUnnegated(text: string, lower: string, words: readonly string[]): boolean {
+  const WINDOW = 30;
+  for (const word of words) {
+    const latin = /[a-z]/.test(word);
+    const haystack = latin ? lower : text;
+    for (let at = haystack.indexOf(word); at !== -1; at = haystack.indexOf(word, at + 1)) {
+      const around = haystack.slice(Math.max(0, at - WINDOW), at + word.length + WINDOW);
+      const aroundLower = latin ? around : around.toLowerCase();
+      if (!NEGATORS.some((negator) => (/[a-z]/.test(negator) ? aroundLower : around).includes(negator))) return true;
+    }
+  }
+  return false;
+}
+
 const SEAPLANE = ["طائرة مائية", "الطائرة المائية", "بالطائرة المائية", "طيران مائي", "seaplane", "sea plane"];
 const FLIGHT_WORDS = ["طيران", "رحلة", "تذاكر", "وصول", "flight", "arrival", "ticket"];
 const DEPOSIT = ["عربون", "دفعة مقدمة", "دفعة أولى", "deposit", "down payment"];
@@ -107,7 +129,7 @@ export function buildInferredConcerns(facts: ExtractedOfferFacts, text = ""): In
     }
   }
 
-  if (has(text, lower, DEPOSIT)) {
+  if (mentionsUnnegated(text, lower, DEPOSIT)) {
     concerns.push({
       key: "depositTerms",
       title: { ar: "شروط العربون", en: "Deposit terms" },
