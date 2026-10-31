@@ -70,6 +70,7 @@ describe("SocialHighlights embeds", () => {
       "2050941925461529038",
       "2106058301876097401",
       "2085437614832939399",
+      "2034403928737976652",
     ]);
     // No account-page embed; with no TikTok videos listed, the TikTok strip is not shown at all.
     expect(sources.some((src) => src.pathname.startsWith("/embed/@"))).toBe(false);
