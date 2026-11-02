@@ -70,6 +70,10 @@ export const RELATED_CONTENT: Readonly<Record<string, readonly ContentRef[]>> = 
     { kind: "guide", slug: "transit-and-baggage" },
     { kind: "insight", slug: "ai-trip-planning-human-review" },
   ],
+  "insight:uk-eta-saudi-travelers-2026": [
+    { kind: "insight", slug: "schengen-2026-ees-etias-saudi-travelers" },
+    { kind: "guide", slug: "before-travel-checklist" },
+  ],
   "insight:japan-trip-hidden-taxes-2026": [
     { kind: "guide", slug: "total-price-and-inclusions" },
     { kind: "insight", slug: "verify-hotel-booking-site" },
