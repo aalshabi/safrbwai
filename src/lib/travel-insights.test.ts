@@ -4,8 +4,8 @@ import { getLatestInsights, getPublishedInsights } from "./travel-insights";
 describe("published travel insights", () => {
   it("publishes the reviewed topics in priority order", () => {
     const insights = getPublishedInsights();
-    expect(insights).toHaveLength(6);
-    expect(insights.map(({ priority }) => priority)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(insights).toHaveLength(7);
+    expect(insights.map(({ priority }) => priority)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(insights.every(({ status }) => status === "published")).toBe(true);
   });
 
@@ -26,14 +26,14 @@ describe("published travel insights", () => {
 describe("latest insights for the homepage", () => {
   it("shows the three newest articles, same-day ones in priority order", () => {
     expect(getLatestInsights(3).map(({ slug }) => slug)).toEqual([
+      "uk-eta-saudi-travelers-2026",
       "flight-cancelled-saudi-airports-rights",
       "schengen-2026-ees-etias-saudi-travelers",
-      "japan-trip-hidden-taxes-2026",
     ]);
   });
 
   it("never returns an older article ahead of a newer one", () => {
-    const dates = getLatestInsights(6).map(({ publishedAt }) => publishedAt);
+    const dates = getLatestInsights(7).map(({ publishedAt }) => publishedAt);
     expect(dates).toEqual([...dates].sort().reverse());
   });
 });

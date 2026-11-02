@@ -37,6 +37,10 @@ const CNT_READERS_CHOICE =
   "https://www.cntraveler.com/inspiration/readers-choice-awards";
 const CNT_ASIA_EDITOR_LETTER =
   "https://www.cntraveler.com/story/editors-letter-introducing-the-2026-readers-choice-awards";
+const UK_ETA_OVERVIEW =
+  "https://www.gov.uk/guidance/apply-for-an-electronic-travel-authorisation-eta";
+const UK_ETA_NATIONALITIES =
+  "https://www.gov.uk/guidance/check-when-you-can-get-an-electronic-travel-authorisation-eta";
 const SKIFT_AI_BOOKING_GAP =
   "https://skift.com/2026/10/11/travel-ais-prove-it-phase-visibility-and-the-booking-gap/";
 const AI_PLANNING_RESEARCH = "https://arxiv.org/abs/2609.26968";
@@ -533,6 +537,90 @@ export const TRAVEL_INSIGHTS: readonly TravelInsight[] = [
         label: { ar: "تغيير ضريبة الإقامة في كيوتو", en: "Kyoto's accommodation tax change" },
         publisher: "Kyoto City Official Travel Guide",
         href: KYOTO_LODGING_TAX_GUIDE,
+        sourceType: "official",
+      },
+    ],
+  },
+  {
+    slug: "uk-eta-saudi-travelers-2026",
+    category: { ar: "التأشيرات والدخول", en: "Visas and entry" },
+    title: {
+      ar: "بريطانيا: تصريح ETA بعشرين جنيهًا لكل مسافر",
+      en: "The UK: a £20 ETA for every traveler",
+    },
+    description: {
+      ar: "تصريح السفر الإلكتروني مطلوب قبل السفر إلى بريطانيا، والسعودية ضمن الجنسيات المؤهلة. رسمه عشرون جنيهًا لكل مسافر بما فيهم الرضّع، والترانزيت ليس استثناءً.",
+      en: "An electronic travel authorisation is required before traveling to the UK, and Saudi Arabia is among the eligible nationalities. It costs £20 per traveler, babies included, and transit is not an exception.",
+    },
+    publishedAt: "2026-11-02",
+    reviewedAt: "2026-11-02",
+    status: "published",
+    priority: 7,
+    sections: [
+      {
+        heading: { ar: "ما هو التصريح، وأين يسري؟", en: "What it is, and where it applies" },
+        body: {
+          ar: "تصريح السفر الإلكتروني (ETA) إذن مسبق يتيح السفر إلى المملكة المتحدة وجيرزي وغيرنزي وجزيرة مان لمدة تصل إلى ستة أشهر. وتقول الصفحة الرسمية صراحة إن التصريح لا يضمن الدخول؛ القرار يبقى عند منفذ الحدود. ورسمه عشرون جنيهًا إسترلينيًا على بوابة الحكومة البريطانية.",
+          en: "An electronic travel authorisation (ETA) is advance permission to travel to the UK, Jersey, Guernsey, or the Isle of Man for up to six months. The official page states plainly that an ETA does not guarantee entry; the decision rests at the border. It costs £20 on the UK government portal.",
+        },
+        claimType: "fact",
+        checks: [],
+      },
+      {
+        heading: { ar: "السعودية ضمن الجنسيات المؤهلة", en: "Saudi Arabia is among the eligible nationalities" },
+        body: {
+          ar: "تدرج صفحة الجنسيات الرسمية السعودية تحت قائمة «من يمكنه التقديم الآن»، وتقول الصفحة نفسها إن من هم خارج القائمة لا يمكنهم الحصول على التصريح أصلًا. ولا تذكر الصفحة تاريخ بدء الاشتراط على حاملي الجواز السعودي، فلا نذكر هنا تاريخًا لم يرد في المصدر.",
+          en: "The official nationality page lists Saudi Arabia under \"Who can apply now\", and states that other nationalities cannot get an ETA at all. The page gives no date for when the requirement began for Saudi passport holders, so we state no date the source does not give.",
+        },
+        claimType: "fact",
+        checks: [],
+      },
+      {
+        heading: { ar: "نقطتان يسقط فيهما كثيرون", en: "Two points that catch people out" },
+        body: {
+          ar: "الأولى: كل مسافر يحتاج تصريحًا مستقلًا باسمه، بما في ذلك الرضّع والأطفال — ويمكن لشخص واحد أن يقدّم نيابة عن غيره. والثانية: الترانزيت ليس استثناءً؛ تقول الصفحة الرسمية إنك تحتاج تصريحًا إذا كنت ستمر على منفذ الجوازات في مطار بريطاني قبل متابعة رحلتك، وتنصح بسؤال شركة الطيران عند الشك.",
+          en: "First: every traveler needs their own ETA, babies and children included — and one person may apply on another's behalf. Second: transit is not an exception; the official page says you need an ETA if you are passing through border control at a UK airport before continuing your journey, and advises asking your airline if you are unsure.",
+        },
+        claimType: "fact",
+        checks: [],
+      },
+      {
+        heading: { ar: "الحكومة نفسها تحذّر من الوسطاء", en: "The government itself warns about intermediaries" },
+        body: {
+          ar: "على الصفحة الرسمية للتصريح جملتان تستحقان الانتباه: «قد تطلب مواقع أخرى مبلغًا أكبر للتقديم»، و«تجنّب المواقع التي تحاكي الخدمات الحكومية». أي أن الجهة المُصدِرة نفسها تنبّه إلى الوسطاء. فإن طُلب منك أكثر من عشرين جنيهًا، فأنت لست على البوابة الرسمية.",
+          en: "Two sentences on the official ETA page are worth noting: \"Other websites may charge more to apply\", and \"Avoid websites that imitate government services.\" The issuing authority itself flags intermediaries. If you are asked for more than £20, you are not on the official portal.",
+        },
+        claimType: "fact",
+        checks: [],
+      },
+      {
+        heading: { ar: "كيف تستعد؟", en: "How to prepare" },
+        body: {
+          ar: "التصريح بند تكلفة ووقت معًا، فأدخله في حساب الرحلة قبل الحجز لا بعده — خاصة للعائلات، حيث يتضاعف الرسم بعدد الأفراد لا بعدد الغرف.",
+          en: "The ETA is both a cost and a time item: put it in your trip budget before booking, not after — especially for families, where the fee multiplies by the number of people, not rooms.",
+        },
+        claimType: "recommendation",
+        checks: [
+          { ar: "اضرب عشرين جنيهًا في عدد المسافرين، والرضّع منهم، قبل مقارنة العروض.", en: "Multiply £20 by the number of travelers, babies included, before comparing offers." },
+          { ar: "قدّم من بوابة الحكومة البريطانية مباشرة، ولا تدفع لموقع وسيط مهما بدا رسميًا.", en: "Apply directly on the UK government portal; do not pay an intermediary site however official it looks." },
+          { ar: "إن كان مسارك يمر ببريطانيا، اسأل شركة الطيران هل ستمر على منفذ الجوازات.", en: "If your route passes through the UK, ask your airline whether you will cross border control." },
+          { ar: "تحقق من تصريحك عبر خدمة «Check your ETA» الرسمية قبل كل رحلة. الصفحة لا تنص على مدة صلاحية، فلا تعتمد على رقم تقرأه في مكان آخر.", en: "Check your authorisation with the official \"Check your ETA\" service before each trip. The page states no validity period, so do not rely on a figure you read elsewhere." },
+          { ar: "احمل مستندات حجزك وعودتك: التصريح لا يضمن الدخول.", en: "Carry your booking and return documents: an ETA does not guarantee entry." },
+        ],
+      },
+    ],
+    sources: [
+      {
+        label: { ar: "تصريح السفر الإلكتروني: الرسم ومن يحتاجه", en: "Electronic travel authorisation: cost and who needs one" },
+        publisher: "GOV.UK — UK Home Office",
+        href: UK_ETA_OVERVIEW,
+        sourceType: "official",
+      },
+      {
+        label: { ar: "من يمكنه الحصول على التصريح الآن", en: "Check when you can get an ETA" },
+        publisher: "GOV.UK — UK Home Office",
+        href: UK_ETA_NATIONALITIES,
+        publishedAt: "2026-04-09",
         sourceType: "official",
       },
     ],
