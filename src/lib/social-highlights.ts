@@ -64,6 +64,18 @@ export const SOCIAL_HIGHLIGHTS: Readonly<Record<SocialPlatform, readonly SocialH
       href: "https://x.com/SafrBwai/status/2085437614832939399",
       label: { ar: "ثريد سفر", en: "Travel thread" },
     },
+    {
+      id: "edge-of-the-world",
+      platform: "x",
+      title: { ar: "حافة العالم قرب الرياض", en: "The Edge of the World near Riyadh" },
+      description: {
+        ar: "فيديو عن قصة الموقع الجيولوجية والسؤال عن سبب بقائه على صورته الحالية.",
+        en: "A video on the site's geological story and why it still looks the way it does.",
+      },
+      action: { ar: "فتح المنشور الأصلي", en: "Open original post" },
+      href: "https://x.com/SafrBwai/status/2034403928737976652",
+      label: { ar: "فيديو", en: "Video" },
+    },
   ],
 };
 
